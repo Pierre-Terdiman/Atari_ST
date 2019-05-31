@@ -1,0 +1,53 @@
+'
+' GFA PUNCH(S)
+' henrion didier
+'
+' Dossier COULEUR
+' ---------------
+' contient des punchs fonctionnant en mode basse r‚solution
+'
+' ARTIFICE.GFA
+' est un feu d'artifices coloris‚ et sonoris‚ (pour les soir‚es chaudes)
+'
+' CERCLES.GFA
+' est un prg. qui utilise la r‚cursivit‚
+' il montre que la surface d‚limit‚e de cette fa‡on par une infinit‚ de cercles
+' est en r‚alit‚ incluse dans un carr‚
+'
+' DEGRADE.GFA (… mon avis le meilleur de la pr‚sente liste...)
+' permet la cr‚ation de degrad‚s,en se servant de 'sources' de couleurs
+' et en tra‡ant … partir de ces points des lignes de niveau
+' (ici le programme tire 5 sources au hasard sur l'‚cran)
+'
+' E
+' Dossier MONO
+' ------------
+' contient par cons‚quent des punchs fonctionnels uniquement en hte r‚s.
+'
+' BZZ.GFA
+' permet de visualiser l'‚tendue r‚elle du balayage du spot sur l'‚cran
+' en remplissant les zones inaccessibles de petites 'bavures' dues …
+' l'abscence de synchronisation
+'
+' EFFACE.GFA
+' diff‚rentes fa‡ons d'effacer ou d'afficher progressivement des pages
+' ‚crans (ici alternant le noir et le blanc spectaculairement)
+'
+' HYPNOSE.GFA
+' animation simpliste et gourmante en m‚moire mais assez int‚ressante
+' (pour les heureux possesseurs de 1040)
+'
+' SNAKE.GFA
+' jeu du serpent qui doit suivre la route sans s'‚craser sur les bas c“t‚s
+' (scrolling vertical … la Goldrunner (non,l… je d‚conne !))
+'
+' E
+' et pour terminer...
+'
+' REBOND.GFA
+' une petite balle rebondit sur les rebords de l'‚cran...c'est tout...
+'
+' VONKOCH.GFA
+' courbe fractale de renomm‚e mondiale,obtenue ici par r‚cursivit‚
+' autour d'un triangle et dirig‚e vers l'ext‚rieur (si,si !)
+'

@@ -1,0 +1,13 @@
+move.l #50,d7
+flash:movea.l #$78000,a6
+loop:not.l (a6)+
+cmpa.l #$78000+$8000,a6
+blt loop
+move.l #$4ffff,d6
+wait:subq.l #1,d6
+cmpi.l #0,d6
+bne wait
+dbf d7,flash
+move.w #0,-(sp)
+trap #1
+end

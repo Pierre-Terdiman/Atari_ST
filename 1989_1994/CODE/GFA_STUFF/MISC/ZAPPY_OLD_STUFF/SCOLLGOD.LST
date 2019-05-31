@@ -1,0 +1,20 @@
+RESERVE 10000
+FILESELECT "a:\*.pi1","",f$
+OPEN "i",#1,f$
+a$=INPUT$(34,#1)
+VOID XBIOS(6,L:V:a$+2)
+BGET #1,HIMEM,32000
+FOR n%=199 DOWNTO 0
+  FOR t%=0 TO 4
+    BMOVE HIMEM+n%*160,HIMEM+n%*800+t%*160,160
+  NEXT t%
+NEXT n%
+a%=HIMEM
+b%=HIMEM+128000
+DO
+  FOR n%=a% TO b% STEP 1280*SGN(b%-a%)
+    VSYNC
+    VOID XBIOS(5,L:n%,L:n%,L:TRUE)
+  NEXT n%
+  SWAP a%,b%
+LOOP

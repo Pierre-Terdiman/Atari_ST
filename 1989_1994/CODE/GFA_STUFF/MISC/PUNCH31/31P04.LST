@@ -1,0 +1,16 @@
+' AUTEUR: NAXOS 89
+DIM a$(101)
+GRAPHMODE 3
+FOR y%=1 TO 100
+  CIRCLE 51,51,50
+  PELLIPSE 51,51,50,25-y%/4
+  PELLIPSE 51,51,50-y%,50
+  GET 0,0,102,102,a$(y%)
+  CLS
+NEXT y%
+dt%=1
+DO
+  ADD t%,dt%
+  dt%=(1-2*ABS(t%<1 OR t%>100))*dt%
+  PUT 0,0,a$(t%),3
+LOOP

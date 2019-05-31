@@ -1,0 +1,93 @@
+Zaphodyne Inc.                                              17 August 1987
+P.O. box 1111
+Fairborn, OH 45324
+
+                            GIFSHOW.PRG
+
+             Resolution - Independant Graphics are HERE !
+
+                *************************************
+                *                                   *
+                * This Software is ABSOLUTELY FREE! *
+                *                                   *
+                * Make as many copies as you want,  *
+                * and give 'em to anyone you please *
+                * But it is NOT for resale!         *
+                *                                   *
+                *************************************
+
+                           GIFSHOW.PRG
+                        copyright (C) 1987                                                        copyright (C) 1987
+                         by Zaphodyne Inc.                                                        by Compuserve Inc.
+                                                                                                an H&R Block Company
+
+This folder contains the following files:
+
+GIFSHOW.PRG - Atari ST GIF slide show program
+GIFSHOW.DOC - This file
+SATURN.GIF  - 32 color GIF picture
+
+and other .GIF files
+
+Please note that GIFSHOW needs to be run from MEDIUM or HIGH resolution.
+Yes, this means that it *will* display in monochrome (and quite nicely
+too, thank you).  It should successfully display *ALL* GIF files that you
+will find on Compuserve.
+
+To run GIFSHOW, simply double-click on it from the desktop.  It will
+display a start-up screen, then automatically cycle through all GIF
+files in the current directory.
+
+You can control the display by pressing various keys, as follows:
+
+Key:                        Effect:
+
+Return      - terminates display after the current picture is finished
+
+Space       - pauses display after the current picture is finished,
+              press any key to continue
+
+F1          - sets no delay between pictures
+
+F2 - F10    - sets 1 to 9 second delay between pictures
+              (F10 is longest)        
+
+You can also use GIFSHOW to display individual files:
+Use INSTALL APPLICATION from the GEM desktop, and install it
+with file type '.GIF' - then double click on any GIF file, and
+it will be displayed for you.
+
+        **************************************************************
+        * We are developing a communications program                 *
+        * (Zaphodyne/vtx) which features B-Protocol file transfer    *
+        * RLE and GIF graphics, scrips and a full text editor.  It   *
+        * runs from the GEM desktop using a mouse/menu interface     *
+        * with Alt-Key commands also available.                      *
+        *                                                            *
+        *         A version for the ST is available NOW              *
+        *         an Amiga version is under development              *
+        *                                                            *
+        * For more information on this, and other Zaphodyne products *
+        *                                                            *
+        * call: (513) 237 - 7168 [residence] 9:00 am - 5:00 pm M-F   *
+        *                                                            *
+        *     or email to jruley (BIX) or 76227,117 (Compuserve)     *
+        **************************************************************
+
+Acknowlegements:
+
+The font used in the start-up screen was created with the FED font
+editor by Reg Knighton.
+
+The GIF expansion code was provided by Compuserve Inc. (Special thanks
+to Steve Wilhite, Craig Knouf and Larry Wood)
+
+The color palette conversions, high-speed line drawing interface, and
+Halftoning for Monochrome display  are proprietary to Zaphodyne Inc.
+If you are a registered GIF developer, and would like to use them i
+your own software, drop us a line.
+
+This program is written in C, using the Megamax C Development system
+(which we highly reccomend) with in-line assemblor used in the low-level
+drawing routines.
+

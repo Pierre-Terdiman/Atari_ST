@@ -1,0 +1,24 @@
+	OPT	A+,O+,P+
+	
+	CLR	-(SP)
+	PEA	-1.W
+	PEA	-1.W
+	MOVE	#$5,-(SP)
+	TRAP	#14
+	ADDA.L	#12,SP
+	
+	PEA	TXT
+	MOVE	#$9,-(SP)
+	TRAP	#1
+	ADDQ.L	#6,SP
+	
+	MOVE	#$7,-(SP)
+	TRAP	#1
+	ADDQ.L	#6,SP
+	
+	MOVE.L	#$FC06DE,$70.W
+	PEA	0.W
+	
+	TRAP	#1
+	DS.B	200
+TXT	DC.B	"THIS IS A TEXT TO CHECK IF THERE'S NO BUGS",$A,$D

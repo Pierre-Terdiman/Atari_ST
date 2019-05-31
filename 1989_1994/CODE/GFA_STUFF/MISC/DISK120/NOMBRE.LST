@@ -1,0 +1,34 @@
+CLS
+PRINT
+REPEAT
+  INPUT "Combien de nombres ?",n%
+UNTIL n%>1
+nombre%=0
+nombre1%=0
+PRINT
+PRINT "Je calcule..."
+FOR a%=1 TO n%
+  e%=RANDOM(2)
+  IF e%=0
+    INC nombre%
+  ENDIF
+  IF e%=1
+    INC nombre1%
+  ENDIF
+NEXT a%
+CLS
+PRINT
+PRINT "R‚sultats :"
+PRINT "-----------"
+PRINT
+PRINT "Nombre de z‚ros :",nombre%
+PRINT
+PRINT "Nombre de un    :",nombre1%
+PRINT
+PRINT "Sur un total de :",n%
+PRINT
+PRINT (nombre%*100)/n%,"% de z‚ros."
+PRINT
+PRINT (nombre1%*100)/n%,"% de uns."
+VOID INP(2)
+RUN

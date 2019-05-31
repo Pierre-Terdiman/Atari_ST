@@ -1,0 +1,15 @@
+xm%=319+160*(XBIOS(4)=0)
+ym%=99-100*(XBIOS(4)=2)
+cm%=2^(2^(2-XBIOS(4)))-1
+DEFFN a(x)=xm%*(1+SIN(x*k%))
+DEFFN b(x)=ym%*(1+SIN(x*k%))
+WHILE INKEY$=""
+  c%=1+c% MOD cm%
+  ADD k%,46
+  COLOR c%
+  DRAW FN a(0.011),FN b(0.023) TO FN a(0.051),FN b(0.067)
+  SUB k%,45
+  COLOR 0
+  DRAW FN a(0.011),FN b(0.023) TO FN a(0.051),FN b(0.067)
+WEND
+EDIT

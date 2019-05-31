@@ -1,0 +1,18 @@
+FILESELECT "\*.pi1","",nom$
+BLOAD nom$,XBIOS(2)-34
+~XBIOS(6,L:XBIOS(2)-32)
+HIDEM
+reduction(4)
+~INP(2)
+SHOWM
+PROCEDURE reduction(taux)
+  LOCAL a$,i,j
+  a$=SPACE$(32000)
+  FOR i=0 TO 319 STEP taux
+    RC_COPY XBIOS(2),i,0,1,199 TO V:a$,i/taux,0
+  NEXT i
+  CLS
+  FOR j=0 TO 199 STEP 2
+    RC_COPY V:a$,0,j,319/taux,1 TO XBIOS(2),0,j/taux
+  NEXT j
+RETURN

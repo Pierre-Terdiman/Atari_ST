@@ -1,0 +1,1547 @@
+IERA	EQU	$FFFA07		* INTERUPTION ENABLE A
+IERB	EQU	$FFFA09		* INTERUPTION ENABLE B
+ISRA	EQU	$FFFA0F		* INTERUPTION IN-SERVICE A
+IMRA	EQU	$FFFA13		* INTERUPTION MASQUE A
+TBCR	EQU	$FFFA1B		* TIMER B CONTROL REGISTER
+TBDR	EQU	$FFFA21		* TIMER B DONNEE REGISTER
+SYNCRO	EQU	$FF820A		* REGISTRE SYNCRO SHIFTER
+COUL_0	EQU	$FF8240
+COUL_1	EQU	$FF8242		* ADRESSES DES REGISTRES
+COUL_2	EQU	$FF8244		* DE LA PALETTE DU SHIFTER
+COUL_3	EQU	$FF8246
+COUL_4	EQU	$FF8248
+COUL_5	EQU	$FF824A
+COUL_6	EQU	$FF824C
+COUL_7	EQU	$FF824E
+COUL_8	EQU	$FF8250
+COUL_9	EQU	$FF8252
+COUL_10	EQU	$FF8254
+COUL_11	EQU	$FF8256
+COUL_12	EQU	$FF8258
+COUL_13	EQU	$FF825A
+COUL_14	EQU	$FF825C
+COUL_15	EQU	$FF825E
+ACIA	EQU	$FFFC02		* LECTURE DE L'ACIA CLAVIER
+PSG	EQU	$FF8800	        * pour le son...
+
+
+	*OPT	X-			* SUPRIME LA TABLE SYMBOLIQUE
+ 	SECTION TEXT
+DEBUT:	MOVE.L  A7,A5
+	LEA.L 	D_PILE,A7
+	MOVE.L 	4(A5),A5
+	MOVE.L 	$C(A5),D0
+	ADD.L 	$14(A5),D0
+	ADD.L 	$1C(A5),D0
+	ADD.L 	#$100,D0		* LE TRADITIONELLE MSSHRINK
+	MOVE.L 	D0,-(SP)		* PAS INDISPENSABLE ICI
+        MOVE.L 	A5,-(SP)
+	MOVE.W 	#0,-(SP)
+	MOVE.W 	#$4A,-(SP)
+	TRAP 	#1
+	LEA 	12(SP),SP
+	
+	CLR.L 	-(SP)			* PASSAGE EN SUPERVISEUR
+	MOVE.W 	#$20,-(SP)		*
+	TRAP 	#1			*
+	ADDQ.L 	#6,SP			*
+	MOVE.L 	D0,SAUVE		* SAUVE LA PILE UTILISATEUR
+			
+	MOVE.B	IERA,MFP1		*
+	MOVE.B	IERB,MFP2		*
+	MOVE.B	ISRA,MFP3		* SAUVE LES REGISTRES
+	MOVE.B	IMRA,MFP4		* UTILISES DU MFP
+	MOVE.B	TBCR,MFP5		*
+	MOVE.B	TBDR,MFP6		*
+	
+	CLR.B	IERA			* VIRE TOUTES LES
+	CLR.B	IERB			* INTERUPTION ! ( SAUVAGE NON ? ) 
+	
+
+	MOVE.L	#BUFFER,D0		* ADRESSE DU BUFFER POUR ECRAN
+	ANDI.L	#$FFFFFF00,D0		* SUPRIME LES 8 BITS "FAIBLE"
+	ADD.L	#512,D0			* ET FAIT MULTIPLE DE 256
+	MOVE.L	D0,ECRAN		* ON SAUVE L'ADRESSE CALCULEE
+	
+	MOVE.W	#4,-(SP)		* APPEL FONCTION GETREZ
+	TRAP 	#14			* XBIOS...
+	ADDQ.L	#2,SP			*
+	MOVE.W	D0,RES			* SAUVE LA RESOLUTION
+	
+	MOVE.W	#2,-(SP)		* APPEL FONCTION PHYSBASE
+	TRAP 	#14			* XBIOS
+	ADDQ.L 	#2,SP			*
+	MOVE.L	D0,ANC_ECR		* SAUVE L'ADRESSE ECRAN
+	
+	MOVE.W 	#0,-(SP)		* BASSE RESOLUTION
+	MOVE.L	ECRAN,-(SP)		* PHYSBASE A ECRAN
+	MOVE.L	ECRAN,-(SP)		* LOGBASE A ECRAN
+	MOVE.W 	#5,-(SP)		* FONCTION SETSCREEN
+	TRAP 	#14			* DU XBIOS
+	LEA.L 	12(SP),SP		*
+
+	MOVEA.L	ECRAN,A1		* ADRESSE DE L'ECRAN DANS A1
+        ADDA.L  #4800,A1
+	MOVEA.L	#FOND+34,A0		* ADRESSE DE L'IMAGE DANS A0
+	MOVE.L	#7999,D0		* 8000 MOTS LONG A COPIER
+COPY1	MOVE.L	(A0)+,(A1)+		* COPIE L'IMAGE DANS L'ECRAN
+	DBF	D0,COPY1		* TANT QUE...
+	
+	LEA.L	COUL_0,A0		* ADRESSE PALETTE SHIFTER
+	MOVEM.L	(A0),D0-D7		* RECUPERE LES 16 REGISTRES
+	LEA.L	ANC_PAL,A0		* ADRESSE DE SAUVEGARDE
+	MOVEM.L	D0-D7,(A0)		* SAUVE LES 16 REGISTRES
+	
+	MOVE.L #MES_F,MES_PNT		* INIT POINTEUR MESSAGE
+	MOVE.B	#4,NB_BIT		* 4 DECALAGE
+	
+	MOVEQ	#1,D0			* NETOIE D0
+	JSR	MUSIQUE		* INITIALISE LA MUSIQUE
+	
+	;MOVEQ	#1,D0			* SPRITE 0 A AFFICHER
+	;BSR	MOULIN			* AFFICHE LE SPRITE DU MOULIN
+	
+	LEA.L	TB_SPR,A5		* ADRESSE DE LA TABLE SPRITE
+	MOVEQ	#0,D0			* NETOIE D0
+	MOVEA.L	(A5,D0.W),A0		* ADRESSE SPRITE HAMBURGER 0
+	MOVEA.L	(A5,D0.W),A2		* ADRESSE SPRITE HAMBURGER 0
+	MOVEA.L	(A5,D0.W),A4		* ADRESSE SPRITE HAMBURGER 0
+	BSR	HAMBUR			* AFFICHE LES 3 HAMBURGERS
+	
+	MOVE.L	$70,ANC_VBL		* SAUVE L'ANCIEN VECTEUR VBL
+	MOVE.L	#VBL_IR,$70		* ET PLACE LE MIEN...
+	MOVE.L	$120,ANC_TB		* SAUVE ANCIEN VECTEUR TIMER B
+	MOVE.L	#TB0_IR,$120		* ET PLACE LE MIEN...
+	
+	DC.W	$A00A			* CACHE LA SOURIS (LINE A)
+	MOVE.B	#$12,ACIA		* INIT CLAV
+	
+	CLR.B	TBCR			* ARRET DU TIMER B (PLUS PRUDENT)
+	BSET	#0,IERA			* AUTORISE LES INTERUPTIONS
+	BSET	#0,IMRA			* SUR LE TIMER B
+
+**********************************************************************
+			* ON TOURNE ICI TANT QU'ON N'A PAS APPUYE SUR
+			* LA BARRE D'ESPACE CAR TOUTES L'ANIMATION EST
+			* FAITE DANS INTERUPTION VBL...
+BOUCLE:	
+	MOVE.B	VSYNC,D0		* ATTEND UNE SYNCRO VERTICALE
+WAIT	CMP.B	VSYNC,D0		* POUR LE TESTS DES TOUCHES
+	BEQ.S	WAIT	
+        CMP.B  #$3B,ACIA
+        BNE.S  SUITE   
+        MOVEQ  #1,D0
+        JSR  MUSIQUE
+SUITE   CMP.B  #$3C,ACIA
+        BNE.S SUITE2
+        MOVEQ  #2,D0
+        JSR MUSIQUE
+SUITE2  CMP.B  #$3D,ACIA
+        BNE.S SUITE3
+        MOVEQ  #3,D0
+        JSR MUSIQUE
+SUITE3  CMP.B  #$3E,ACIA
+        BNE.S SUITE4
+        MOVEQ  #4,D0
+        JSR MUSIQUE
+SUITE4	CMP.B	#$39,ACIA		* TESTE ESPACE (CODE SCAN)
+	BNE.S	BOUCLE			* SI ESPACE, ON SORT DE L'INTRO
+***********************************************************************
+
+FIN:	
+	MOVE.B	#8,ACIA			* REMET LE CLAVIER
+	MOVE.B	MFP1,IERA		* RESTAURE LE MFP
+	MOVE.B	MFP2,IERB		*
+	MOVE.B	MFP3,ISRA		*
+	MOVE.B	MFP4,IMRA		*
+	MOVE.B	MFP5,TBCR		*
+	MOVE.B	MFP6,TBDR		*
+	
+	MOVE.L	ANC_VBL,$70		* REMET LE VECTEUR VBL
+	MOVE.L	ANC_TB,$120		* REMET LE VECTEUR TIMER C
+	
+	LEA.L	ANC_PAL,A0		* ADRESSE PALETTE SAUVEE
+	MOVEM.L	(A0),D0-D7		* RECUPERE LES 16 REGISTRES
+	LEA.L	COUL_0,A0		* ADRESSE PALETTE SHIFTER
+	MOVEM.L	D0-D7,(A0)		* RESTITUE LES COULEURS
+	
+	MOVE.W 	RES,-(SP)		* ANCIENNE RESOLUTION
+	MOVE.L	ANC_ECR,-(SP)		* ANCIEN ECRAN PHYSIQUE
+	MOVE.L	ANC_ECR,-(SP)		* ANCIEN ECRAN LOGIQUE
+	MOVE.W 	#5,-(SP)		* FONCTION SETSCREEN
+	TRAP 	#14			* DU XBIOS
+	LEA.L 	12(SP),SP		* CORRIGE LA PILE
+	
+	MOVE.L	SAUVE,-(SP)		* RETOUR EN UTILISATEUR
+	MOVE.W 	#$20,-(SP)		* AVEC LA FONCTION SUPER
+	TRAP 	#1			* DU GEMDOS
+	ADDQ.L 	#6,SP			*
+	
+	PEA	CHUT_DA	   		* ADRESSE DES PARAMETRES
+	MOVE.W	#$20,-(A7) 		* FONCTION DOSOUND
+	TRAP	#14        		* DU XBIOS
+	ADDQ.L	#6,A7      		* CORIGE LA PILE
+
+	CLR.W 	-(SP)			* FIN DU PROGRAMME
+	TRAP	#1			* FONCTION PTERM
+	
+
+
+********* SOUS PROGRAMMES D'INTERUPTION ************
+
+VBL_IR	
+	MOVEM.L	D0,-(SP)		* SAUVE LE REGISTRE
+	CLR.B	TBCR			* ARRET DU TIMER B
+	MOVE.B	#109,TBDR		* INTERUPTION SUR LIGNE 117
+	MOVE.B	#8,TBCR			* TIMER C EN EVENT COUNT MODE
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER DANS A6
+	LEA.L	PAL1,A5			* ADRESSE NOUVELLE PALETTE DANS A5
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET LA NOUVELLE PALETTE EN PLACE
+     ENDR
+
+	CMP.W	#50*3,POIROT4		* A T-ON EFFECTUER 150 VBL?
+	BEQ.S	VBL8			* SI OUI, ALORS MUSIQUE ON
+	ADDQ.W	#1,POIROT4		* SI NON, ON INCREMENTE COMPTEUR
+	BRA.S	VBL9			* ET ON EXECUTE PAS LA MUSIQUE
+VBL8	JSR	MUSIQUE+8		* MUSIQUE SVP...
+VBL9	CMP.W	#50*3,POIROT3		* A T-ON EFFECTUE 750 VBL?
+	BEQ.S	VBL6			* SI OUI, ALORS ON ANIME LES HAMBURGEERS
+	ADDQ.W	#1,POIROT3		* SI NON, ON INCREMENTE COMPTEUR
+	BRA.S	VBL7			* ET ON NE BOUGE PAS LES HAMBURGERS
+VBL6	BSR	HAMBURGER		* ANIME HAMBURGER
+VBL7	CMP.W	#50*5,POIROT1		* VOIR PLUS HAUT SAUF QU'ICI
+	BEQ.S	VBL4			* C'EST POUR LE SCROLL TEXTE
+	ADDQ.W	#1,POIROT1		*
+	BRA.S	VBL3			*
+VBL4	BSR	SCR_TXT			*
+	BSR	DEFIL
+VBL3	MOVEM.L	(SP)+,D0		* RESTAURE LE REGISTRE
+	NOT.B	VSYNC			* BASCULE POUR SYNCRO
+	RTE				* FIN DE L'INTERUPTION VBL
+
+******************************
+
+TB0_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER DANS A6
+	LEA.L	PAL2,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#2,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TB1_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB1_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL3,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB2_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB2_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL4,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB3_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB3_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL5,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB4_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB4_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL6,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB5_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB5_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL7,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB6_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB6_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL8,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB7_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB7_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL9,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB8_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB8_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL10,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB10_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+
+
+TB10_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER DANS A6
+	LEA.L	PAL2,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#2,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TB11_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB11_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL3,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB12_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB12_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL4,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB13_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB13_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL5,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB14_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB14_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL6,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB15_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB15_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL7,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB16_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB16_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL8,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB17_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB17_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL9,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB18_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB18_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL10,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#2,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB19_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB19_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER DANS A6
+	LEA.L	PAL2,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#3,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TB21_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB21_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL3,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB22_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB22_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL4,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB23_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB23_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL5,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB24_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB24_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL6,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB25_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB25_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL7,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB26_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB26_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL8,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB27_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB27_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL9,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB28_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB28_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL10,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB30_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB30_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER DANS A6
+	LEA.L	PAL9,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#3,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TB31_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB31_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL8,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB32_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB32_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL7,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB33_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB33_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL6,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB34_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+TB34_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL5,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB35_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB35_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL4,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB36_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB36_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL3,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB37_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB37_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL2,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB38_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB38_IR	
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER
+	LEA.L	PAL10,A5			* ADRESSE DE LA NOUVELLE PALETTE
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET EN PLACE LA NOUVELLE PALETTE
+     ENDR
+	CLR.B	TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.B	#3,TBDR			* PROCHAINE INTERUP DANS 8 LIGNE
+	MOVE.B	#8,TBCR			* PASSE EN 'EVENT COUNT MODE'
+	MOVE.L	#TB39_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+
+
+
+TB39_IR
+     REPT 127
+	NOP				* BOUCLE D'ATTENTE...
+     ENDR
+	MOVE.B	#0,SYNCRO		* PASSAGE EN 60 HZ
+     REPT 8
+     	NOP				* BOUCLE D'ATTENTE
+     ENDR
+	MOVE.B	#2,SYNCRO		* RETOUR EN 50 HZ
+	CLR.B	TBCR			* ARRET DU TIMER B
+	MOVE.L	#TB0_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* INTERUPTION TRAITEE
+	RTE				* RETOUR
+**********************************************************************
+DEFIL:  
+        MOVE.L	ECRAN,A4		* ADRESSE DE L'ECRAN
+	ADDA.L	#160*35,A4		* DECALE A PARTIR DE LA LIGNE 195
+          rept 13
+          roxl.w    152(a4)
+          roxl.w    144(a4)
+          roxl.w    136(a4)         ;D‚cale le 1er plan
+          roxl.w    128(a4)
+          roxl.w    120(a4)
+          roxl.w    112(a4)
+          roxl.w    104(a4)
+          roxl.w    96(a4)
+          roxl.w    88(a4)
+          roxl.w    80(a4)
+          roxl.w    72(a4)
+          roxl.w    64(a4)
+          roxl.w    56(a4)
+          roxl.w    48(a4)
+          roxl.w    40(a4)
+          roxl.w    32(a4)
+          roxl.w    24(a4)
+          roxl.w    16(a4)
+          roxl.w    8(a4)
+          roxl.w    (a4)
+          move.w    (a4),152(a4)
+          roxl.w    154(a4)
+          roxl.w    146(a4)
+          roxl.w    138(a4)         ;D‚cale le 2eme plan
+          roxl.w    130(a4)
+          roxl.w    122(a4)
+          roxl.w    114(a4)
+          roxl.w    106(a4)
+          roxl.w    98(a4)
+          roxl.w    90(a4)
+          roxl.w    82(a4)
+          roxl.w    74(a4)
+          roxl.w    66(a4)
+          roxl.w    58(a4)
+          roxl.w    50(a4)
+          roxl.w    42(a4)
+          roxl.w    34(a4)
+          roxl.w    26(a4)
+         roxl.w    18(a4)
+         roxl.w    10(a4)
+         roxl.w    2(a4)
+          move.w    2(a4),154(a4)
+          roxl.w    158(a4)
+          roxl.w    150(a4)
+          roxl.w    142(a4)
+          roxl.w    134(a4)
+          roxl.w    126(a4)
+          roxl.w    118(a4)
+          roxl.w    110(a4)
+          roxl.w    102(a4)
+         roxl.w    94(a4)
+          roxl.w    86(a4)
+          roxl.w    78(a4)
+          roxl.w    70(a4)
+          roxl.w    62(a4)
+          roxl.w    54(a4)  
+          roxl.w    46(a4)
+          roxl.w    38(a4)
+          roxl.w    30(a4)
+          roxl.w    22(a4)
+          roxl.w    14(a4)
+          roxl.w    6(a4)
+          move.w    6(a4),158(a4)
+          adda.l    #160,A4
+          ENDR
+
+
+          rept 10
+          roxl.w    152(a4)
+          roxl.w    144(a4)
+          roxl.w    136(a4)         ;D‚cale le 1er plan
+          roxl.w    128(a4)
+          roxl.w    120(a4)
+          roxl.w    112(a4)
+          roxl.w    104(a4)
+          roxl.w    96(a4)
+          roxl.w    88(a4)
+          roxl.w    80(a4)
+          roxl.w    72(a4)
+          roxl.w    64(a4)
+          roxl.w    56(a4)
+          roxl.w    48(a4)
+          roxl.w    40(a4)
+          roxl.w    32(a4)
+          roxl.w    24(a4)
+          roxl.w    16(a4)
+          roxl.w    8(a4)
+          roxl.w    (a4)
+          move.w    (a4),152(a4)
+          roxl.w    154(a4)
+          roxl.w    146(a4)
+          roxl.w    138(a4)         ;D‚cale le 2eme plan
+          roxl.w    130(a4)
+          roxl.w    122(a4)
+          roxl.w    114(a4)
+          roxl.w    106(a4)
+          roxl.w    98(a4)
+          roxl.w    90(a4)
+          roxl.w    82(a4)
+          roxl.w    74(a4)
+          roxl.w    66(a4)
+          roxl.w    58(a4)
+          roxl.w    50(a4)
+          roxl.w    42(a4)
+          roxl.w    34(a4)
+          roxl.w    26(a4)
+         roxl.w    18(a4)
+         roxl.w    10(a4)
+         roxl.w    2(a4)
+          move.w    2(a4),154(a4)
+          roxl.w    158(a4)
+          roxl.w    150(a4)
+          roxl.w    142(a4)
+          roxl.w    134(a4)
+          roxl.w    126(a4)
+          roxl.w    118(a4)
+          roxl.w    110(a4)
+          roxl.w    102(a4)
+         roxl.w    94(a4)
+          roxl.w    86(a4)
+          roxl.w    78(a4)
+          roxl.w    70(a4)
+          roxl.w    62(a4)
+          roxl.w    54(a4)  
+          roxl.w    46(a4)
+          roxl.w    38(a4)
+          roxl.w    30(a4)
+          roxl.w    22(a4)
+          roxl.w    14(a4)
+          roxl.w    6(a4)
+          roxl.w    152(a4)
+          roxl.w    144(a4)
+          roxl.w    136(a4)         ;D‚cale le 1er plan
+          roxl.w    128(a4)
+          roxl.w    120(a4)
+          roxl.w    112(a4)
+          roxl.w    104(a4)
+          roxl.w    96(a4)
+          roxl.w    88(a4)
+          roxl.w    80(a4)
+          roxl.w    72(a4)
+          roxl.w    64(a4)
+          roxl.w    56(a4)
+          roxl.w    48(a4)
+          roxl.w    40(a4)
+          roxl.w    32(a4)
+          roxl.w    24(a4)
+          roxl.w    16(a4)
+          roxl.w    8(a4)
+          roxl.w    (a4)
+          move.w    (a4),152(a4)
+          roxl.w    154(a4)
+          roxl.w    146(a4)
+          roxl.w    138(a4)         ;D‚cale le 2eme plan
+          roxl.w    130(a4)
+          roxl.w    122(a4)
+          roxl.w    114(a4)
+          roxl.w    106(a4)
+          roxl.w    98(a4)
+          roxl.w    90(a4)
+          roxl.w    82(a4)
+          roxl.w    74(a4)
+          roxl.w    66(a4)
+          roxl.w    58(a4)
+          roxl.w    50(a4)
+          roxl.w    42(a4)
+          roxl.w    34(a4)
+          roxl.w    26(a4)
+         roxl.w    18(a4)
+         roxl.w    10(a4)
+         roxl.w    2(a4)
+          move.w    2(a4),154(a4)
+          roxl.w    158(a4)
+          roxl.w    150(a4)
+          roxl.w    142(a4)
+          roxl.w    134(a4)
+          roxl.w    126(a4)
+          roxl.w    118(a4)
+          roxl.w    110(a4)
+          roxl.w    102(a4)
+         roxl.w    94(a4)
+          roxl.w    86(a4)
+          roxl.w    78(a4)
+          roxl.w    70(a4)
+          roxl.w    62(a4)
+          roxl.w    54(a4)  
+          roxl.w    46(a4)
+          roxl.w    38(a4)
+          roxl.w    30(a4)
+          roxl.w    22(a4)
+          roxl.w    14(a4)
+          roxl.w    6(a4)
+          move.w    6(a4),158(a4)
+          adda.l    #160,A4
+          ENDR
+         
+          rept 10
+          roxl.w    152(a4)
+          roxl.w    144(a4)
+          roxl.w    136(a4)         ;D‚cale le 1er plan
+          roxl.w    128(a4)
+          roxl.w    120(a4)
+          roxl.w    112(a4)
+          roxl.w    104(a4)
+          roxl.w    96(a4)
+          roxl.w    88(a4)
+          roxl.w    80(a4)
+          roxl.w    72(a4)
+          roxl.w    64(a4)
+          roxl.w    56(a4)
+          roxl.w    48(a4)
+          roxl.w    40(a4)
+          roxl.w    32(a4)
+          roxl.w    24(a4)
+          roxl.w    16(a4)
+          roxl.w    8(a4)
+          roxl.w    (a4)
+          move.w    (a4),152(a4)
+          roxl.w    154(a4)
+          roxl.w    146(a4)
+          roxl.w    138(a4)         ;D‚cale le 2eme plan
+          roxl.w    130(a4)
+          roxl.w    122(a4)
+          roxl.w    114(a4)
+          roxl.w    106(a4)
+          roxl.w    98(a4)
+          roxl.w    90(a4)
+          roxl.w    82(a4)
+          roxl.w    74(a4)
+          roxl.w    66(a4)
+          roxl.w    58(a4)
+          roxl.w    50(a4)
+          roxl.w    42(a4)
+          roxl.w    34(a4)
+          roxl.w    26(a4)
+         roxl.w    18(a4)
+         roxl.w    10(a4)
+         roxl.w    2(a4)
+          move.w    2(a4),154(a4)
+          roxl.w    158(a4)
+          roxl.w    150(a4)
+          roxl.w    142(a4)
+          roxl.w    134(a4)
+          roxl.w    126(a4)
+          roxl.w    118(a4)
+          roxl.w    110(a4)
+          roxl.w    102(a4)
+         roxl.w    94(a4)
+          roxl.w    86(a4)
+          roxl.w    78(a4)
+          roxl.w    70(a4)
+          roxl.w    62(a4)
+          roxl.w    54(a4)  
+          roxl.w    46(a4)
+          roxl.w    38(a4)
+          roxl.w    30(a4)
+          roxl.w    22(a4)
+          roxl.w    14(a4)
+          roxl.w    6(a4)
+          roxl.w    152(a4)
+          roxl.w    144(a4)
+          roxl.w    136(a4)         ;D‚cale le 1er plan
+          roxl.w    128(a4)
+          roxl.w    120(a4)
+          roxl.w    112(a4)
+          roxl.w    104(a4)
+          roxl.w    96(a4)
+          roxl.w    88(a4)
+          roxl.w    80(a4)
+          roxl.w    72(a4)
+          roxl.w    64(a4)
+          roxl.w    56(a4)
+          roxl.w    48(a4)
+          roxl.w    40(a4)
+          roxl.w    32(a4)
+          roxl.w    24(a4)
+          roxl.w    16(a4)
+          roxl.w    8(a4)
+          roxl.w    (a4)
+          move.w    (a4),152(a4)
+          roxl.w    154(a4)
+          roxl.w    146(a4)
+          roxl.w    138(a4)         ;D‚cale le 2eme plan
+          roxl.w    130(a4)
+          roxl.w    122(a4)
+          roxl.w    114(a4)
+          roxl.w    106(a4)
+          roxl.w    98(a4)
+          roxl.w    90(a4)
+          roxl.w    82(a4)
+          roxl.w    74(a4)
+          roxl.w    66(a4)
+          roxl.w    58(a4)
+          roxl.w    50(a4)
+          roxl.w    42(a4)
+          roxl.w    34(a4)
+          roxl.w    26(a4)
+         roxl.w    18(a4)
+         roxl.w    10(a4)
+         roxl.w    2(a4)
+          move.w    2(a4),154(a4)
+          roxl.w    158(a4)
+          roxl.w    150(a4)
+          roxl.w    142(a4)
+          roxl.w    134(a4)
+          roxl.w    126(a4)
+          roxl.w    118(a4)
+          roxl.w    110(a4)
+          roxl.w    102(a4)
+         roxl.w    94(a4)
+          roxl.w    86(a4)
+          roxl.w    78(a4)
+          roxl.w    70(a4)
+          roxl.w    62(a4)
+          roxl.w    54(a4)  
+          roxl.w    46(a4)
+          roxl.w    38(a4)
+          roxl.w    30(a4)
+          roxl.w    22(a4)
+          roxl.w    14(a4)
+          roxl.w    6(a4)
+          roxl.w    152(a4)
+          roxl.w    144(a4)
+          roxl.w    136(a4)         ;D‚cale le 1er plan
+          roxl.w    128(a4)
+          roxl.w    120(a4)
+          roxl.w    112(a4)
+          roxl.w    104(a4)
+          roxl.w    96(a4)
+          roxl.w    88(a4)
+          roxl.w    80(a4)
+          roxl.w    72(a4)
+          roxl.w    64(a4)
+          roxl.w    56(a4)
+          roxl.w    48(a4)
+          roxl.w    40(a4)
+          roxl.w    32(a4)
+          roxl.w    24(a4)
+          roxl.w    16(a4)
+          roxl.w    8(a4)
+          roxl.w    (a4)
+          move.w    (a4),152(a4)
+          roxl.w    154(a4)
+          roxl.w    146(a4)
+          roxl.w    138(a4)         ;D‚cale le 2eme plan
+          roxl.w    130(a4)
+          roxl.w    122(a4)
+          roxl.w    114(a4)
+          roxl.w    106(a4)
+          roxl.w    98(a4)
+          roxl.w    90(a4)
+          roxl.w    82(a4)
+          roxl.w    74(a4)
+          roxl.w    66(a4)
+          roxl.w    58(a4)
+          roxl.w    50(a4)
+          roxl.w    42(a4)
+          roxl.w    34(a4)
+          roxl.w    26(a4)
+         roxl.w    18(a4)
+         roxl.w    10(a4)
+         roxl.w    2(a4)
+          move.w    2(a4),154(a4)
+          roxl.w    158(a4)
+          roxl.w    150(a4)
+          roxl.w    142(a4)
+          roxl.w    134(a4)
+          roxl.w    126(a4)
+          roxl.w    118(a4)
+          roxl.w    110(a4)
+          roxl.w    102(a4)
+         roxl.w    94(a4)
+          roxl.w    86(a4)
+          roxl.w    78(a4)
+          roxl.w    70(a4)
+          roxl.w    62(a4)
+          roxl.w    54(a4)  
+          roxl.w    46(a4)
+          roxl.w    38(a4)
+          roxl.w    30(a4)
+          roxl.w    22(a4)
+          roxl.w    14(a4)
+          roxl.w    6(a4)
+          move.w    6(a4),158(a4)
+          adda.l    #160,A4
+          ENDR
+         RTS
+SCR_TXT	MOVEQ	#32,D0			* 33 LIGNES A DECALER
+	MOVE.L	#160,D1			* VALEUR D'INCREMENT (1 LIGNE)
+	LEA.L	CAR_BUF,A5		* ADRESSE DU BUFFER CARACTERE
+	MOVE.L	ECRAN,A4		* ADRESSE DE L'ECRAN
+	ADDA.L	#160*35,A4		* DECALE A PARTIR DE LA LIGNE 195
+
+DECAL:
+
+	MOVE.B	160*0+5(A4),160*0+4(A4)		* PLAN 3
+ ;       MOVE.B	160*0+5(A4),160*1+4(A4)		
+	MOVE.B	160*0+12(A4),160*0+5(A4)
+  ;      MOVE.B	160*0+12(A4),160*1+5(A4)
+	MOVE.B	160*0+13(A4),160*0+12(A4)
+   ;     MOVE.B	160*0+13(A4),160*1+12(A4)
+	MOVE.B	160*0+20(A4),160*0+13(A4)
+    ;    MOVE.B	160*0+20(A4),160*1+13(A4)
+	MOVE.B	160*0+21(A4),160*0+20(A4)
+     ;   MOVE.B	160*0+21(A4),160*1+20(A4)
+	MOVE.B	160*0+28(A4),160*0+21(A4)
+	;MOVE.B	160*0+28(A4),160*1+21(A4)
+	MOVE.B	160*0+29(A4),160*0+28(A4)
+;	MOVE.B	160*0+29(A4),160*1+28(A4)
+	MOVE.B	160*0+36(A4),160*0+29(A4)
+	;MOVE.B	160*0+36(A4),160*1+29(A4)
+	MOVE.B	160*0+37(A4),160*0+36(A4)
+	;MOVE.B	160*0+37(A4),160*1+36(A4)
+	MOVE.B	160*0+44(A4),160*0+37(A4)
+	;MOVE.B	160*0+44(A4),160*1+37(A4)
+	MOVE.B	160*0+45(A4),160*0+44(A4)
+	;MOVE.B	160*0+45(A4),160*1+44(A4)
+	MOVE.B	160*0+52(A4),160*0+45(A4)
+	;MOVE.B	160*0+52(A4),160*1+45(A4)
+	MOVE.B	160*0+53(A4),160*0+52(A4)
+	;MOVE.B	160*0+53(A4),160*1+52(A4)
+	MOVE.B	160*0+60(A4),160*0+53(A4)
+ 	;MOVE.B	160*0+60(A4),160*1+53(A4)
+	MOVE.B	160*0+61(A4),160*0+60(A4)
+	;MOVE.B	160*0+61(A4),160*1+60(A4)
+	MOVE.B	160*0+68(A4),160*0+61(A4)
+	;MOVE.B	160*0+68(A4),160*1+61(A4)
+	MOVE.B	160*0+69(A4),160*0+68(A4)
+	;MOVE.B	160*0+69(A4),160*1+68(A4)
+	MOVE.B	160*0+76(A4),160*0+69(A4)	
+ 	;MOVE.B	160*0+76(A4),160*1+69(A4)	
+	MOVE.B	160*0+77(A4),160*0+76(A4)
+	;MOVE.B	160*0+77(A4),160*1+76(A4)
+	MOVE.B	160*0+84(A4),160*0+77(A4)
+	;MOVE.B	160*0+84(A4),160*1+77(A4)
+	MOVE.B	160*0+85(A4),160*0+84(A4)
+	;MOVE.B	160*0+85(A4),160*1+84(A4)
+	MOVE.B	160*0+92(A4),160*0+85(A4)
+	;MOVE.B	160*0+92(A4),160*1+85(A4)
+	MOVE.B	160*0+93(A4),160*0+92(A4)
+	;MOVE.B	160*0+93(A4),160*1+92(A4)
+	MOVE.B	160*0+100(A4),160*0+93(A4)
+	;MOVE.B	160*0+100(A4),160*1+93(A4)
+	MOVE.B	160*0+101(A4),160*0+100(A4)
+	;MOVE.B	160*0+101(A4),160*1+100(A4)
+	MOVE.B	160*0+108(A4),160*0+101(A4)
+	;MOVE.B	160*0+108(A4),160*1+101(A4)
+	MOVE.B	160*0+109(A4),160*0+108(A4)
+	;MOVE.B	160*0+109(A4),160*1+108(A4)
+	MOVE.B	160*0+116(A4),160*0+109(A4)
+	;MOVE.B	160*0+116(A4),160*1+109(A4)
+	MOVE.B	160*0+117(A4),160*0+116(A4)
+	;MOVE.B	160*0+117(A4),160*1+116(A4)
+	MOVE.B	160*0+124(A4),160*0+117(A4)
+	;MOVE.B	160*0+124(A4),160*1+117(A4)
+	MOVE.B	160*0+125(A4),160*0+124(A4)
+	;MOVE.B	160*0+125(A4),160*1+124(A4)
+	MOVE.B	160*0+132(A4),160*0+125(A4)
+	;MOVE.B	160*0+132(A4),160*1+125(A4)
+	MOVE.B	160*0+133(A4),160*0+132(A4)
+	;MOVE.B	160*0+133(A4),160*1+132(A4)
+	MOVE.B	160*0+140(A4),160*0+133(A4)
+	;MOVE.B	160*0+140(A4),160*1+133(A4)
+	MOVE.B	160*0+141(A4),160*0+140(A4)
+	;MOVE.B	160*0+141(A4),160*1+140(A4)
+	MOVE.B	160*0+148(A4),160*0+141(A4)
+	;MOVE.B	160*0+148(A4),160*1+141(A4)
+	MOVE.B	160*0+149(A4),160*0+148(A4)
+	;MOVE.B	160*0+149(A4),160*1+148(A4)
+	MOVE.B	160*0+156(A4),160*0+149(A4)
+	;MOVE.B	160*0+156(A4),160*1+149(A4)
+	MOVE.B	160*0+157(A4),160*0+156(A4)
+	;MOVE.B	160*0+157(A4),160*1+156(A4)
+	MOVE.B	4(A5),160*0+157(A4)	*
+	;MOVE.B	4(A5),160*1+157(A4)	*
+
+	MOVE.B	5(A5),4(A5)		* SCROLL LE BUFFER
+	MOVE.B	10(A5),5(A5)		* TROISIEMES PLANS
+	MOVE.B	11(A5),10(A5)		*
+
+
+	ADDA.L	#12,A5
+	ADDA.L D1,A4			* AJOUTE 1 LIGNE
+	DBF D0,DECAL			* ET ON BOUCLE 33 FOIS
+
+
+
+
+
+
+	SUBQ.B #1,NB_BIT		* ON DECREMENTE LE COMPTEUR
+	BEQ.S NEXTCHAR			* SI 0, PREND LE CARACTERE SUIVANT
+	RTS				* RETOUR
+
+NEXTCHAR:
+	MOVE.B	#4,NB_BIT		* REMET LE COMPTEUR A 32
+	MOVEQ	#0,D0			* NETOIE D0
+	MOVE.L	MES_PNT,A0		* POINTEUR TEXTE DANS D0
+	MOVE.B	(A0)+,D0		* MET LE CARACTERE SUIVANT DANS D0
+	CMPI.B	#-1,D0			* SI -1, ON RECOMMENCE LE TEXTE
+	BEQ	 AGAIN			*
+	MOVE.L	A0,MES_PNT		* SAUVE LE POINTEUR
+	CMPI.B	#-2,D0			* SI -2, ESPACE
+	BEQ	SPACE			*
+	CMPI.B	#39,D0			* SI D0 > 39 -> CINQUIEME RANGE
+	BGT	LINE5			* * DANS LA PAGE GRAPHIQUE
+	CMPI.B	#29,D0			* SI D0 > 29 -> QUATRIEME RANGE
+	BGT.S	LINE4			* DANS LA PAGE GRAPHIQUE
+	CMPI.B	#19,D0			* SI D0> > 19 -> TROISIEME RANGE
+	BGT.S	LINE3			* DANS LA PAGE GRAPHIQUE
+	CMPI.B	#9,D0			* SI D0 > 9 -> DEUXIEME RANGE
+	BGT.S	LINE2			* DANS LA PAGE GRAPHIQUE
+LINE1:	LSL.L	#4,D0			* MULTIPLIE D0 PAR 16
+	LEA.L	FONTES,A1		* ADRESSE DES FONTS EN MEMOIRE
+	ADDA.L	#34,A1			* ON SAUTE LES DATAS INUTILES
+	ADDA.L	D0,A1			* ADRESSE DU PROCHAIN CAR DANS A1
+	MOVE.L	A1,CAR_ADR		* SAUVE SON ADRESSE DANS CAR_ADR
+	BSR	LOAD_C			* COPIE LE CARACTERE DANS BUFFER
+	RTS				*
+LINE2:	SUB.B	#10,D0			* POSITION DU CAR DANS LA LIGNE
+	LSL.L	#4,D0			* MULTIPLIE PAR 16
+	LEA.L	FONTES,A1		* ADRESSE DES FONTS EN MEMOIRE
+	ADDA.L	#34,A1			* SAUTE LES DATAS INUTILES
+	ADDA.L	#160*33,A1		* (160*32): 32 LIGNES...
+	ADDA.L	D0,A1			* POUR POINTE SUR LE CARACTERE
+	MOVE.L	A1,CAR_ADR		* SAUVE ADRESSE DANS CAR_ADR
+	BSR	LOAD_C			* COPIE LE CARACTERE DANS LE BUFFER
+	RTS				* RETOUR
+LINE3:	SUB.B	#20,D0			* VOIR AU DESSUS...
+	LSL.L	#4,D0			*
+	LEA.L	FONTES,A1		*
+	ADDA.L	#34,A1			*
+	ADDA.L	#160*66,A1		*
+	ADDA.L	D0,A1			*
+	MOVE.L	A1,CAR_ADR		*
+	BSR	LOAD_C			*
+	RTS				*
+LINE4:	SUB.B	#30,D0			* VOIR AU DESSUS DU DESSUS
+	LSL.L	#4,D0			*
+	LEA.L	FONTES,A1		*
+	ADDA.L	#34,A1			*
+	ADDA.L	#160*99,A1		*
+	ADDA.L	D0,A1			*
+	MOVE.L	A1,CAR_ADR		*
+	BSR	LOAD_C			*
+	RTS				*
+LINE5:	SUB.B	#40,D0			* VOIR AU DESSUS DU DESSUS DU...ETC...
+	LSL.L	#4,D0			*
+	LEA.L	FONTES,A1		*
+	ADDA.L	#34,A1			*
+	ADDA.L	#160*132,A1		*
+	ADDA.L	D0,A1			*
+	MOVE.L	A1,CAR_ADR		*
+	BSR	LOAD_C			*
+	RTS				*
+
+SPACE	LEA	CAR_BUF,A0		* ADRESSE DU BUFFER DANS A0
+     REPT 99				*
+	CLR.L	(A0)+			* ON EFFACE LE BUFFER (DATA A 0)
+     ENDR				*
+	RTS				* RETOUR
+
+AGAIN	MOVE.L	#MES_F,MES_PNT		* REINITIALISE LE POINTEUR TEXTE
+	BRA	NEXTCHAR	        * ET ON RECOMMENCE...
+
+LOAD_C	MOVE.L	CAR_ADR,A0		* ADRESSE DU CAR DANS A0
+	LEA	CAR_BUF,A1	        * ADRESSE DU BUFFER DANS A1
+	MOVE.L	#160,D0			* VALEUR D'INCREMENT
+     REPT  33				*
+	MOVE.L	(A0),(A1)+		* COPIE PREMIER ET DEUXIEME PLAN
+	MOVE.W	4(A0),(A1)+		* COPIE TROISIEME ET QUATRIEME PLAN
+	MOVE.L	8(A0),(A1)+		* COPIE LE PLAN 1 ET 2  SUIVANT
+	MOVE.W	12(A0),(A1)+		* COPIE LE PLAN 3 ET 4 SUIVANT
+	ADDA.L	D0,A0			* ON AJOUTE 160 (LIGNE SUIVANTE)
+     ENDR				*
+	RTS				* ET HOP...RETOUR
+
+**********************************************************************
+
+;MOULIN
+;	MOVEQ	#0,D0			* NETOIE D0
+;	LEA.L	TB_MOUL,A5		* ADRESSE DE LA TABLE SPRITE
+;	MOVE.B	N_SPR,D0		* NUMERO DU SPRITE
+;	ADDQ.B	#1,N_SPR		* ON L'INCCREMENTE
+;	CMP.B	#16,N_SPR		* EST IL EGALE A 16
+;	BNE.S	MOUL2			* NON? ALORS ON CONTINUE
+;	CLR.B	N_SPR			* OUI ALORS ON REMET A 0
+;MOUL2	LSL.L	#2,D0			* MULTIPLIE PAR 4
+;	MOVEA.L	(A5,D0.W),A0		* ADRESSE SOURCE DU SPRITE 1
+;	MOVEA.L	ECRAN,A1		* ADRESSE DE L'ECRAN DANS A1
+;	ADDA.L	#(160*0)+(112/2),A1	* ADRESSE DESTINATION DU SPRITE
+;	MOVE.L	#88,D7			* NOMBRE DE LIGNE A TRANSFERE
+;	MOVE.L	#104,D6			* INCREMENT (1 LIGNE)
+;MOUL3	
+;     REPT 14
+;     	MOVE.L	(A0)+,(A1)+		* ON COPIE UNE LIGNE DU SPRITE
+;     ENDR
+;	ADDA.L	D6,A0			* A0 POINTE SUR LA LIGNE SUIVANTE
+;	ADDA.L	D6,A1			* A1     "      "      "
+;	DBF	D7,MOUL3		* ET ON BOUCLE 89 FOIS
+;	RTS				* RETOUR (OF COURSE)
+
+**********************************************************************
+
+HAMBURGER
+	LEA.L	PSG,A6			* ADRESSE DU PSG
+	LEA.L	TB_SPR,A5		* ADRESSE DE LA TABLE SPRITE
+	MOVEQ	#0,D0			* NETOIE D0
+	MOVE.B	#8,(A6)			* DEMANDE VOLUME CANAL 1
+	MOVE.B	(A6),D0			* VOLUME CANAL 1
+	LSL.L	#2,D0			* MULTIPLIE PAR 4
+	MOVEA.L	(A5,D0.W),A0		* ADRESSE SOURCE DU SPRITE 1
+	MOVE.B	#9,(A6)			* DEMANDE VOLUME CANAL 2
+	MOVE.B	(A6),D0			* VOLUME CANAL 2
+	LSL.L	#2,D0			* MULTIPLIE PAR 4
+	MOVEA.L	(A5,D0.W),A2		* ADRESSE SOURCE DU SPRITE 2
+	MOVE.B	#10,(A6)		* DEMANDE VOLUME CANAL 3
+	MOVE.B	(A6),D0			* VOLUME CANAL 13
+	LSL.L	#2,D0			* MULTIPLIE PAR 4
+	MOVEA.L	(A5,D0.W),A4		* ADRESSE SOURCE DU SPRITE 3
+HAMBUR	MOVEA.L	ECRAN,A1		* ADRESSE ECRAN DANS A1
+	MOVEA.L	A1,A3			* COPIE DANS A3
+	MOVEA.L	A1,A5			* ET A5
+	ADDA.L	#(160*165)+(48/2),A1	* POSITION DU SPRITE 1
+	ADDA.L	#(160*165)+(144/2),A3	* POSITION DU SPRITE 2
+	ADDA.L	#(160*165)+(240/2),A5	* POSITION DU SPRITE 3
+	MOVE.L	#5,D6			* 6 BOUCLES A AFFECTUER
+	MOVE.L	#1600,D7		* VALEUR D'INCREMENT (10 LIGNES)
+TRANSFERE
+	MOVEM.L	(A0),D0-D5		* RECUPERE SPRITE 1
+	MOVEM.L	D0-D5,(A1)		* ET LE RECOPIE
+	MOVEM.L	(A2),D0-D5		* RECUPERE SPRITE 2
+	MOVEM.L	D0-D5,(A3)		* ET LE RECOPIE
+	MOVEM.L	(A4),D0-D5		* RECUPERE SPRITE 3
+	MOVEM.L	D0-D5,(A5)		* ET LE RECOPIE
+	MOVEM.L	160(A0),D0-D5		* RECUPERE SPRITE 1
+	MOVEM.L	D0-D5,160(A1)		* ET LE RECOPIE
+	MOVEM.L	160(A2),D0-D5		* RECUPERE SPRITE 2
+	MOVEM.L	D0-D5,160(A3)		* ET LE RECOPIE
+	MOVEM.L	160(A4),D0-D5		* RECUPERE SPRITE 3
+	MOVEM.L	D0-D5,160(A5)		* ET LE RECOPIE
+	MOVEM.L	320(A0),D0-D5		* RECUPERE SPRITE 1
+	MOVEM.L	D0-D5,320(A1)		* ET LE RECOPIE
+	MOVEM.L	320(A2),D0-D5		* RECUPERE SPRITE 2
+	MOVEM.L	D0-D5,320(A3)		* ET LE RECOPIE
+	MOVEM.L	320(A4),D0-D5		* RECUPERE SPRITE 3
+	MOVEM.L	D0-D5,320(A5)		* ET LE RECOPIE
+	MOVEM.L	480(A0),D0-D5		* RECUPERE SPRITE 1
+	MOVEM.L	D0-D5,480(A1)		* ET LE RECOPIE
+	MOVEM.L	480(A2),D0-D5		* RECUPERE SPRITE 2
+	MOVEM.L	D0-D5,480(A3)		* ET LE RECOPIE
+	MOVEM.L	480(A4),D0-D5		* RECUPERE SPRITE 3
+	MOVEM.L	D0-D5,480(A5)		* ET LE RECOPIE
+	MOVEM.L	640(A0),D0-D5		* RECUPERE SPRITE 1
+	MOVEM.L	D0-D5,640(A1)		* ET LE RECOPIE
+	MOVEM.L	640(A2),D0-D5		* RECUPERE SPRITE 2
+	MOVEM.L	D0-D5,640(A3)		* ET LE RECOPIE
+	MOVEM.L	640(A4),D0-D5		* RECUPERE SPRITE 3
+	MOVEM.L	D0-D5,640(A5)		* ET LE RECOPIE
+	MOVEM.L	800(A0),D0-D5		* RECUPERE SPRITE 1
+	MOVEM.L	D0-D5,800(A1)		* ET LE RECOPIE
+	MOVEM.L	800(A2),D0-D5		* RECUPERE SPRITE 2
+	MOVEM.L	D0-D5,800(A3)		* ET LE RECOPIE
+	MOVEM.L	800(A4),D0-D5		* RECUPERE SPRITE 3
+	MOVEM.L	D0-D5,800(A5)		* ET LE RECOPIE
+	MOVEM.L	960(A0),D0-D5		* RECUPERE SPRITE 1
+	MOVEM.L	D0-D5,960(A1)		* ET LE RECOPIE
+	MOVEM.L	960(A2),D0-D5		* RECUPERE SPRITE 2
+	MOVEM.L	D0-D5,960(A3)		* ET LE RECOPIE
+	MOVEM.L	960(A4),D0-D5		* RECUPERE SPRITE 3
+	MOVEM.L	D0-D5,960(A5)		* ET LE RECOPIE
+	MOVEM.L	1120(A0),D0-D5		* RECUPERE SPRITE 1
+	MOVEM.L	D0-D5,1120(A1)		* ET LE RECOPIE
+	MOVEM.L	1120(A2),D0-D5		* RECUPERE SPRITE 2
+	MOVEM.L	D0-D5,1120(A3)		* ET LE RECOPIE
+	MOVEM.L	1120(A4),D0-D5		* RECUPERE SPRITE 3
+	MOVEM.L	D0-D5,1120(A5)		* ET LE RECOPIE
+	MOVEM.L	1280(A0),D0-D5		* RECUPERE SPRITE 1
+	MOVEM.L	D0-D5,1280(A1)		* ET LE RECOPIE
+        MOVEM.L	1280(A2),D0-D5		* RECUPERE SPRITE 2
+	MOVEM.L	D0-D5,1280(A3)		* ET LE RECOPIE
+	MOVEM.L	1280(A4),D0-D5		* RECUPERE SPRITE 3
+	MOVEM.L	D0-D5,1280(A5)		* ET LE RECOPIE
+	MOVEM.L	1440(A0),D0-D5		* RECUPERE SPRITE 1
+	MOVEM.L	D0-D5,1440(A1)		* ET LE RECOPIE
+	MOVEM.L	1440(A2),D0-D5		* RECUPERE SPRITE 2
+	MOVEM.L	D0-D5,1440(A3)		* ET LE RECOPIE
+	MOVEM.L	1440(A4),D0-D5		* RECUPERE SPRITE 3
+	MOVEM.L	D0-D5,1440(A5)		* ET LE RECOPIE
+	ADDA.L	D7,A0			* A0 POINTE 10 LIGNE EN DESSOUS
+	ADDA.L	D7,A1			* A1 POINTE 10 LIGNE EN DESSOUS
+	ADDA.L	D7,A2			* A2 POINTE 10 LIGNE EN DESSOUS
+	ADDA.L	D7,A3			* A3 POINTE 10 LIGNE EN DESSOUS
+	ADDA.L	D7,A4			* A4 POINTE 10 LIGNE EN DESSOUS
+	ADDA.L	D7,A5			* A5 POINTE 10 LIGNE EN DESSOUS
+	DBF	D6,TRANSFERE		* ET ON BOUCLE 6 FOIS
+	MOVEM.L	(A0),D0-D5		* RECUPERE SPRITE 1
+	MOVEM.L	D0-D5,(A1)		* ET LE RECOPIE
+	MOVEM.L	(A2),D0-D5		* RECUPERE SPRITE 2
+	MOVEM.L	D0-D5,(A3)		* ET LE RECOPIE
+	MOVEM.L	(A4),D0-D5		* RECUPERE SPRITE 3
+	MOVEM.L	D0-D5,(A5)		* ET LE RECOPIE
+	RTS				* RETOUR A L'ENVOYEUR...
+
+**********************************************************************
+
+	SECTION DATA
+	EVEN
+
+NEW_PAL	DC.W	$233,$233,$300,$700,$210,$320,$122,$122
+	DC.W	$202,$707,$344,$344,$320,$540,$000,$777
+
+MES_F	DC.B  -2,-2
+	DC.B	0,1,2,3,4,5,6,7,8,9
+	DC.B	10,11,12,13,14,15,16,17,18,19
+	DC.B	20,21,22,23,24,25,26,27,28,29
+	DC.B	30,31,32,33,34,35,36,37,38,39
+	DC.B	40,41,42,43,44,45,46,47,48,49
+
+	DC.B  -1
+	EVEN
+
+MUSIQUE	INCBIN	"GEAR.MUS"	* ROUTINE ET DATA MUSIQUE
+	EVEN
+FONTES	INCBIN	"GOODFNT.PI1"	* LES FONTES
+	EVEN
+FOND	INCBIN	"FOND3.PI1"		* LE FOND
+	EVEN
+SPRITES	INCBIN	"SPRITES2.PI1"		* LES SPRITES HAMBURGER
+	EVEN
+;MOU_SPR	INCBIN	"SPRITES2.PI1"	* LES SPRITES DU MOULIN
+;	EVEN
+
+
+;************ TABLE D'ADRESSE DES SPRITES HAMBURGER EN MEMOIRE **********
+TB_SPR	DC.L	SPRITES+34+(160*1)+(0/2),SPRITES+34+(160*1)+(48/2)
+	DC.L	SPRITES+34+(160*1)+(96/2),SPRITES+34+(160*1)+(144/2)
+	DC.L	SPRITES+34+(160*1)+(192/2),SPRITES+34+(160*1)+(240/2)
+	DC.L	SPRITES+34+(160*63)+(0/2),SPRITES+34+(160*63)+(48/2)
+	DC.L	SPRITES+34+(160*63)+(96/2),SPRITES+34+(160*63)+(144/2)
+	DC.L	SPRITES+34+(160*63)+(192/2),SPRITES+34+(160*63)+(240/2)
+	DC.L	SPRITES+34+(160*125)+(0/2),SPRITES+34+(160*125)+(48/2)
+	DC.L	SPRITES+34+(160*125)+(96/2),SPRITES+34+(160*125)+(144/2)
+	DC.L	SPRITES+34+(160*125)+(144/2),SPRITES+34+(160*125)+(144/2)
+	EVEN
+
+*************** TABLE D'ADRESSE DES SPRITES MOULIN EN MEMOIRE **********
+;TB_MOUL	DC.L	MOU_SPR+34+(160*0)+(0/2),MOU_SPR+34+(160*0)+(0/2)
+;	DC.L	MOU_SPR+34+(160*0)+(0/2),MOU_SPR+34+(160*0)+(0/2)
+;	DC.L	MOU_SPR+34+(160*0)+(112/2),MOU_SPR+34+(160*0)+(112/2)
+;	DC.L	MOU_SPR+34+(160*0)+(112/2),MOU_SPR+34+(160*0)+(112/2)
+;	DC.L	MOU_SPR+34+(160*90)+(0/2),MOU_SPR+34+(160*90)+(0/2)
+;	DC.L	MOU_SPR+34+(160*90)+(0/2),MOU_SPR+34+(160*90)+(0/2)
+;	DC.L	MOU_SPR+34+(160*90)+(112/2),MOU_SPR+34+(160*90)+(112/2)
+;	DC.L	MOU_SPR+34+(160*90)+(112/2),MOU_SPR+34+(160*90)+(112/2)
+;	EVEN
+************************* LES DIFFERENTES PALETTES *********************
+PAL1	DC.W	$000,$000,$000,$000,$323,$434,$545,$656
+	DC.W	$000,$000,$000,$000,$212,$101,$577,$777
+	EVEN
+PAL2	DC.W	$000,$001,$011,$022,$033,$032,$043,$000
+	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+	EVEN
+PAL3	DC.W	$002,$001,$011,$022,$033,$032,$043,$000
+	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+	EVEN
+PAL4	DC.W	$112,$001,$011,$022,$033,$032,$043,$000
+	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+	EVEN
+PAL5	DC.W	$223,$001,$011,$022,$033,$032,$043,$000
+	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+	EVEN
+PAL6	DC.W	$334,$001,$011,$022,$033,$032,$043,$000
+	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+	EVEN
+PAL7	DC.W	$445,$001,$011,$022,$033,$032,$043,$000
+	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+	EVEN
+PAL8	DC.W	$556,$001,$011,$022,$033,$032,$043,$000
+	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+	EVEN
+PAL9	DC.W	$667,$001,$011,$022,$033,$032,$043,$000
+	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+	EVEN
+PAL10	DC.W	$777,$001,$011,$022,$033,$032,$043,$000
+	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+	EVEN
+;PAL11	DC.W	$000,$001,$011,$022,$033,$032,$043,$000
+;	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+;	EVEN
+;PAL12	DC.W	$000,$001,$011,$022,$033,$032,$043,$000
+;	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+;	EVEN
+;PAL13	DC.W	$000,$001,$011,$022,$033,$032,$043,$000
+;	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+;	EVEN
+;PAL14	DC.W	$000,$001,$011,$022,$033,$032,$043,$000
+;	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+;	EVEN
+;PAL15	DC.W	$000,$001,$011,$022,$033,$032,$043,$000
+;	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+;	EVEN
+;PAL16	DC.W	$000,$001,$011,$022,$033,$032,$043,$000
+;	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+;	EVEN
+;PAL17	DC.W	$000,$001,$011,$022,$033,$032,$043,$000
+;	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+;	EVEN
+;PAL18	DC.W	$000,$001,$011,$022,$033,$032,$043,$000
+;	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+;	EVEN
+;PAL19	DC.W	$000,$001,$011,$022,$033,$032,$043,$000
+;	DC.W	$723,$734,$744,$754,$300,$400,$500,$777
+;	EVEN
+CHUT_DA	DC.B	7,$FF,6,0,8,0,9,0,$A,0
+
+ 	SECTION BSS
+ 	EVEN
+F_PILE	DS.L 	128			* FIN DE LA PILE
+D_PILE	DS.L 	1			* DEBUT DE LA PILE
+ECRAN	DS.L 	1			* ADRESSE DE L'ECRAN
+SAUVE	DS.L	1			* SAUVE LA PILE UTILISATEUR
+ANC_VBL DS.L	1			* SAUVE LE VECTEUR VBL
+ANC_TB	DS.L	1			* SAUVE LE VECTEUR TIMER B
+ANC_ECR	DS.L	1			* SAUVE L'ADRESSE DE L'ECRAN
+CAR_BUF	DS.L	99			* BUFFER POUR FONTS
+MES_PNT	DS.L	1			* POINTEUR SUR MESSAGE
+CAR_ADR	DS.L	1			* ADRESSE DATA DU CARACTERE
+POIROT1	DS.W	1			* COMPTEURS POUR FAIRE DEMARRER
+POIROT2	DS.W	1			* LES ANIMATIONS, LES UNES
+POIROT3	DS.W	1			* APRES LES AUTRES
+POIROT4	DS.W	1			*
+RES	DS.W	1			* SAUVE LA RESOLUTION
+ANC_PAL	DS.W	16			* SAUVE LA PALETTE
+MFP1	DS.B	1			* SAUVE LES REGISTRES DU MFP
+MFP2	DS.B	1			*
+MFP3	DS.B	1			*
+MFP4	DS.B	1			*
+MFP5	DS.B	1			*
+MFP6	DS.B	1			*
+BUFFER	DS.B	45000			* BUFFER POUR L'ECRAN
+VSYNC	DS.B	1			* POUR LA SYNCRO VERTICALE
+NB_BIT	DS.B	1			* NOMBRE DE DECALAGE EFFECTUE
+N_SPR	DS.B	1			* NUMERO DU SPRITE MOULIN
+

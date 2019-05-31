@@ -1,0 +1,27 @@
+DATA    Whow guys ! Zappy presents you his
+DATA    second  digit. Sorry  but I really
+DATA    can 't  do  a  better  screen  coz
+DATA    there  aren't  any bit left on the
+DATA    disk. I just want  to greet Toubab
+DATA    altough  he  didn't  know  how  to
+DATA    choose  a  demo  in   the   Sowatt
+DATA    - Arf arf arf - and  to leave  you
+DATA     with  this  marvellous  piece  of
+DATA    music which is... Electricity !
+DATA    Ok  you choose :
+DATA       1.......long digit
+DATA       2.......short digit
+FOR c%=0 TO 16
+  SETCOLOR c%,0,0,0
+NEXT c%
+FOR c%=1 TO 13
+  DEFTEXT c%
+  READ a$
+  TEXT 10,10*c%,a$
+NEXT c%
+FOR c%=1 TO 15
+  FOR d%=0 TO 7
+    SETCOLOR c%,d%,d%,d%
+    PAUSE 2
+  NEXT d%
+NEXT c%

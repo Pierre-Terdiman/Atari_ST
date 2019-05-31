@@ -1,0 +1,11 @@
+	MOVE	#0,-(SP)
+	MOVE	#2,-(SP)
+	MOVE	#52,-(SP)
+	MOVE.L	#TAM,-(SP)
+	MOVE	#1,-(SP)
+	MOVE	#4,-(SP)
+	TRAP	#13
+	ADDA.L	#14,SP
+	
+TAM	INCBIN	WAVE.PRG
+	DS.B	5000

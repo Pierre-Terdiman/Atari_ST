@@ -1,0 +1,12 @@
+REPEAT
+  FOR i%=0 TO 7
+    SETCOLOR 0,i%,i%,i%
+  NEXT i%
+  FOR i%=7 DOWNTO 0
+    SETCOLOR 0,i%,i%,0
+  NEXT i%
+  o=o+0.05
+  u=SIN(o)*3
+  FOR i=1 TO 7+u
+  NEXT i
+UNTIL MOUSEK

@@ -1,0 +1,2595 @@
+
+NB_PTS=8424/4
+NB_POS=1
+
+ON_COMMENCE:
+	PEA	0.W
+	MOVE	#$20,-(SP)
+	TRAP	#1
+	ADDQ.L	#6,SP
+
+;	MOVE.L	#FIN,$8.W
+;	MOVE.L	#FIN,$C.W
+;	MOVE.L	#FIN,$10.W
+;	MOVE.L	#FIN,$14.W
+
+	CLR	-(SP)
+	PEA	-1.W
+	PEA	-1.W
+	move.w	#5,-(sp)
+	trap	#14
+	lea	12(sp),sp
+
+	move.l	#BUFFERSCR,d0	
+	and.l	#$ffffff00,d0		
+	add.l	#32000,d0		
+	move.l	d0,SCREEN1
+	add.l	#32000,d0		
+	move.l	d0,SCREEN2
+
+	MOVE	#$777,$FFFF8242.W
+	MOVE	#$777,$FFFF8250.W
+	
+	move.l	SCREEN1,d0
+	lsr.l	#8,d0
+	move.l	#$ffff8201,a0
+	movep	d0,(a0)
+	
+	clr	x_angle
+	clr	y_angle
+	clr	z_angle
+	MOVE	#5*2,y_angle
+	MOVE	#77*2,x_angle
+
+	move	#256,z_pt_fuite
+
+ici	CLR.L	POINTEUR
+	CLR.L	PNT
+	ADD	#1,POINTZ
+	LEA	DATA_X,A1
+	LEA	DATA_X2,A2
+	LEA	DATA_X2B,A3
+	jsr	trigo
+	ADD.L	#2,POINTEUR2
+	MOVE	#NB_PTS-1,D6
+KJH	;move	#130,mod
+	jsr	sp_to_pl
+	jsr	ROUTINE
+	addq.l	#4,POINTEUR
+	DBF	D6,KJH
+
+	MOVEM.L	D0-A6,-(SP)
+	JSR	EFF
+	MOVEM.L	(SP)+,D0-A6
+
+
+	JSR	EFF
+	MOVE.L	SCREEN1,A0
+	LEA	DATA_X2,A1
+	LEA	DATA_X2B,A2
+	MOVE	#(8424/4)-1,D7
+AFP
+	MOVE.B	(A1)+,D0
+	MOVE	(A2)+,D1
+	OR.B	D0,(A0,D1.W)
+	DBF	D7,AFP
+
+H	CMPI.B	#$39,$FFFFFC02.W
+	BEQ.S	FIN
+	BRA	H
+FIN
+	PEA	0.W
+	TRAP	#1
+POINTZ	DC	0
+	EVEN
+	NOP
+	NOP
+EFF	move.l	SCREEN1,a0
+	MOVE	#7999,D0
+HA	CLR.L	(A0)+
+	DBF	D0,HA
+	RTS	
+
+trigo	movem.l d0-d7/a4-a6,-(a7)
+
+	lea cos_tab,a4	;a4 pointe table cos
+	lea sin_tab,a5	;a5 pointe table sin
+
+	lea x_angle,a6
+	move.w (a6)+,d2	;d2=x_angle
+	move.w (a6)+,d1	;d1=y_angle
+	move.w (a6)+,d0	;d0=z_angle
+	
+	move.w 0(a5,d2.w),d5	;d5=sin_x
+	move.w 0(a4,d2.w),d4	;d4=cos_x
+	move.w 0(a5,d1.w),d3	;d3=sin_y
+	move.w 0(a4,d1.w),d2	;d2=cos_y
+	move.w 0(a5,d0.w),d1	;d1=sin_z
+	move.w 0(a4,d0.w),d0	;d0=cos_z
+
+	lea var_3d,a6	;a6 pointe la zone
+			;qui contiendra les
+			;calculs 
+			;intermediaires
+
+	moveq #9,d7		;d7 contient le nombre 
+			;de decalages a faire	
+			;pour diviser par 512
+			
+	;****** calcul de C *****
+	
+sp_c	move.w d3,d6	;sin_y*512
+	neg.w d6		;inverse signe
+	move.w d6,(a6)+	;-sin_y*512
+	
+	;****** calcul de F *****
+	
+sp_f	move.w d2,d6	;cos_y*512 
+	muls d5,d6		;cos_y*512*sin_x*512
+	asr.l d7,d6		;divise par 512
+	move.w d6,(a6)+	;cos_y*sin_x*512
+	
+	;****** calcul de I *****
+	
+sp_i	move.w d2,d6	;cos_y*512
+	muls d4,d6		;cos_y*512*cos_x*512
+	asr.l d7,d6		;divise par 512
+	move.w d6,(a6)+	;cos_y*cos_x*512
+
+	;****** calcul de A *****	
+
+sp_a	move.w d0,d6	;cos_z*512
+	muls d2,d6		;cos_z*512*cos_y*512
+	asr.l d7,d6		;divise par 512
+	move.w d6,(a6)+	;cos_z*cos_y*512
+
+	;****** calcul de D *****
+
+sp_d	move.w d1,d6	;sin_z*512
+	muls d4,d6		;sin_z*512*cos_x*512
+	asr.l d7,d6		;divise par 512
+	movea.w d6,a4	;stocke resultat
+			;dans a4
+
+	move.w d0,d6	;cos_z*512
+	muls d3,d6		;cos_z*512*sin_y*512
+	asr.l d7,d6		;divise par 512
+	muls d5,d6		;cos_z*sin_y*512
+			;     *sin_x*512
+	asr.l d7,d6		;divise par 512
+	sub.w a4,d6		;soustrait resultat
+			;stock‚ dans a4
+	move.w d6,(a6)+	
+
+	;****** calcul de G *****
+
+sp_g	move.w d1,d6	;sin_z*512
+	muls d5,d6		;sin_z*512*sin_x*512
+	asr.l d7,d6		;divise par 512
+	movea.w d6,a4	;stocke dans a4
+
+	move.w d0,d6	;cos_z*512
+	muls d3,d6		;cos_z*512*sin_y*512
+	asr.l d7,d6		;divise par 512
+	muls d4,d6		;cos_z*sin_y*512
+			;     *cos_x*512
+	asr.l d7,d6		;divise par 512
+	add.w a4,d6		;ajoute resultat
+			;stock‚ dans a4
+	move.w d6,(a6)+	
+
+	;****** calcul de B *****
+	
+sp_b	move.w d1,d6	;sin_z*512
+	muls d2,d6		;sin_z*512*cos_y*512
+	asr.l d7,d6		;divise par 512
+	move.w d6,(a6)+	;sin_z*cos_y*512
+
+	;****** calcul de E *****
+	
+sp_e	move.w d0,d6	;cos_z*512
+	muls d4,d6		;cos_z*512*cos_x*512
+	asr.l d7,d6		;divise par 512
+	movea.w d6,a4	;stocke dans a4
+	
+	move.w d1,d6	;sin_z*512
+	muls d3,d6		;sin_z*512*sin_y*512
+	asr.l d7,d6		;divise par 512
+	muls d5,d6		;sin_z*sin_y*512
+			;     *sin_x*512
+	asr.l d7,d6		;divise par 512
+	add.w a4,d6		;ajoute resultat
+			;stock‚ dans a4
+	move.w d6,(a6)+	
+	
+	;****** calcul de H *****
+
+sp_h	move.w d0,d6	;cos_z*512
+	muls d5,d6		;cos_z*512*sin_x*512
+	asr.l d7,d6		;divise par 512
+	movea.w d6,a4	;stocke dans a4
+	
+	move.w d1,d6	;sin_z*512
+	muls d3,d6		;sin_z*512*sin_y*512
+	asr.l d7,d6		;divise par 512
+	muls d4,d6		;sin_z*sin_y*512
+			;     *cos_x*512
+	asr.l d7,d6		;divise par 512
+	sub.w a4,d6		;soustrait resultat
+			;stock‚ dans a4
+	move.w d6,(a6)+	
+	
+	movem.l (a7)+,d0-d7/a4-a6
+	rts
+
+sp_to_pl movem.l d0-d7/a1-a6,-(a7)
+	
+	lea 	points,a6		;a6 pointe coords
+	ADDA.L	POINTEUR,A6
+	move.w (a6)+,d0	;d0=xe
+	move.w (a6)+,d1	;d1=ye
+	moveq	#0,d2
+	SUB	#160,D0
+	SUB	#100,D1
+;	add	#15,d1
+	ADD	POINTZ,D1
+
+	move	#75,D5
+
+letsgo	ext.l d3
+	ext.l d4
+	ext.l d5
+	moveq #9,d6
+	asl.l d6,d3 	;xdep*512
+	asl.l d6,d4		;ydep*512
+	asl.l d6,d5		;zdep*512
+	movea.l d3,a1	
+	movea.l d4,a2
+	movea.l d5,a3
+	
+	lea var_3d,a6	;pointe zone de
+			;calcul 
+			;intermediaire
+
+	move.w d0,d3	;d3=xe
+	move.w d1,d4	;d4=ye
+	move.w d2,d5	;d5=ze
+
+	muls (a6)+,d3	;d3=c*xe*512
+	muls (a6)+,d4	;d4=f*ye*512
+	muls (a6)+,d5	;d5=i*ze*512
+	add.l d4,d5		; + f*ye*512
+	add.l d3,d5		; + c*xe*512
+	add.l a3,d5		; + zdep*512
+	move.l d5,a5	;a5=new_ze*512
+	divs z_pt_fuite,d5	;d5=new_ze/z_pt_fuite
+
+	move.w #512,d7
+	sub.w d5,d7		;d7=512*q
+			;d7=512*
+			;(1-new_ze/z_pt_fuite)
+	
+	move.w d0,d3	;d3=xe
+	move.w d1,d4	;d4=ye	
+	move.w d2,d5	;d5=ze
+		
+	muls (a6)+,d3	;d3=a*xe*512
+	muls (a6)+,d4	;d4=d*ye*512
+	muls (a6)+,d5	;d5=g*ze*512
+	add.l d4,d5		;+ a*xe*512
+	add.l d3,d5		;+ d*xe*512
+	add.l a1,d5		;+ xdep*512
+	move.l d5,a4	;a4=new_xe*512
+	divs d7,d5		;d5.w=
+			;(new_xe*512)/(q*512)
+			;d5=new_xe/q
+	
+	muls (a6)+,d0	;d0=b*xe*512
+	muls (a6)+,d1	;d1=e*ye*512
+	muls (a6)+,d2	;d2=h*ze*512
+	add.l d0,d1		; + b*xe*512
+	add.l d1,d2		; + e*ye*512
+	add.l a2,d2		; + ydep*512
+	move.l d2,d6	;d6=new_ye*512
+	divs d7,d2		;d2.w=new_ye/q
+	
+	lea xp,a6		;a6 pointe zone
+			;sauvergarde coords
+			;plane qu'on
+			;centre … l'‚cran
+
+	add.w #130,d5	;d5=xp+160
+	move.w d5,(a6)+	;xp
+	
+mod	equ	*+2
+	add.w #130,d2	;d2=yp+100
+	move.w d2,(a6)+	;yp
+
+	move.l a4,d5	;new_xe*512
+	move.l a5,d7	;new_ze*512
+	moveq #9,d0
+	asr.l d0,d5		;new_xe
+	asr.l d0,d6		;new_ye
+	asr.l d0,d7		;new_ze
+			
+			;sauve nouvelles 
+			;coords spatiales
+	move.w d5,(a6)+	;new_xe
+	move.w d6,(a6)+	;new_ye
+	move.w d7,(a6)+	;new_ze
+	MOVE	D7,ZA	
+	movem.l (a7)+,d0-d7/a1-a6
+	rts
+
+ROUTINE
+	MOVE	xp,D0
+	MOVE	D0,(A1)+
+	MOVE	yp,D0
+	MOVE	D0,(A1)+
+
+	CLR.L	D0
+	CLR.L	D1
+	CLR.L	D2
+	MOVE	xp,D0
+	TST	D0
+	BGE.S	FD
+	CLR	D0
+FD	CMPI	#320,D0
+	BLE.S	FDD
+	MOVE	#320,D0
+FDD	
+	MOVE	yp,d1
+	TST	D1
+	BGE.S	FDQ
+	CLR	D1
+FDQ	CMPI	#200,D1
+	BLE.S	FDDQ
+	MOVE	#200,D1
+FDDQ	
+	MULU	#160,D1
+	DIVS	#16,D0
+	MOVE	D0,D2
+	MULU	#8,D2
+	ADD.L	D2,D1
+	SWAP	D0
+	CMPI	#$7,D0
+	BGT.S	PLUS_UN
+	BRA.S	PLUS_LOIN
+PLUS_UN	ADD.L	#1,D1
+	SUB.L	#8,D0
+PLUS_LOIN
+	LEA	KK,A0
+	LSL	#3,D0
+	JSR	(A0,D0.W)
+
+	MOVE	D1,(A3)+
+	RTS
+
+
+KK	MOVE.B	#%10000000,(A2)+
+	NOP
+	RTS
+	MOVE.B	#%01000000,(A2)+
+	NOP
+	RTS
+	MOVE.B	#%00100000,(A2)+
+	NOP
+	RTS	
+	MOVE.B	#%00010000,(A2)+
+	NOP
+	RTS	
+	MOVE.B	#%00001000,(A2)+
+	NOP
+	RTS	
+	MOVE.B	#%00000100,(A2)+
+	NOP
+	RTS
+	MOVE.B	#%00000010,(A2)+
+	NOP
+	RTS
+	MOVE.B	#%00000001,(A2)+
+	NOP
+	RTS
+	
+
+cos_tab	incbin '\COSIN.DAT'	;tables sinus cosinus
+sin_tab	equ cos_tab+720
+
+points	
+ DC 0,0
+ DC 4,0
+ DC 8,0
+ DC 12,0
+ DC 16,0
+ DC 20,0
+ DC 24,0
+ DC 28,0
+ DC 32,0
+ DC 36,0
+ DC 40,0
+ DC 44,0
+ DC 48,0
+ DC 52,0
+ DC 56,0
+ DC 60,0
+ DC 64,0
+ DC 68,0
+ DC 72,0
+ DC 76,0
+ DC 80,0
+ DC 84,0
+ DC 88,0
+ DC 92,0
+ DC 96,0
+ DC 100,0
+ DC 104,0
+ DC 108,0
+ DC 112,0
+ DC 116,0
+ DC 120,0
+ DC 124,0
+ DC 128,0
+ DC 132,0
+ DC 136,0
+ DC 140,0
+ DC 144,0
+ DC 148,0
+ DC 152,0
+ DC 156,0
+ DC 160,0
+ DC 164,0
+ DC 168,0
+ DC 172,0
+ DC 176,0
+ DC 180,0
+ DC 184,0
+ DC 188,0
+ DC 192,0
+ DC 196,0
+ DC 200,0
+ DC 204,0
+ DC 208,0
+ DC 212,0
+ DC 216,0
+ DC 220,0
+ DC 224,0
+ DC 228,0
+ DC 232,0
+ DC 236,0
+ DC 240,0
+ DC 244,0
+ DC 248,0
+ DC 252,0
+ DC 256,0
+ DC 260,0
+ DC 264,0
+ DC 268,0
+ DC 272,0
+ DC 276,0
+ DC 280,0
+ DC 284,0
+ DC 288,0
+ DC 292,0
+ DC 296,0
+ DC 300,0
+ DC 304,0
+ DC 308,0
+ DC 312,0
+ DC 316,0
+ DC 320,0
+ DC 0,4
+ DC 4,4
+ DC 8,4
+ DC 12,4
+ DC 16,4
+ DC 20,4
+ DC 24,4
+ DC 28,4
+ DC 32,4
+ DC 36,4
+ DC 40,4
+ DC 44,4
+ DC 48,4
+ DC 52,4
+ DC 56,4
+ DC 60,4
+ DC 64,4
+ DC 68,4
+ DC 72,4
+ DC 76,4
+ DC 80,4
+ DC 84,4
+ DC 88,4
+ DC 92,4
+ DC 96,4
+ DC 100,4
+ DC 104,4
+ DC 108,4
+ DC 112,4
+ DC 116,4
+ DC 120,4
+ DC 124,4
+ DC 128,4
+ DC 132,4
+ DC 136,4
+ DC 140,4
+ DC 144,4
+ DC 148,4
+ DC 152,4
+ DC 156,4
+ DC 160,4
+ DC 164,4
+ DC 168,4
+ DC 172,4
+ DC 176,4
+ DC 180,4
+ DC 184,4
+ DC 188,4
+ DC 192,4
+ DC 196,4
+ DC 200,4
+ DC 204,4
+ DC 208,4
+ DC 212,4
+ DC 216,4
+ DC 220,4
+ DC 224,4
+ DC 228,4
+ DC 232,4
+ DC 236,4
+ DC 240,4
+ DC 244,4
+ DC 248,4
+ DC 252,4
+ DC 256,4
+ DC 260,4
+ DC 264,4
+ DC 268,4
+ DC 272,4
+ DC 276,4
+ DC 280,4
+ DC 284,4
+ DC 288,4
+ DC 292,4
+ DC 296,4
+ DC 300,4
+ DC 304,4
+ DC 308,4
+ DC 312,4
+ DC 316,4
+ DC 320,4
+ DC 0,8
+ DC 4,8
+ DC 8,8
+ DC 12,8
+ DC 16,8
+ DC 20,8
+ DC 24,8
+ DC 28,8
+ DC 32,8
+ DC 36,8
+ DC 40,8
+ DC 44,8
+ DC 48,8
+ DC 52,8
+ DC 56,8
+ DC 60,8
+ DC 64,8
+ DC 68,8
+ DC 72,8
+ DC 76,8
+ DC 80,8
+ DC 84,8
+ DC 88,8
+ DC 92,8
+ DC 96,8
+ DC 100,8
+ DC 104,8
+ DC 108,8
+ DC 112,8
+ DC 116,8
+ DC 120,8
+ DC 124,8
+ DC 128,8
+ DC 132,8
+ DC 136,8
+ DC 140,8
+ DC 144,8
+ DC 148,8
+ DC 152,8
+ DC 156,8
+ DC 160,8
+ DC 164,8
+ DC 168,8
+ DC 172,8
+ DC 176,8
+ DC 180,8
+ DC 184,8
+ DC 188,8
+ DC 192,8
+ DC 196,8
+ DC 200,8
+ DC 204,8
+ DC 208,8
+ DC 212,8
+ DC 216,8
+ DC 220,8
+ DC 224,8
+ DC 228,8
+ DC 232,8
+ DC 236,8
+ DC 240,8
+ DC 244,8
+ DC 248,8
+ DC 252,8
+ DC 256,8
+ DC 260,8
+ DC 264,8
+ DC 268,8
+ DC 272,8
+ DC 276,8
+ DC 280,8
+ DC 284,8
+ DC 288,8
+ DC 292,8
+ DC 296,8
+ DC 300,8
+ DC 304,8
+ DC 308,8
+ DC 312,8
+ DC 316,8
+ DC 320,8
+ DC 0,12
+ DC 4,12
+ DC 8,12
+ DC 12,12
+ DC 16,12
+ DC 20,12
+ DC 24,12
+ DC 28,12
+ DC 32,12
+ DC 36,12
+ DC 40,12
+ DC 44,12
+ DC 48,12
+ DC 52,12
+ DC 56,12
+ DC 60,12
+ DC 64,12
+ DC 68,12
+ DC 72,12
+ DC 76,12
+ DC 80,12
+ DC 84,12
+ DC 88,12
+ DC 92,12
+ DC 96,12
+ DC 100,12
+ DC 104,12
+ DC 108,12
+ DC 112,12
+ DC 116,12
+ DC 120,12
+ DC 124,12
+ DC 128,12
+ DC 132,12
+ DC 136,12
+ DC 140,12
+ DC 144,12
+ DC 148,12
+ DC 152,12
+ DC 156,12
+ DC 160,12
+ DC 164,12
+ DC 168,12
+ DC 172,12
+ DC 176,12
+ DC 180,12
+ DC 184,12
+ DC 188,12
+ DC 192,12
+ DC 196,12
+ DC 200,12
+ DC 204,12
+ DC 208,12
+ DC 212,12
+ DC 216,12
+ DC 220,12
+ DC 224,12
+ DC 228,12
+ DC 232,12
+ DC 236,12
+ DC 240,12
+ DC 244,12
+ DC 248,12
+ DC 252,12
+ DC 256,12
+ DC 260,12
+ DC 264,12
+ DC 268,12
+ DC 272,12
+ DC 276,12
+ DC 280,12
+ DC 284,12
+ DC 288,12
+ DC 292,12
+ DC 296,12
+ DC 300,12
+ DC 304,12
+ DC 308,12
+ DC 312,12
+ DC 316,12
+ DC 320,12
+ DC 0,16
+ DC 4,16
+ DC 8,16
+ DC 12,16
+ DC 16,16
+ DC 20,16
+ DC 24,16
+ DC 28,16
+ DC 32,16
+ DC 36,16
+ DC 40,16
+ DC 44,16
+ DC 48,16
+ DC 52,16
+ DC 56,16
+ DC 60,16
+ DC 64,16
+ DC 68,16
+ DC 72,16
+ DC 76,16
+ DC 80,16
+ DC 84,16
+ DC 88,16
+ DC 92,16
+ DC 96,16
+ DC 100,16
+ DC 104,16
+ DC 108,16
+ DC 112,16
+ DC 116,16
+ DC 120,16
+ DC 124,16
+ DC 128,16
+ DC 132,16
+ DC 136,16
+ DC 140,16
+ DC 144,16
+ DC 148,16
+ DC 152,16
+ DC 156,16
+ DC 160,16
+ DC 164,16
+ DC 168,16
+ DC 172,16
+ DC 176,16
+ DC 180,16
+ DC 184,16
+ DC 188,16
+ DC 192,16
+ DC 196,16
+ DC 200,16
+ DC 204,16
+ DC 208,16
+ DC 212,16
+ DC 216,16
+ DC 220,16
+ DC 224,16
+ DC 228,16
+ DC 232,16
+ DC 236,16
+ DC 240,16
+ DC 244,16
+ DC 248,16
+ DC 252,16
+ DC 256,16
+ DC 260,16
+ DC 264,16
+ DC 268,16
+ DC 272,16
+ DC 276,16
+ DC 280,16
+ DC 284,16
+ DC 288,16
+ DC 292,16
+ DC 296,16
+ DC 300,16
+ DC 304,16
+ DC 308,16
+ DC 312,16
+ DC 316,16
+ DC 320,16
+ DC 0,20
+ DC 4,20
+ DC 8,20
+ DC 12,20
+ DC 16,20
+ DC 20,20
+ DC 24,20
+ DC 28,20
+ DC 32,20
+ DC 36,20
+ DC 40,20
+ DC 44,20
+ DC 48,20
+ DC 52,20
+ DC 56,20
+ DC 60,20
+ DC 64,20
+ DC 68,20
+ DC 72,20
+ DC 76,20
+ DC 80,20
+ DC 84,20
+ DC 88,20
+ DC 92,20
+ DC 96,20
+ DC 100,20
+ DC 104,20
+ DC 108,20
+ DC 112,20
+ DC 116,20
+ DC 120,20
+ DC 124,20
+ DC 128,20
+ DC 132,20
+ DC 136,20
+ DC 140,20
+ DC 144,20
+ DC 148,20
+ DC 152,20
+ DC 156,20
+ DC 160,20
+ DC 164,20
+ DC 168,20
+ DC 172,20
+ DC 176,20
+ DC 180,20
+ DC 184,20
+ DC 188,20
+ DC 192,20
+ DC 196,20
+ DC 200,20
+ DC 204,20
+ DC 208,20
+ DC 212,20
+ DC 216,20
+ DC 220,20
+ DC 224,20
+ DC 228,20
+ DC 232,20
+ DC 236,20
+ DC 240,20
+ DC 244,20
+ DC 248,20
+ DC 252,20
+ DC 256,20
+ DC 260,20
+ DC 264,20
+ DC 268,20
+ DC 272,20
+ DC 276,20
+ DC 280,20
+ DC 284,20
+ DC 288,20
+ DC 292,20
+ DC 296,20
+ DC 300,20
+ DC 304,20
+ DC 308,20
+ DC 312,20
+ DC 316,20
+ DC 320,20
+ DC 0,24
+ DC 4,24
+ DC 8,24
+ DC 12,24
+ DC 16,24
+ DC 20,24
+ DC 24,24
+ DC 28,24
+ DC 32,24
+ DC 36,24
+ DC 40,24
+ DC 44,24
+ DC 48,24
+ DC 52,24
+ DC 56,24
+ DC 60,24
+ DC 64,24
+ DC 68,24
+ DC 72,24
+ DC 76,24
+ DC 80,24
+ DC 84,24
+ DC 88,24
+ DC 92,24
+ DC 96,24
+ DC 100,24
+ DC 104,24
+ DC 108,24
+ DC 112,24
+ DC 116,24
+ DC 120,24
+ DC 124,24
+ DC 128,24
+ DC 132,24
+ DC 136,24
+ DC 140,24
+ DC 144,24
+ DC 148,24
+ DC 152,24
+ DC 156,24
+ DC 160,24
+ DC 164,24
+ DC 168,24
+ DC 172,24
+ DC 176,24
+ DC 180,24
+ DC 184,24
+ DC 188,24
+ DC 192,24
+ DC 196,24
+ DC 200,24
+ DC 204,24
+ DC 208,24
+ DC 212,24
+ DC 216,24
+ DC 220,24
+ DC 224,24
+ DC 228,24
+ DC 232,24
+ DC 236,24
+ DC 240,24
+ DC 244,24
+ DC 248,24
+ DC 252,24
+ DC 256,24
+ DC 260,24
+ DC 264,24
+ DC 268,24
+ DC 272,24
+ DC 276,24
+ DC 280,24
+ DC 284,24
+ DC 288,24
+ DC 292,24
+ DC 296,24
+ DC 300,24
+ DC 304,24
+ DC 308,24
+ DC 312,24
+ DC 316,24
+ DC 320,24
+ DC 0,28
+ DC 4,28
+ DC 8,28
+ DC 12,28
+ DC 16,28
+ DC 20,28
+ DC 24,28
+ DC 28,28
+ DC 32,28
+ DC 36,28
+ DC 40,28
+ DC 44,28
+ DC 48,28
+ DC 52,28
+ DC 56,28
+ DC 60,28
+ DC 64,28
+ DC 68,28
+ DC 72,28
+ DC 76,28
+ DC 80,28
+ DC 84,28
+ DC 88,28
+ DC 92,28
+ DC 96,28
+ DC 100,28
+ DC 104,28
+ DC 108,28
+ DC 112,28
+ DC 116,28
+ DC 120,28
+ DC 124,28
+ DC 128,28
+ DC 132,28
+ DC 136,28
+ DC 140,28
+ DC 144,28
+ DC 148,28
+ DC 152,28
+ DC 156,28
+ DC 160,28
+ DC 164,28
+ DC 168,28
+ DC 172,28
+ DC 176,28
+ DC 180,28
+ DC 184,28
+ DC 188,28
+ DC 192,28
+ DC 196,28
+ DC 200,28
+ DC 204,28
+ DC 208,28
+ DC 212,28
+ DC 216,28
+ DC 220,28
+ DC 224,28
+ DC 228,28
+ DC 232,28
+ DC 236,28
+ DC 240,28
+ DC 244,28
+ DC 248,28
+ DC 252,28
+ DC 256,28
+ DC 260,28
+ DC 264,28
+ DC 268,28
+ DC 272,28
+ DC 276,28
+ DC 280,28
+ DC 284,28
+ DC 288,28
+ DC 292,28
+ DC 296,28
+ DC 300,28
+ DC 304,28
+ DC 308,28
+ DC 312,28
+ DC 316,28
+ DC 320,28
+ DC 0,32
+ DC 4,32
+ DC 8,32
+ DC 12,32
+ DC 16,32
+ DC 20,32
+ DC 24,32
+ DC 28,32
+ DC 32,32
+ DC 36,32
+ DC 40,32
+ DC 44,32
+ DC 48,32
+ DC 52,32
+ DC 56,32
+ DC 60,32
+ DC 64,32
+ DC 68,32
+ DC 72,32
+ DC 76,32
+ DC 80,32
+ DC 84,32
+ DC 88,32
+ DC 92,32
+ DC 96,32
+ DC 100,32
+ DC 104,32
+ DC 108,32
+ DC 112,32
+ DC 116,32
+ DC 120,32
+ DC 124,32
+ DC 128,32
+ DC 132,32
+ DC 136,32
+ DC 140,32
+ DC 144,32
+ DC 148,32
+ DC 152,32
+ DC 156,32
+ DC 160,32
+ DC 164,32
+ DC 168,32
+ DC 172,32
+ DC 176,32
+ DC 180,32
+ DC 184,32
+ DC 188,32
+ DC 192,32
+ DC 196,32
+ DC 200,32
+ DC 204,32
+ DC 208,32
+ DC 212,32
+ DC 216,32
+ DC 220,32
+ DC 224,32
+ DC 228,32
+ DC 232,32
+ DC 236,32
+ DC 240,32
+ DC 244,32
+ DC 248,32
+ DC 252,32
+ DC 256,32
+ DC 260,32
+ DC 264,32
+ DC 268,32
+ DC 272,32
+ DC 276,32
+ DC 280,32
+ DC 284,32
+ DC 288,32
+ DC 292,32
+ DC 296,32
+ DC 300,32
+ DC 304,32
+ DC 308,32
+ DC 312,32
+ DC 316,32
+ DC 320,32
+ DC 0,36
+ DC 4,36
+ DC 8,36
+ DC 12,36
+ DC 16,36
+ DC 20,36
+ DC 24,36
+ DC 28,36
+ DC 32,36
+ DC 36,36
+ DC 40,36
+ DC 44,36
+ DC 48,36
+ DC 52,36
+ DC 56,36
+ DC 60,36
+ DC 64,36
+ DC 68,36
+ DC 72,36
+ DC 76,36
+ DC 80,36
+ DC 84,36
+ DC 88,36
+ DC 92,36
+ DC 96,36
+ DC 100,36
+ DC 104,36
+ DC 108,36
+ DC 112,36
+ DC 116,36
+ DC 120,36
+ DC 124,36
+ DC 128,36
+ DC 132,36
+ DC 136,36
+ DC 140,36
+ DC 144,36
+ DC 148,36
+ DC 152,36
+ DC 156,36
+ DC 160,36
+ DC 164,36
+ DC 168,36
+ DC 172,36
+ DC 176,36
+ DC 180,36
+ DC 184,36
+ DC 188,36
+ DC 192,36
+ DC 196,36
+ DC 200,36
+ DC 204,36
+ DC 208,36
+ DC 212,36
+ DC 216,36
+ DC 220,36
+ DC 224,36
+ DC 228,36
+ DC 232,36
+ DC 236,36
+ DC 240,36
+ DC 244,36
+ DC 248,36
+ DC 252,36
+ DC 256,36
+ DC 260,36
+ DC 264,36
+ DC 268,36
+ DC 272,36
+ DC 276,36
+ DC 280,36
+ DC 284,36
+ DC 288,36
+ DC 292,36
+ DC 296,36
+ DC 300,36
+ DC 304,36
+ DC 308,36
+ DC 312,36
+ DC 316,36
+ DC 320,36
+ DC 0,40
+ DC 4,40
+ DC 8,40
+ DC 12,40
+ DC 16,40
+ DC 20,40
+ DC 24,40
+ DC 28,40
+ DC 32,40
+ DC 36,40
+ DC 40,40
+ DC 44,40
+ DC 48,40
+ DC 52,40
+ DC 56,40
+ DC 60,40
+ DC 64,40
+ DC 68,40
+ DC 72,40
+ DC 76,40
+ DC 80,40
+ DC 84,40
+ DC 88,40
+ DC 92,40
+ DC 96,40
+ DC 100,40
+ DC 104,40
+ DC 108,40
+ DC 112,40
+ DC 116,40
+ DC 120,40
+ DC 124,40
+ DC 128,40
+ DC 132,40
+ DC 136,40
+ DC 140,40
+ DC 144,40
+ DC 148,40
+ DC 152,40
+ DC 156,40
+ DC 160,40
+ DC 164,40
+ DC 168,40
+ DC 172,40
+ DC 176,40
+ DC 180,40
+ DC 184,40
+ DC 188,40
+ DC 192,40
+ DC 196,40
+ DC 200,40
+ DC 204,40
+ DC 208,40
+ DC 212,40
+ DC 216,40
+ DC 220,40
+ DC 224,40
+ DC 228,40
+ DC 232,40
+ DC 236,40
+ DC 240,40
+ DC 244,40
+ DC 248,40
+ DC 252,40
+ DC 256,40
+ DC 260,40
+ DC 264,40
+ DC 268,40
+ DC 272,40
+ DC 276,40
+ DC 280,40
+ DC 284,40
+ DC 288,40
+ DC 292,40
+ DC 296,40
+ DC 300,40
+ DC 304,40
+ DC 308,40
+ DC 312,40
+ DC 316,40
+ DC 320,40
+ DC 0,44
+ DC 4,44
+ DC 8,44
+ DC 12,44
+ DC 16,44
+ DC 20,44
+ DC 24,44
+ DC 28,44
+ DC 32,44
+ DC 36,44
+ DC 40,44
+ DC 44,44
+ DC 48,44
+ DC 52,44
+ DC 56,44
+ DC 60,44
+ DC 64,44
+ DC 68,44
+ DC 72,44
+ DC 76,44
+ DC 80,44
+ DC 84,44
+ DC 88,44
+ DC 92,44
+ DC 96,44
+ DC 100,44
+ DC 104,44
+ DC 108,44
+ DC 112,44
+ DC 116,44
+ DC 120,44
+ DC 124,44
+ DC 128,44
+ DC 132,44
+ DC 136,44
+ DC 140,44
+ DC 144,44
+ DC 148,44
+ DC 152,44
+ DC 156,44
+ DC 160,44
+ DC 164,44
+ DC 168,44
+ DC 172,44
+ DC 176,44
+ DC 180,44
+ DC 184,44
+ DC 188,44
+ DC 192,44
+ DC 196,44
+ DC 200,44
+ DC 204,44
+ DC 208,44
+ DC 212,44
+ DC 216,44
+ DC 220,44
+ DC 224,44
+ DC 228,44
+ DC 232,44
+ DC 236,44
+ DC 240,44
+ DC 244,44
+ DC 248,44
+ DC 252,44
+ DC 256,44
+ DC 260,44
+ DC 264,44
+ DC 268,44
+ DC 272,44
+ DC 276,44
+ DC 280,44
+ DC 284,44
+ DC 288,44
+ DC 292,44
+ DC 296,44
+ DC 300,44
+ DC 304,44
+ DC 308,44
+ DC 312,44
+ DC 316,44
+ DC 320,44
+ DC 0,48
+ DC 4,48
+ DC 8,48
+ DC 12,48
+ DC 16,48
+ DC 20,48
+ DC 24,48
+ DC 28,48
+ DC 32,48
+ DC 36,48
+ DC 40,48
+ DC 44,48
+ DC 48,48
+ DC 52,48
+ DC 56,48
+ DC 60,48
+ DC 64,48
+ DC 68,48
+ DC 72,48
+ DC 76,48
+ DC 80,48
+ DC 84,48
+ DC 88,48
+ DC 92,48
+ DC 96,48
+ DC 100,48
+ DC 104,48
+ DC 108,48
+ DC 112,48
+ DC 116,48
+ DC 120,48
+ DC 124,48
+ DC 128,48
+ DC 132,48
+ DC 136,48
+ DC 140,48
+ DC 144,48
+ DC 148,48
+ DC 152,48
+ DC 156,48
+ DC 160,48
+ DC 164,48
+ DC 168,48
+ DC 172,48
+ DC 176,48
+ DC 180,48
+ DC 184,48
+ DC 188,48
+ DC 192,48
+ DC 196,48
+ DC 200,48
+ DC 204,48
+ DC 208,48
+ DC 212,48
+ DC 216,48
+ DC 220,48
+ DC 224,48
+ DC 228,48
+ DC 232,48
+ DC 236,48
+ DC 240,48
+ DC 244,48
+ DC 248,48
+ DC 252,48
+ DC 256,48
+ DC 260,48
+ DC 264,48
+ DC 268,48
+ DC 272,48
+ DC 276,48
+ DC 280,48
+ DC 284,48
+ DC 288,48
+ DC 292,48
+ DC 296,48
+ DC 300,48
+ DC 304,48
+ DC 308,48
+ DC 312,48
+ DC 316,48
+ DC 320,48
+ DC 0,52
+ DC 4,52
+ DC 8,52
+ DC 12,52
+ DC 16,52
+ DC 20,52
+ DC 24,52
+ DC 28,52
+ DC 32,52
+ DC 36,52
+ DC 40,52
+ DC 44,52
+ DC 48,52
+ DC 52,52
+ DC 56,52
+ DC 60,52
+ DC 64,52
+ DC 68,52
+ DC 72,52
+ DC 76,52
+ DC 80,52
+ DC 84,52
+ DC 88,52
+ DC 92,52
+ DC 96,52
+ DC 100,52
+ DC 104,52
+ DC 108,52
+ DC 112,52
+ DC 116,52
+ DC 120,52
+ DC 124,52
+ DC 128,52
+ DC 132,52
+ DC 136,52
+ DC 140,52
+ DC 144,52
+ DC 148,52
+ DC 152,52
+ DC 156,52
+ DC 160,52
+ DC 164,52
+ DC 168,52
+ DC 172,52
+ DC 176,52
+ DC 180,52
+ DC 184,52
+ DC 188,52
+ DC 192,52
+ DC 196,52
+ DC 200,52
+ DC 204,52
+ DC 208,52
+ DC 212,52
+ DC 216,52
+ DC 220,52
+ DC 224,52
+ DC 228,52
+ DC 232,52
+ DC 236,52
+ DC 240,52
+ DC 244,52
+ DC 248,52
+ DC 252,52
+ DC 256,52
+ DC 260,52
+ DC 264,52
+ DC 268,52
+ DC 272,52
+ DC 276,52
+ DC 280,52
+ DC 284,52
+ DC 288,52
+ DC 292,52
+ DC 296,52
+ DC 300,52
+ DC 304,52
+ DC 308,52
+ DC 312,52
+ DC 316,52
+ DC 320,52
+ DC 0,56
+ DC 4,56
+ DC 8,56
+ DC 12,56
+ DC 16,56
+ DC 20,56
+ DC 24,56
+ DC 28,56
+ DC 32,56
+ DC 36,56
+ DC 40,56
+ DC 44,56
+ DC 48,56
+ DC 52,56
+ DC 56,56
+ DC 60,56
+ DC 64,56
+ DC 68,56
+ DC 72,56
+ DC 76,56
+ DC 80,56
+ DC 84,56
+ DC 88,56
+ DC 92,56
+ DC 96,56
+ DC 100,56
+ DC 104,56
+ DC 108,56
+ DC 112,56
+ DC 116,56
+ DC 120,56
+ DC 124,56
+ DC 128,56
+ DC 132,56
+ DC 136,56
+ DC 140,56
+ DC 144,56
+ DC 148,56
+ DC 152,56
+ DC 156,56
+ DC 160,56
+ DC 164,56
+ DC 168,56
+ DC 172,56
+ DC 176,56
+ DC 180,56
+ DC 184,56
+ DC 188,56
+ DC 192,56
+ DC 196,56
+ DC 200,56
+ DC 204,56
+ DC 208,56
+ DC 212,56
+ DC 216,56
+ DC 220,56
+ DC 224,56
+ DC 228,56
+ DC 232,56
+ DC 236,56
+ DC 240,56
+ DC 244,56
+ DC 248,56
+ DC 252,56
+ DC 256,56
+ DC 260,56
+ DC 264,56
+ DC 268,56
+ DC 272,56
+ DC 276,56
+ DC 280,56
+ DC 284,56
+ DC 288,56
+ DC 292,56
+ DC 296,56
+ DC 300,56
+ DC 304,56
+ DC 308,56
+ DC 312,56
+ DC 316,56
+ DC 320,56
+ DC 0,60
+ DC 4,60
+ DC 8,60
+ DC 12,60
+ DC 16,60
+ DC 20,60
+ DC 24,60
+ DC 28,60
+ DC 32,60
+ DC 36,60
+ DC 40,60
+ DC 44,60
+ DC 48,60
+ DC 52,60
+ DC 56,60
+ DC 60,60
+ DC 64,60
+ DC 68,60
+ DC 72,60
+ DC 76,60
+ DC 80,60
+ DC 84,60
+ DC 88,60
+ DC 92,60
+ DC 96,60
+ DC 100,60
+ DC 104,60
+ DC 108,60
+ DC 112,60
+ DC 116,60
+ DC 120,60
+ DC 124,60
+ DC 128,60
+ DC 132,60
+ DC 136,60
+ DC 140,60
+ DC 144,60
+ DC 148,60
+ DC 152,60
+ DC 156,60
+ DC 160,60
+ DC 164,60
+ DC 168,60
+ DC 172,60
+ DC 176,60
+ DC 180,60
+ DC 184,60
+ DC 188,60
+ DC 192,60
+ DC 196,60
+ DC 200,60
+ DC 204,60
+ DC 208,60
+ DC 212,60
+ DC 216,60
+ DC 220,60
+ DC 224,60
+ DC 228,60
+ DC 232,60
+ DC 236,60
+ DC 240,60
+ DC 244,60
+ DC 248,60
+ DC 252,60
+ DC 256,60
+ DC 260,60
+ DC 264,60
+ DC 268,60
+ DC 272,60
+ DC 276,60
+ DC 280,60
+ DC 284,60
+ DC 288,60
+ DC 292,60
+ DC 296,60
+ DC 300,60
+ DC 304,60
+ DC 308,60
+ DC 312,60
+ DC 316,60
+ DC 320,60
+ DC 0,64
+ DC 4,64
+ DC 8,64
+ DC 12,64
+ DC 16,64
+ DC 20,64
+ DC 24,64
+ DC 28,64
+ DC 32,64
+ DC 36,64
+ DC 40,64
+ DC 44,64
+ DC 48,64
+ DC 52,64
+ DC 56,64
+ DC 60,64
+ DC 64,64
+ DC 68,64
+ DC 72,64
+ DC 76,64
+ DC 80,64
+ DC 84,64
+ DC 88,64
+ DC 92,64
+ DC 96,64
+ DC 100,64
+ DC 104,64
+ DC 108,64
+ DC 112,64
+ DC 116,64
+ DC 120,64
+ DC 124,64
+ DC 128,64
+ DC 132,64
+ DC 136,64
+ DC 140,64
+ DC 144,64
+ DC 148,64
+ DC 152,64
+ DC 156,64
+ DC 160,64
+ DC 164,64
+ DC 168,64
+ DC 172,64
+ DC 176,64
+ DC 180,64
+ DC 184,64
+ DC 188,64
+ DC 192,64
+ DC 196,64
+ DC 200,64
+ DC 204,64
+ DC 208,64
+ DC 212,64
+ DC 216,64
+ DC 220,64
+ DC 224,64
+ DC 228,64
+ DC 232,64
+ DC 236,64
+ DC 240,64
+ DC 244,64
+ DC 248,64
+ DC 252,64
+ DC 256,64
+ DC 260,64
+ DC 264,64
+ DC 268,64
+ DC 272,64
+ DC 276,64
+ DC 280,64
+ DC 284,64
+ DC 288,64
+ DC 292,64
+ DC 296,64
+ DC 300,64
+ DC 304,64
+ DC 308,64
+ DC 312,64
+ DC 316,64
+ DC 320,64
+ DC 0,68
+ DC 4,68
+ DC 8,68
+ DC 12,68
+ DC 16,68
+ DC 20,68
+ DC 24,68
+ DC 28,68
+ DC 32,68
+ DC 36,68
+ DC 40,68
+ DC 44,68
+ DC 48,68
+ DC 52,68
+ DC 56,68
+ DC 60,68
+ DC 64,68
+ DC 68,68
+ DC 72,68
+ DC 76,68
+ DC 80,68
+ DC 84,68
+ DC 88,68
+ DC 92,68
+ DC 96,68
+ DC 100,68
+ DC 104,68
+ DC 108,68
+ DC 112,68
+ DC 116,68
+ DC 120,68
+ DC 124,68
+ DC 128,68
+ DC 132,68
+ DC 136,68
+ DC 140,68
+ DC 144,68
+ DC 148,68
+ DC 152,68
+ DC 156,68
+ DC 160,68
+ DC 164,68
+ DC 168,68
+ DC 172,68
+ DC 176,68
+ DC 180,68
+ DC 184,68
+ DC 188,68
+ DC 192,68
+ DC 196,68
+ DC 200,68
+ DC 204,68
+ DC 208,68
+ DC 212,68
+ DC 216,68
+ DC 220,68
+ DC 224,68
+ DC 228,68
+ DC 232,68
+ DC 236,68
+ DC 240,68
+ DC 244,68
+ DC 248,68
+ DC 252,68
+ DC 256,68
+ DC 260,68
+ DC 264,68
+ DC 268,68
+ DC 272,68
+ DC 276,68
+ DC 280,68
+ DC 284,68
+ DC 288,68
+ DC 292,68
+ DC 296,68
+ DC 300,68
+ DC 304,68
+ DC 308,68
+ DC 312,68
+ DC 316,68
+ DC 320,68
+ DC 0,72
+ DC 4,72
+ DC 8,72
+ DC 12,72
+ DC 16,72
+ DC 20,72
+ DC 24,72
+ DC 28,72
+ DC 32,72
+ DC 36,72
+ DC 40,72
+ DC 44,72
+ DC 48,72
+ DC 52,72
+ DC 56,72
+ DC 60,72
+ DC 64,72
+ DC 68,72
+ DC 72,72
+ DC 76,72
+ DC 80,72
+ DC 84,72
+ DC 88,72
+ DC 92,72
+ DC 96,72
+ DC 100,72
+ DC 104,72
+ DC 108,72
+ DC 112,72
+ DC 116,72
+ DC 120,72
+ DC 124,72
+ DC 128,72
+ DC 132,72
+ DC 136,72
+ DC 140,72
+ DC 144,72
+ DC 148,72
+ DC 152,72
+ DC 156,72
+ DC 160,72
+ DC 164,72
+ DC 168,72
+ DC 172,72
+ DC 176,72
+ DC 180,72
+ DC 184,72
+ DC 188,72
+ DC 192,72
+ DC 196,72
+ DC 200,72
+ DC 204,72
+ DC 208,72
+ DC 212,72
+ DC 216,72
+ DC 220,72
+ DC 224,72
+ DC 228,72
+ DC 232,72
+ DC 236,72
+ DC 240,72
+ DC 244,72
+ DC 248,72
+ DC 252,72
+ DC 256,72
+ DC 260,72
+ DC 264,72
+ DC 268,72
+ DC 272,72
+ DC 276,72
+ DC 280,72
+ DC 284,72
+ DC 288,72
+ DC 292,72
+ DC 296,72
+ DC 300,72
+ DC 304,72
+ DC 308,72
+ DC 312,72
+ DC 316,72
+ DC 320,72
+ DC 0,76
+ DC 4,76
+ DC 8,76
+ DC 12,76
+ DC 16,76
+ DC 20,76
+ DC 24,76
+ DC 28,76
+ DC 32,76
+ DC 36,76
+ DC 40,76
+ DC 44,76
+ DC 48,76
+ DC 52,76
+ DC 56,76
+ DC 60,76
+ DC 64,76
+ DC 68,76
+ DC 72,76
+ DC 76,76
+ DC 80,76
+ DC 84,76
+ DC 88,76
+ DC 92,76
+ DC 96,76
+ DC 100,76
+ DC 104,76
+ DC 108,76
+ DC 112,76
+ DC 116,76
+ DC 120,76
+ DC 124,76
+ DC 128,76
+ DC 132,76
+ DC 136,76
+ DC 140,76
+ DC 144,76
+ DC 148,76
+ DC 152,76
+ DC 156,76
+ DC 160,76
+ DC 164,76
+ DC 168,76
+ DC 172,76
+ DC 176,76
+ DC 180,76
+ DC 184,76
+ DC 188,76
+ DC 192,76
+ DC 196,76
+ DC 200,76
+ DC 204,76
+ DC 208,76
+ DC 212,76
+ DC 216,76
+ DC 220,76
+ DC 224,76
+ DC 228,76
+ DC 232,76
+ DC 236,76
+ DC 240,76
+ DC 244,76
+ DC 248,76
+ DC 252,76
+ DC 256,76
+ DC 260,76
+ DC 264,76
+ DC 268,76
+ DC 272,76
+ DC 276,76
+ DC 280,76
+ DC 284,76
+ DC 288,76
+ DC 292,76
+ DC 296,76
+ DC 300,76
+ DC 304,76
+ DC 308,76
+ DC 312,76
+ DC 316,76
+ DC 320,76
+ DC 0,80
+ DC 4,80
+ DC 8,80
+ DC 12,80
+ DC 16,80
+ DC 20,80
+ DC 24,80
+ DC 28,80
+ DC 32,80
+ DC 36,80
+ DC 40,80
+ DC 44,80
+ DC 48,80
+ DC 52,80
+ DC 56,80
+ DC 60,80
+ DC 64,80
+ DC 68,80
+ DC 72,80
+ DC 76,80
+ DC 80,80
+ DC 84,80
+ DC 88,80
+ DC 92,80
+ DC 96,80
+ DC 100,80
+ DC 104,80
+ DC 108,80
+ DC 112,80
+ DC 116,80
+ DC 120,80
+ DC 124,80
+ DC 128,80
+ DC 132,80
+ DC 136,80
+ DC 140,80
+ DC 144,80
+ DC 148,80
+ DC 152,80
+ DC 156,80
+ DC 160,80
+ DC 164,80
+ DC 168,80
+ DC 172,80
+ DC 176,80
+ DC 180,80
+ DC 184,80
+ DC 188,80
+ DC 192,80
+ DC 196,80
+ DC 200,80
+ DC 204,80
+ DC 208,80
+ DC 212,80
+ DC 216,80
+ DC 220,80
+ DC 224,80
+ DC 228,80
+ DC 232,80
+ DC 236,80
+ DC 240,80
+ DC 244,80
+ DC 248,80
+ DC 252,80
+ DC 256,80
+ DC 260,80
+ DC 264,80
+ DC 268,80
+ DC 272,80
+ DC 276,80
+ DC 280,80
+ DC 284,80
+ DC 288,80
+ DC 292,80
+ DC 296,80
+ DC 300,80
+ DC 304,80
+ DC 308,80
+ DC 312,80
+ DC 316,80
+ DC 320,80
+ DC 0,84
+ DC 4,84
+ DC 8,84
+ DC 12,84
+ DC 16,84
+ DC 20,84
+ DC 24,84
+ DC 28,84
+ DC 32,84
+ DC 36,84
+ DC 40,84
+ DC 44,84
+ DC 48,84
+ DC 52,84
+ DC 56,84
+ DC 60,84
+ DC 64,84
+ DC 68,84
+ DC 72,84
+ DC 76,84
+ DC 80,84
+ DC 84,84
+ DC 88,84
+ DC 92,84
+ DC 96,84
+ DC 100,84
+ DC 104,84
+ DC 108,84
+ DC 112,84
+ DC 116,84
+ DC 120,84
+ DC 124,84
+ DC 128,84
+ DC 132,84
+ DC 136,84
+ DC 140,84
+ DC 144,84
+ DC 148,84
+ DC 152,84
+ DC 156,84
+ DC 160,84
+ DC 164,84
+ DC 168,84
+ DC 172,84
+ DC 176,84
+ DC 180,84
+ DC 184,84
+ DC 188,84
+ DC 192,84
+ DC 196,84
+ DC 200,84
+ DC 204,84
+ DC 208,84
+ DC 212,84
+ DC 216,84
+ DC 220,84
+ DC 224,84
+ DC 228,84
+ DC 232,84
+ DC 236,84
+ DC 240,84
+ DC 244,84
+ DC 248,84
+ DC 252,84
+ DC 256,84
+ DC 260,84
+ DC 264,84
+ DC 268,84
+ DC 272,84
+ DC 276,84
+ DC 280,84
+ DC 284,84
+ DC 288,84
+ DC 292,84
+ DC 296,84
+ DC 300,84
+ DC 304,84
+ DC 308,84
+ DC 312,84
+ DC 316,84
+ DC 320,84
+ DC 0,88
+ DC 4,88
+ DC 8,88
+ DC 12,88
+ DC 16,88
+ DC 20,88
+ DC 24,88
+ DC 28,88
+ DC 32,88
+ DC 36,88
+ DC 40,88
+ DC 44,88
+ DC 48,88
+ DC 52,88
+ DC 56,88
+ DC 60,88
+ DC 64,88
+ DC 68,88
+ DC 72,88
+ DC 76,88
+ DC 80,88
+ DC 84,88
+ DC 88,88
+ DC 92,88
+ DC 96,88
+ DC 100,88
+ DC 104,88
+ DC 108,88
+ DC 112,88
+ DC 116,88
+ DC 120,88
+ DC 124,88
+ DC 128,88
+ DC 132,88
+ DC 136,88
+ DC 140,88
+ DC 144,88
+ DC 148,88
+ DC 152,88
+ DC 156,88
+ DC 160,88
+ DC 164,88
+ DC 168,88
+ DC 172,88
+ DC 176,88
+ DC 180,88
+ DC 184,88
+ DC 188,88
+ DC 192,88
+ DC 196,88
+ DC 200,88
+ DC 204,88
+ DC 208,88
+ DC 212,88
+ DC 216,88
+ DC 220,88
+ DC 224,88
+ DC 228,88
+ DC 232,88
+ DC 236,88
+ DC 240,88
+ DC 244,88
+ DC 248,88
+ DC 252,88
+ DC 256,88
+ DC 260,88
+ DC 264,88
+ DC 268,88
+ DC 272,88
+ DC 276,88
+ DC 280,88
+ DC 284,88
+ DC 288,88
+ DC 292,88
+ DC 296,88
+ DC 300,88
+ DC 304,88
+ DC 308,88
+ DC 312,88
+ DC 316,88
+ DC 320,88
+ DC 0,92
+ DC 4,92
+ DC 8,92
+ DC 12,92
+ DC 16,92
+ DC 20,92
+ DC 24,92
+ DC 28,92
+ DC 32,92
+ DC 36,92
+ DC 40,92
+ DC 44,92
+ DC 48,92
+ DC 52,92
+ DC 56,92
+ DC 60,92
+ DC 64,92
+ DC 68,92
+ DC 72,92
+ DC 76,92
+ DC 80,92
+ DC 84,92
+ DC 88,92
+ DC 92,92
+ DC 96,92
+ DC 100,92
+ DC 104,92
+ DC 108,92
+ DC 112,92
+ DC 116,92
+ DC 120,92
+ DC 124,92
+ DC 128,92
+ DC 132,92
+ DC 136,92
+ DC 140,92
+ DC 144,92
+ DC 148,92
+ DC 152,92
+ DC 156,92
+ DC 160,92
+ DC 164,92
+ DC 168,92
+ DC 172,92
+ DC 176,92
+ DC 180,92
+ DC 184,92
+ DC 188,92
+ DC 192,92
+ DC 196,92
+ DC 200,92
+ DC 204,92
+ DC 208,92
+ DC 212,92
+ DC 216,92
+ DC 220,92
+ DC 224,92
+ DC 228,92
+ DC 232,92
+ DC 236,92
+ DC 240,92
+ DC 244,92
+ DC 248,92
+ DC 252,92
+ DC 256,92
+ DC 260,92
+ DC 264,92
+ DC 268,92
+ DC 272,92
+ DC 276,92
+ DC 280,92
+ DC 284,92
+ DC 288,92
+ DC 292,92
+ DC 296,92
+ DC 300,92
+ DC 304,92
+ DC 308,92
+ DC 312,92
+ DC 316,92
+ DC 320,92
+ DC 0,96
+ DC 4,96
+ DC 8,96
+ DC 12,96
+ DC 16,96
+ DC 20,96
+ DC 24,96
+ DC 28,96
+ DC 32,96
+ DC 36,96
+ DC 40,96
+ DC 44,96
+ DC 48,96
+ DC 52,96
+ DC 56,96
+ DC 60,96
+ DC 64,96
+ DC 68,96
+ DC 72,96
+ DC 76,96
+ DC 80,96
+ DC 84,96
+ DC 88,96
+ DC 92,96
+ DC 96,96
+ DC 100,96
+ DC 104,96
+ DC 108,96
+ DC 112,96
+ DC 116,96
+ DC 120,96
+ DC 124,96
+ DC 128,96
+ DC 132,96
+ DC 136,96
+ DC 140,96
+ DC 144,96
+ DC 148,96
+ DC 152,96
+ DC 156,96
+ DC 160,96
+ DC 164,96
+ DC 168,96
+ DC 172,96
+ DC 176,96
+ DC 180,96
+ DC 184,96
+ DC 188,96
+ DC 192,96
+ DC 196,96
+ DC 200,96
+ DC 204,96
+ DC 208,96
+ DC 212,96
+ DC 216,96
+ DC 220,96
+ DC 224,96
+ DC 228,96
+ DC 232,96
+ DC 236,96
+ DC 240,96
+ DC 244,96
+ DC 248,96
+ DC 252,96
+ DC 256,96
+ DC 260,96
+ DC 264,96
+ DC 268,96
+ DC 272,96
+ DC 276,96
+ DC 280,96
+ DC 284,96
+ DC 288,96
+ DC 292,96
+ DC 296,96
+ DC 300,96
+ DC 304,96
+ DC 308,96
+ DC 312,96
+ DC 316,96
+ DC 320,96
+ DC 0,100
+ DC 4,100
+ DC 8,100
+ DC 12,100
+ DC 16,100
+ DC 20,100
+ DC 24,100
+ DC 28,100
+ DC 32,100
+ DC 36,100
+ DC 40,100
+ DC 44,100
+ DC 48,100
+ DC 52,100
+ DC 56,100
+ DC 60,100
+ DC 64,100
+ DC 68,100
+ DC 72,100
+ DC 76,100
+ DC 80,100
+ DC 84,100
+ DC 88,100
+ DC 92,100
+ DC 96,100
+ DC 100,100
+ DC 104,100
+ DC 108,100
+ DC 112,100
+ DC 116,100
+ DC 120,100
+ DC 124,100
+ DC 128,100
+ DC 132,100
+ DC 136,100
+ DC 140,100
+ DC 144,100
+ DC 148,100
+ DC 152,100
+ DC 156,100
+ DC 160,100
+ DC 164,100
+ DC 168,100
+ DC 172,100
+ DC 176,100
+ DC 180,100
+ DC 184,100
+ DC 188,100
+ DC 192,100
+ DC 196,100
+ DC 200,100
+ DC 204,100
+ DC 208,100
+ DC 212,100
+ DC 216,100
+ DC 220,100
+ DC 224,100
+ DC 228,100
+ DC 232,100
+ DC 236,100
+ DC 240,100
+ DC 244,100
+ DC 248,100
+ DC 252,100
+ DC 256,100
+ DC 260,100
+ DC 264,100
+ DC 268,100
+ DC 272,100
+ DC 276,100
+ DC 280,100
+ DC 284,100
+ DC 288,100
+ DC 292,100
+ DC 296,100
+ DC 300,100
+ DC 304,100
+ DC 308,100
+ DC 312,100
+ DC 316,100
+ DC 320,100
+
+depla
+	dc	255
+	
+PART1	DC.W	%1111111111111111
+	DC.W	%0111111111111111
+	DC.W	%0011111111111111
+	DC.W	%0001111111111111
+	DC.W	%0000111111111111
+	DC.W	%0000011111111111
+	DC.W	%0000001111111111
+	DC.W	%0000000111111111
+	DC.W	%0000000011111111
+	DC.W	%0000000001111111
+	DC.W	%0000000000111111
+	DC.W	%0000000000011111
+	DC.W	%0000000000001111
+	DC.W	%0000000000000111
+	DC.W	%0000000000000011
+	DC.W	%0000000000000001
+
+PART2	DC.W	%1000000000000000
+	DC.W	%1100000000000000
+	DC.W	%1110000000000000
+	DC.W	%1111000000000000
+	DC.W	%1111100000000000
+	DC.W	%1111110000000000
+	DC.W	%1111111000000000
+	DC.W	%1111111100000000
+	DC.W	%1111111110000000
+	DC.W	%1111111111000000
+	DC.W	%1111111111100000
+	DC.W	%1111111111110000
+	DC.W	%1111111111111000
+	DC.W	%1111111111111100
+	DC.W	%1111111111111110
+	DC.W	%1111111111111111
+
+PNTS
+N	SET	32768
+	REPT	16
+	DC.W	N
+N	SET	N/2
+	ENDR
+
+
+	section bss
+
+xe	ds.w 1		;coordonnees spatiales
+ye	ds.w 1
+ze	ds.w 1
+
+xdep	ds.w 1		;d‚placements
+ydep	ds.w 1
+zdep	ds.w 1
+
+xp	ds.w 1		;coordonnees planes
+yp	ds.w 1
+
+new_xe	ds.w 1		;nouvelles coords 
+new_ye	ds.w 1		;aprŠs rotation
+new_ze	ds.w 1
+
+x_angle	ds.w 1		;angles de rotation
+y_angle	ds.w 1
+z_angle	ds.w 1	
+ 
+z_pt_fuite	ds.w 1		;coordonn‚es z du 
+			;du point de fuite
+
+var_3d	ds.w 9                  ;tableau pour calculs
+POINTEUR	DS.L	1
+POINTEUR2	DS.L	1
+DATA_X
+	DS.B	10000
+DATA_X2	DS.B	8424
+DATA_X2B	DS	8424
+	section bss
+
+SCREEN2	DS.L	1
+SCREEN1	DS.L	1
+ANC_VBL	DS.L	1
+CNT	DS.L	1
+CNT2	DS.L	1
+ZA	DS	1	
+PNT_X	DS.L	1
+PNT_Y	DS.L	1
+PNT	DS.L	1
+	
+	DS.B	256
+BUFFERSCR	DS.B	96000

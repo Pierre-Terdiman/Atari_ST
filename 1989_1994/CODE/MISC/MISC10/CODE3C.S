@@ -1,0 +1,86 @@
+;140=24
+
+	PEA	0
+	MOVE	#$20,-(SP)
+	TRAP	#1
+	ADDQ.L	#6,SP
+	MOVE.L	$70.W,VBL
+	MOVE.B	$FFFFFA09.W,TB1
+	MOVE.B	$FFFFFA07.W,TB2
+
+;*****************************************************
+	OPT	O+,A+,P+
+	St	$FFFF8240.W
+	MOVE	#$2700,SR
+
+	OPT	P-,A-	
+	LEA	$50074,A0
+	OPT	P+,A+
+	LEA	PRG,A1
+	MOVE	#(512/4)-1,D0
+LOCK	MOVE.L	(A1)+,(A0)+
+	DBF	D0,LOCK
+	OPT	P-,A-	
+	JMP	$50074
+	OPT	P+,A+
+	
+PRG	
+	OPT	P-,A-
+	MOVE.L	#$500D6,$70.W		!$D6
+	OPT	P+,A+
+	MOVE.B	#2,$FFFF8260.W
+	CLR.B	$FFFFFA09.W
+	CLR.B	$FFFFFA07.W
+	MOVE.L	#$5A617021,$140.W
+	MOVE.L	#$12345678,$C.W
+	STOP	#$2300
+	STOP	#$2300
+	STOP	#$2300
+	STOP	#$2300
+	MOVEQ	#0,D0
+	MOVEQ	#0,D2
+	LEA	BOOT,A0
+	LEA	$FFFF8209.W,A1
+	MOVE	#((228)/4)-1,D1
+CODE	ADD.L	$140.W,D0
+	ADD.L	$C.W,D0
+	ADD.L	$70.W,D0
+	ADD.L	$FFFF8260.W,D0
+	MOVE.B	(A1),D2
+	SUB	D2,(A0)
+	SUB.L	D0,(A0)+
+	DBF	D1,CODE
+	BRA.S	CONT
+RTE	RTE	
+CONT	CLR.B	$FFFF8260.W
+	MOVEQ	#0,D1	
+	MOVEQ	#0,D2
+	MOVE.L	VBL,$70.W
+	MOVE.B	TB1,$FFFFFA09.W
+	MOVE.B	TB2,$FFFFFA07.W
+FIN	LEA	BOOT,A0
+	LEA	6(A0),A0
+	ADD.L	#$50020+16-2+22+12,(A0)
+	clr	-(sp)
+	pea	-1.w
+	pea	-1.w
+	move	#5,-(sp)
+	trap	#14
+	adda.l	#12,sp
+	lea	BOOT(pc),a0
+	lea	$b8(a0),a0
+	move	#$14,(a0)
+
+	OPT	O-,P-,A-
+;	JMP	$5010E+22+12
+	OPT	O+,P+,A+
+	PEA	0.W
+	TRAP	#1
+;	BSS
+TB1	DS.B	1
+	EVEN
+TB2	DS.B	1
+	EVEN
+VBL	DS.L	1
+BOOT	
+	INCBIN	DEF.COD

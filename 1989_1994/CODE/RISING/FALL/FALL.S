@@ -1,0 +1,2486 @@
+X1	EQU	0
+Y1	EQU	2
+X2	EQU	4
+Y2	EQU	6
+X3	EQU	8
+Y3	EQU	10
+X4	EQU	12
+Y4	EQU	14
+
+Y_CLIP=199
+MAX=130
+
+main
+;	clr.l	-(sp)
+;	move.w	#$20,-(sp)
+;	trap	#1
+;	addq.l	#6,sp
+;
+;	lea.l	8,a0
+;	move.l	#fini,d0
+;	move.l	#fini,d1
+;	move.l	#fini,d2
+;	move.l	#fini,d3
+;	move.l	#fini,d4
+;	move.l	#fini,d5
+;	move.l	#fini,d6
+;	move.l	#fini,d7
+;	movem.l	d0-d7,(a0)
+
+;	CLR	-(SP)
+;	PEA	-1.W
+;	PEA	-1.W
+;	move.w	#$5,-(sp)
+;	trap	#14
+;	lea.l	12(sp),sp
+
+;	MOVEQ	#1,D0
+;	JSR	ZIK
+
+	MOVE.L	A0,MOD_ZIK
+	MOVE.L	A1,MOD_RET
+
+	lea	bss_deb,a0
+	lea	bss_end,a1
+eff	clr.l	(a0)+
+	cmp.l	a1,a0
+	ble.s	eff
+	
+	move.l	#BUFECR,d0	deff ecr
+	CLR.B	D0
+	move.l	d0,SCREEN1
+
+	move.l	#BUFECR2,d0	deff ecr
+	CLR.B	D0
+	move.l	d0,SCREEN2
+
+**
+	;CLR.L	$FFFF8240.W
+	;CLR.L	$FFFF8244.W
+	;CLR.L	$FFFF8248.W
+	;CLR.L	$FFFF824C.W
+	;CLR.L	$FFFF8250.W
+	;CLR.L	$FFFF8254.W
+	;CLR.L	$FFFF8258.W
+	;CLR.L	$FFFF825C.W
+	
+	clr.b	$fffffa07.w
+	clr.b	$fffffa09.w
+
+	LEA	CODE,A0
+	LEA	TABLE,A1
+	MOVE.L	A0,(A1)+
+	LEA	TABLO,A6
+	MOVE	#%1000000000000000,(A6)
+	MOVE	#%0100000000000000,D6
+
+ANEW	LEA	TABLO,A6
+	LEA	TABLO_COPIE,A5
+	REPT	10
+	MOVE.L	(A6)+,(A5)+
+	ENDR
+
+AGAIN	LEA	TABLO,A6
+	MOVEQ	#0,D7
+	
+VIDE	MOVE	(A6)+,D0
+	BEQ.S	VIDE
+	CMPI	#$9999,D0
+	BEQ.S	GNR
+
+	CMPI	#$FFFF,D0
+	BNE.S	NON_PLEIN
+
+	TST	D7
+	BEQ.S	DEBUT_DE_LIGNE
+	MOVE	#$3141,(A0)+
+	MOVE	D7,(A0)+
+	ADDQ	#8,D7
+	BRA.S	SUIT0
+DEBUT_DE_LIGNE	MOVE	#$3081,(A0)+
+	ADDQ	#8,D7
+	BRA.S	SUIT0
+
+NON_PLEIN	TST	D7
+	BEQ.S	DEB_LINE
+
+	MOVE	#$317C,(A0)+
+	MOVE	D0,(A0)+
+	MOVE	D7,(A0)+
+	ADDQ	#8,D7
+	BRA.S	SUIT0
+DEB_LINE	MOVE	#$30BC,(A0)+
+	MOVE	D0,(A0)+
+	ADDQ	#8,D7
+
+SUIT0	BRA.S	VIDE
+	
+GNR	MOVE	#$4ED7,(A0)+
+	MOVE.L	A0,(A1)+
+	LEA	TABLO,A6
+N	SET	0
+	REPT	20
+	ROXR	N(A6)
+N	SET	N+2
+	ENDR
+
+	ADDQ.L	#1,CNT
+	CMPI.L	#16,CNT
+	BNE	AGAIN
+	CLR.L	CNT
+	LEA	TABLO,A5
+	LEA	TABLO_COPIE,A6
+	REPT	10
+	MOVE.L	(A6)+,(A5)+
+	ENDR
+	LEA	TABLO,A6
+MODX	EQU	*+2
+	LEA	0(A6),A6
+	OR	D6,(A6)
+	LSR	#1,D6
+	BNE	ANEW
+	MOVE	#%1000000000000000,D6
+	ADDQ	#2,MODX
+	CMPI	#40,MODX
+	BEQ.S	FINITO
+	BRA	ANEW
+	
+FINITO	NOP
+;	LEA	LA,A1
+	LEA	TABLE,A0
+	LEA	20480-31*4(A0),A0
+	LEA	TABLE,A1
+	LEA	20480-16*4(A1),A1
+	MOVE.L	(A0),(A1)
+	MOVE.L	(A0),4(A1)
+	
+;	LEA	TABLE_,A1
+;	LEA	TABLE,A0
+;	MOVE.L	A0,A2
+;	MOVE	#16-1,D1
+;TA2	MOVE.L	A2,A0
+;	MOVE	#320-1,D0
+;TA	TST.L	(A0)
+;	BNE.S	DO_IT
+;	MOVE.L	#RETOUR,(A1)+
+;	BRA.S	JUMP
+;DO_IT	MOVE.L	(A0),(A1)+
+;JUMP	LEA	16*4(A0),A0
+;	DBF	D0,TA
+;	ADDQ	#4,A2
+;	DBF	D1,TA2
+
+**
+	LEA	TABLE,A0
+	LEA	320*64(A0),A0
+	MOVE.L	#RETOUR_ULTIME,(A0)
+
+	MOVE.L	#RETOUR_ULTIME,ADR_RET
+
+;	move.l	#newvbl,$70.w	
+;	clr.b	$fffffa07.w	
+;	clr.b	$fffffa09.w	
+
+;	MOVE.L	#VBL,$70.W
+	jmp	newvbl
+		
+mainloop	
+	bra.s	mainloop
+;VBL	ADDQ.L	#1,VBL_FLAG
+;	RTE
+;VBL_FLAG	DC.L	0
+	
+fini	MOVE.L	4.W,A0
+	JMP	(A0)
+DONNEE	DC	17
+DONNEE2	DC	-17
+newvbl        
+;	SF	$FFFF8240.W
+;COL1	EQU	*+2
+;	MOVE	#$112,$FFFF8242.W
+;COL2	EQU	*+2
+;	MOVE	#$334,$FFFF8244.W
+;COL3	EQU	*+2
+;	MOVE	#$556,$FFFF8248.W
+
+	CMPI.B	#$3B,$FFFFFC02.W
+	BNE.S	NO_F1
+	CMPI	#MAX,DONNEE
+	BGT.S	NO_F1
+	ADDQ	#1,DONNEE
+	SUBQ	#1,DONNEE2
+NO_F1	CMPI.B	#$3C,$FFFFFC02.W
+	BNE.S	NO_F2
+	CMPI	#MAX,DONNEE2
+	BGT.S	NO_F2
+	SUBQ	#1,DONNEE
+	ADDQ	#1,DONNEE2
+NO_F2
+	LEA	tpoitesp1,A0
+	LEA	2(A0),A0
+	MOVEQ	#0,D0
+	MOVE	DONNEE,D0
+	SWAP	D0
+	MOVE	DONNEE,D0
+	MOVEQ	#0,D1
+	MOVE	DONNEE2,D1
+	SWAP	D1
+	MOVE	DONNEE2,D1
+
+	MOVE.L	D1,(A0)+
+	MOVE	D1,(A0)+
+;	dc.w	-50,-50,-50		1
+
+	MOVE	D1,(A0)+
+	MOVE	D0,(A0)+
+	MOVE	D1,(A0)+
+;	dc.w	-50,50,-50		2
+
+	MOVE.L	D0,(A0)+
+	MOVE	D1,(A0)+
+;	dc.w	50,50,-50		3	
+
+	MOVE	D0,(A0)+
+	MOVE.L	D1,(A0)+
+;	dc.w	50,-50,-50		4
+
+	MOVE.L	D1,(A0)+
+	MOVE	D0,(A0)+
+;	dc.w	-50,-50,50		5	
+
+	MOVE	D1,(A0)+
+	MOVE.L	D0,(A0)+
+;	dc.w	-50,50,50		6	
+
+	MOVE.L	D0,(A0)+
+	MOVE	D0,(A0)+
+;	dc.w	50,50,50		7
+
+	MOVE	D0,(A0)+
+	MOVE	D1,(A0)+
+	MOVE	D0,(A0)+
+;	dc.w	50,-50,50		8
+
+	Jsr	efecr
+
+	move.w	$fffffc02.w,key
+	Jsr	calcpoint
+	Jsr	calcrot  
+
+*
+	lea	t_points,a0
+	lea	face_en_cours,a1
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+	CLR	MOD_PLAN
+;	LEA	COL1,A6
+	JSR	GERE_FACE
+*
+;	BRA	STOP
+	lea	t_points,a0
+	lea	face_en_cours,a1
+	move.l	28(a0),(a1)+
+	move.l	24(a0),(a1)+
+	move.l	20(a0),(a1)+
+	move.l	16(a0),(a1)+
+	CLR	MOD_PLAN
+;	LEA	COL1,A6
+	JSR	GERE_FACE
+*
+
+	lea	t_points,a0
+	lea	face_en_cours,a1
+	move.l	12(a0),(a1)+
+	move.l	8(a0),(a1)+
+	move.l	24(a0),(a1)+
+	move.l	28(a0),(a1)+
+	MOVE	#2,MOD_PLAN
+;	LEA	COL2,A6
+	JSR	GERE_FACE
+*
+	lea	t_points,a0
+	lea	face_en_cours,a1
+	move.l	16(a0),(a1)+
+	move.l	20(a0),(a1)+
+	move.l	4(a0),(a1)+
+	move.l	(a0),(a1)+
+	MOVE	#2,MOD_PLAN
+;	LEA	COL2,A6
+	JSR	GERE_FACE
+*
+	lea	t_points,a0
+	lea	face_en_cours,a1
+	move.l	16(a0),(a1)+
+	move.l	(a0),(a1)+
+	move.l	12(a0),(a1)+
+	move.l	28(A0),(a1)+
+	MOVE	#4,MOD_PLAN
+;	LEA	COL3,A6
+	JSR	GERE_FACE
+*
+	lea	t_points,a0
+	lea	face_en_cours,a1
+	move.l	4(a0),(a1)+
+	move.l	20(a0),(a1)+
+	move.l	24(a0),(a1)+
+	move.l	8(a0),(a1)+
+	MOVE	#4,MOD_PLAN
+;	LEA	COL3,A6
+	JSR	GERE_FACE
+*
+STOP	
+
+	LEA	BUF_CUBES,A2
+MODCUB=*+2
+	ADDA.L	#0,A2
+
+	MOVE.L	SCREEN2,A0
+	LEA	320+160*4(A0),A0
+	;MOVE.L	SCREEN2,A1
+	;LEA	160*100(A1),A1
+	;MOVE	#$FFFF,D1
+	MOVE	#50-1-4,D0
+	MOVEQ	#0,D3
+
+RTZ	;MOVE.L	(A0),(A1)
+	;MOVE.L	4(A0),4(A1)
+	;MOVE	D1,4+2(A1)
+	MOVE.L	(A0),(A2)
+	MOVE	4(A0),D2
+	OR	D2,(A2)+
+	OR	D2,(A2)+
+	ADDQ.L	#4,MODCUB
+
+	;MOVE.L	4*2(A0),4*2(A1)
+	;MOVE.L	4*3(A0),4*3(A1)
+	;MOVE	D1,4*3+2(A1)
+	MOVE.L	4*2(A0),(A2)
+	MOVE	4*3(A0),D2
+	OR	D2,(A2)+
+	OR	D2,(A2)+
+	ADDQ.L	#4,MODCUB
+
+	;MOVE.L	4*4(A0),4*4(A1)
+	;MOVE.L	4*5(A0),4*5(A1)
+	;MOVE	D1,4*5+2(A1)
+	MOVE.L	4*4(A0),(A2)
+	MOVE	4*5(A0),D2
+	OR	D2,(A2)+
+	OR	D2,(A2)+
+	ADDQ.L	#4,MODCUB
+
+	;MOVE.L	4*6(A0),4*6(A1)
+	;MOVE.L	4*7(A0),4*7(A1)
+	;MOVE	D1,4*7+2(A1)
+	MOVE.L	4*6(A0),(A2)
+	MOVE	4*7(A0),D2
+	OR	D2,(A2)+
+	OR	D2,(A2)+
+	ADDQ.L	#4,MODCUB
+
+	LEA	160(A0),A0
+	;LEA	160(A1),A1
+	DBF	D0,RTZ
+
+	ADDQ.L	#1,TIME
+	CMPI.L	#128,TIME
+	BNE.S	CON
+	CLR.L	TIME
+	CLR	ang1
+	CLR	ang2
+	CLR	ang3
+	JMP	newvbl2
+CON
+
+	move.l	SCREEN1,d0		flip SCREEN
+	move.l	SCREEN2,d1
+	move.b	SCREEN2+1,$ffff8201.w
+	move.b	SCREEN2+2,$ffff8203.w
+	move.l	d0,SCREEN2
+	move.l	d1,SCREEN1
+
+	CMPI.B	#$F,$FFFFFC02.W
+	BNE.S	NO_TIME
+	ST	$FFFF8240.W
+NO_TIME
+;	cmp.b	#$39,key
+;	beq	fini
+;POPO	TST.L	VBL_FLAG
+;	BEQ.S	POPO
+;	CLR.L	VBL_FLAG
+;
+;	CMPI.B	#$10,$FFFFFC02.W
+;	BNE.S	JUMPED
+;POPO2	TST.L	VBL_FLAG
+;	BEQ.S	POPO2
+;	CLR.L	VBL_FLAG
+;JUMPED
+	jmp	newvbl
+newvbl2	move	#14,DONNEE
+	MOVE	#-14,DONNEE2
+	LEA	tpoitesp1,A0
+	LEA	2(A0),A0
+	MOVEQ	#0,D0
+	MOVE	DONNEE,D0
+	SWAP	D0
+	MOVE	DONNEE,D0
+	MOVEQ	#0,D1
+	MOVE	DONNEE2,D1
+	SWAP	D1
+	MOVE	DONNEE2,D1
+
+	MOVE.L	D1,(A0)+
+	MOVE	D1,(A0)+
+;	dc.w	-50,-50,-50		1
+
+	MOVE	D1,(A0)+
+	MOVE	D0,(A0)+
+	MOVE	D1,(A0)+
+;	dc.w	-50,50,-50		2
+
+	MOVE.L	D0,(A0)+
+	MOVE	D1,(A0)+
+;	dc.w	50,50,-50		3	
+
+	MOVE	D0,(A0)+
+	MOVE.L	D1,(A0)+
+;	dc.w	50,-50,-50		4
+
+	MOVE.L	D1,(A0)+
+	MOVE	D0,(A0)+
+;	dc.w	-50,-50,50		5	
+
+	MOVE	D1,(A0)+
+	MOVE.L	D0,(A0)+
+;	dc.w	-50,50,50		6	
+
+	MOVE.L	D0,(A0)+
+	MOVE	D0,(A0)+
+;	dc.w	50,50,50		7
+
+	MOVE	D0,(A0)+
+	MOVE	D1,(A0)+
+	MOVE	D0,(A0)+
+;	dc.w	50,-50,50		8
+
+	Jsr	efecr
+
+	move.w	$fffffc02.w,key
+	Jsr	calcpoint
+	Jsr	calcrot  
+
+*
+	lea	t_points,a0
+	lea	face_en_cours,a1
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+	move.l	(a0)+,(a1)+
+	CLR	MOD_PLAN
+;	LEA	COL1,A6
+	JSR	GERE_FACE
+*
+;	BRA	STOP
+	lea	t_points,a0
+	lea	face_en_cours,a1
+	move.l	28(a0),(a1)+
+	move.l	24(a0),(a1)+
+	move.l	20(a0),(a1)+
+	move.l	16(a0),(a1)+
+	CLR	MOD_PLAN
+;	LEA	COL1,A6
+	JSR	GERE_FACE
+*
+
+	lea	t_points,a0
+	lea	face_en_cours,a1
+	move.l	12(a0),(a1)+
+	move.l	8(a0),(a1)+
+	move.l	24(a0),(a1)+
+	move.l	28(a0),(a1)+
+	MOVE	#2,MOD_PLAN
+;	LEA	COL2,A6
+	JSR	GERE_FACE
+*
+	lea	t_points,a0
+	lea	face_en_cours,a1
+	move.l	16(a0),(a1)+
+	move.l	20(a0),(a1)+
+	move.l	4(a0),(a1)+
+	move.l	(a0),(a1)+
+	MOVE	#2,MOD_PLAN
+;	LEA	COL2,A6
+	JSR	GERE_FACE
+*
+	lea	t_points,a0
+	lea	face_en_cours,a1
+	move.l	16(a0),(a1)+
+	move.l	(a0),(a1)+
+	move.l	12(a0),(a1)+
+	move.l	28(A0),(a1)+
+	MOVE	#4,MOD_PLAN
+;	LEA	COL3,A6
+	JSR	GERE_FACE
+*
+	lea	t_points,a0
+	lea	face_en_cours,a1
+	move.l	4(a0),(a1)+
+	move.l	20(a0),(a1)+
+	move.l	24(a0),(a1)+
+	move.l	8(a0),(a1)+
+	MOVE	#4,MOD_PLAN
+;	LEA	COL3,A6
+	JSR	GERE_FACE
+*
+STOP2
+
+	LEA	BUF_CUBES2,A2
+MODCUB2=*+2
+	ADDA.L	#0,A2
+
+	MOVE.L	SCREEN2,A0
+	LEA	320+160*4(A0),A0
+	;MOVE.L	SCREEN2,A1
+	;LEA	160*100(A1),A1
+	;MOVE	#$FFFF,D1
+	MOVE	#50-1-4,D0
+	MOVEQ	#0,D3
+
+RTZ2	;MOVE.L	(A0),(A1)
+	;MOVE.L	4(A0),4(A1)
+	;MOVE	D1,4+2(A1)
+	MOVE.L	(A0),(A2)
+	MOVE	4(A0),D2
+	OR	D2,(A2)+
+	OR	D2,(A2)+
+	ADDQ.L	#4,MODCUB2
+
+	;MOVE.L	4*2(A0),4*2(A1)
+	;MOVE.L	4*3(A0),4*3(A1)
+	;MOVE	D1,4*3+2(A1)
+	MOVE.L	4*2(A0),(A2)
+	MOVE	4*3(A0),D2
+	OR	D2,(A2)+
+	OR	D2,(A2)+
+	ADDQ.L	#4,MODCUB2
+
+	;MOVE.L	4*4(A0),4*4(A1)
+	;MOVE.L	4*5(A0),4*5(A1)
+	;MOVE	D1,4*5+2(A1)
+	MOVE.L	4*4(A0),(A2)
+	MOVE	4*5(A0),D2
+	OR	D2,(A2)+
+	OR	D2,(A2)+
+	ADDQ.L	#4,MODCUB2
+
+	;MOVE.L	4*6(A0),4*6(A1)
+	;MOVE.L	4*7(A0),4*7(A1)
+	;MOVE	D1,4*7+2(A1)
+	MOVE.L	4*6(A0),(A2)
+	MOVE	4*7(A0),D2
+	OR	D2,(A2)+
+	OR	D2,(A2)+
+	ADDQ.L	#4,MODCUB2
+
+	LEA	160(A0),A0
+	;LEA	160(A1),A1
+	DBF	D0,RTZ2
+
+	ADDQ.L	#1,TIME
+	CMPI.L	#128,TIME
+	BNE.S	CON2
+	CLR.L	TIME
+	CLR	ang1
+	CLR	ang2
+	CLR	ang3
+	JMP	SUITE_DEMO
+CON2
+
+	move.l	SCREEN1,d0		flip SCREEN
+	move.l	SCREEN2,d1
+	move.b	SCREEN2+1,$ffff8201.w
+	move.b	SCREEN2+2,$ffff8203.w
+	move.l	d0,SCREEN2
+	move.l	d1,SCREEN1
+
+	jmp	newvbl2
+
+SUITE_DEMO	;MOVE	#$700,$FFFF8240.W
+
+	MOVE.L	#INTER_RTE,$68.W
+	CLR.B	$FFFFFA07.W
+	CLR.B	$FFFFFA09.W
+	CLR.B	$FFFFFA13.W
+	CLR.B	$FFFFFA15.W
+
+	move.l	#BUFECR,d0
+	CLR.B	D0
+	move.l	d0,SCREEN1
+	move.l	#BUFECR2,d0
+	CLR.B	D0
+	move.l	d0,SCREEN1
+
+	MOVE.L	SCREEN1,A0
+	MOVE.L	SCREEN2,A1
+	MOVE	#15999,D0
+EFF_AL	CLR.L	(A0)+
+	CLR.L	(A1)+
+	DBF	D0,EFF_AL
+
+;	MOVE.L	SCREEN1,A0
+;	MOVE.L	SCREEN2,A1
+;	MOVE	#15999,D0
+;EFF_AL	CLR.L	(A0)+
+;	CLR.L	(A1)+
+;	DBF	D0,EFF_AL
+
+	CLR.L	PNT_CUBE
+
+	move.l	SCREEN1,d0	
+	lsr.l	#8,d0		
+	move.l	#$ffff8201,a0
+	movep	d0,(a0)
+
+	MOVE.L	#VBL_CUBES,$70.W
+	
+	MOVE.B	#$12,$FFFFFC02.W
+
+	CLR.B	$FFFFFA1B.W
+	BSET	#0,$FFFFFA07.W
+	BSET	#0,$FFFFFA13.W
+
+BARRAGE	BRA.S	BARRAGE
+MOD_RET	EQU	*+2
+	JMP	MOD_RET
+;	MOVE.L	#VBLE,$70.W
+;O	JMP	O
+;VBLE	MOVE	#$700,$FFFF8240.W
+;	RTE
+TIME_FD	DC	0
+TIME_FD2	DC	50*20
+PNT_CUBE	DC.L	0
+FLAG	DC	0
+VBL_CUBES
+	CLR.B	$FFFFFA1B.W
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVEQ	#0,D4
+	MOVEQ	#0,D5
+	MOVEQ	#0,D6
+	MOVEQ	#0,D7
+	MOVEM.L	D0-D7,$FFFF8240.W
+
+
+;	ADD.L	#46*4*4,MOD1
+;	CMPI.L	#46*4*4*128,MOD1
+;	BNE.S	INTER_RTE
+;	CLR.L	MOD1
+
+	MOVE.B	#0,$FFFFFA19.W
+	MOVE.B	#99,$FFFFFA1F.W		; BORDER HAUT
+	MOVE.B	#4,$FFFFFA19.W
+	BCLR	#3,$FFFFFA17.W
+	MOVE.L	#INTER_TMA,$134.W
+	ORI.B	#$20,$FFFFFA13.W
+	ORI.B	#$20,$FFFFFA07.W
+	CLR.L	$FFFF8240.W
+	CLR.L	$FFFF8244.W
+	CLR.L	$FFFF8248.W
+	CLR.L	$FFFF824C.W
+	CLR.L	$FFFF8250.W
+	CLR.L	$FFFF8254.W
+	CLR.L	$FFFF8258.W
+	CLR.L	$FFFF825C.W
+	TST	TIME_FD
+	BEQ.S	.DD
+	SUBQ	#1,TIME_FD2
+	BNE.S	.DD
+	MOVE	#$4E71,BARRAGE
+.DD
+	CMPI.B	#$39,$FFFFFC02.W
+	BNE.S	.QQQ
+	MOVE	#1,TIME_FD
+	CLR.L	MODF1
+	CLR.L	MODF2
+.QQQ	LEA	TABLE_ADR,A0
+	MOVEQ	#10-1,D1
+.J	MOVE.L	(A0),D0
+	ADD.L	#230,D0
+	CMPI.L	#230*(266+20),D0
+	BLT.S	.ROOL1
+	;MOVEQ	#0,D0
+MODF1	EQU	*+2
+	SUB.L	#230*(256+60+20),D0
+.ROOL1	MOVE.L	D0,(A0)+
+	DBF	D1,.J
+
+	ADDQ	#1,FLAG
+	CMPI	#2,FLAG
+	BNE.S	.IU
+	CLR	FLAG
+
+	LEA	TABLE_ADR2,A0
+	MOVEQ	#11-1,D1
+.J2	MOVE.L	(A0),D0
+	ADD.L	#230,D0
+	CMPI.L	#230*(256+20),D0
+	BLT.S	.ROOL1B
+	;MOVEQ	#0,D0
+MODF2	EQU	*+2
+	SUB.L	#230*(256+50+20),D0
+.ROOL1B	MOVE.L	D0,(A0)+
+	DBF	D1,.J2
+.IU
+MOD_ZIK	EQU	*+2
+	JSR	MOD_ZIK
+	moveq	#0,d7
+INTER_RTE	RTE
+INTER_TMA:	CLR.B	$FFFFFA07.W
+	CLR.B	$FFFFFA09.W
+	MOVE	#$2100,SR
+full
+	LEA	$FFFF8209.W,A3
+	LEA	$FFFF8260.W,A6
+	LEA	$FFFF820A.W,A5
+
+	MOVEQ	#0,D0
+	MOVEQ	#2,D1
+
+	STOP	#$2100
+	MOVE	#$2700,SR
+	MOVE	#$2300,(SP)
+
+	MOVEQ	#29,D2
+SYNCHROA:	DBF	D2,SYNCHROA
+	NOP
+
+	MOVE.B	D0,(A5)
+	REPT	6
+	NOP
+	ENDR
+	MOVE.B	D1,(A5)
+
+*******
+	;move	#$700,$ffff8240.w
+	nop
+	LEA	$FFFF8209.W,A6
+	LEA	$FFFF8260.W,A4
+	LEA	$FFFF820A.W,A3
+	MOVEQ	#0,D1		
+	MOVEQ	#$10,D6
+	MOVE.L	#228-12+2-1-1-1,D0
+
+SYNCHRO	MOVE.B	(A6),D7
+	BEQ.S	SYNCHRO
+	SUB.W	D7,D6
+	LSL.W	D6,D1
+	LEA	TABLE_ADR,A5
+	LEA	TABLE_OFF,A2
+	DCB	97-5-18-6-4*16,$4E71
+
+	MOVE.L	SCREEN2,A0	5
+	LEA	160(A0),A0	2
+	ADDA.L	(A5)+,A0	4
+	LEA	BUF_CUBES,A1	3
+	ADDA.L	(A2)+,A1	4
+	MOVE	#$122,$FFFF824A.W	0101
+	MOVE	#$233,$FFFF824C.W	0110
+	MOVE	#$344,$FFFF824E.W	0111
+	MOVE	#$122,$FFFF8252.W	1001
+	MOVE	#$233,$FFFF8254.W	1010
+	MOVE	#$344,$FFFF8256.W	1011
+	MOVE	#$122,$FFFF825A.W	1101
+	MOVE	#$233,$FFFF825C.W	1110
+	MOVE	#$344,$FFFF825E.W	1111
+
+	MOVE	#$334,$FFFF8258.W	1100
+	MOVE	#$223,$FFFF8250.W	1000
+	MOVE	#$112,$FFFF8248.W	0100
+	MOVE	#$122,$FFFF8242.W	0001
+	MOVE	#$233,$FFFF8244.W	0010
+	MOVE	#$344,$FFFF8246.W	0011
+	move	#$001,$ffff8240.w
+
+	JSR	ROUTY
+	JSR	ROUTY
+	JSR	ROUTY
+	JSR	ROUTY
+	JSR	ROUTY
+	JSR	ROUTY
+	JSR	ROUTY
+	JSR	ROUTY
+	JSR	ROUTY
+	JSR	ROUTY
+	DCB	5,$4E71
+
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	88-18-6,$4E71
+	MOVE.L	SCREEN2,A0	5
+	LEA	160+4(A0),A0	2
+	LEA	TABLE_ADR2,A5	3
+	ADDA.L	(A5)+,A0	4
+	LEA	BUF_CUBES2,A1	3
+	LEA	TABLE_OFF,A2	3
+	ADDA.L	(A2)+,A1	4
+
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12-5,$4E71
+
+	JSR	ROUTY2
+	JSR	ROUTY2
+	JSR	ROUTY2
+	JSR	ROUTY2
+	JSR	ROUTY2
+	JSR	ROUTY2
+	JSR	ROUTY2
+	JSR	ROUTY2
+	JSR	ROUTY2
+	;JSR	ROUTY2
+	DCB	5,$4E71
+
+
+	REPT	6
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	88,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12,$4E71
+	ENDR
+
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	88,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12,$4E71
+	;MOVE	#$700,$FFFF8240.W
+
+	MOVE	A4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	88,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	;	ICI=116	NOPS
+
+	CLR.B	$FFFF820A.W 
+	DCB	8,$4E71
+
+	MOVE	A4,(A4)
+	MOVE.B	#0,(A4)
+	MOVE	A4,(A3)
+	DCB	88-2,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12-5,$4E71
+	JSR	ROUTY2
+	JSR	ROUTY2
+	DCB	5,$4E71
+	REPT	20
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	88,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12,$4E71
+	ENDR
+POPOPO
+	MOVE.B	SCREEN2+1,$FFFF8201.W
+	MOVE.B	SCREEN2+2,$FFFF8203.W
+
+	MOVE.L	SCREEN1,D0
+	MOVE.L	SCREEN2,SCREEN1
+	MOVE.L	D0,SCREEN2
+
+
+	LEA	TABLE_OFF,A0
+	MOVEQ	#11-1,D1
+.K	MOVE.L	(A0),D0
+	ADD.L	#46*4*4,D0
+	CMPI.L	#46*4*4*128,D0
+	BNE.S	.ROOL2
+	MOVEQ	#0,D0
+.ROOL2	MOVE.L	D0,(A0)+
+	DBF	D1,.K
+
+
+;	CMPI.B	#$39,$FFFFFC02.W
+;	BEQ	FIN
+	RTE
+
+TB0_IR	RTE
+
+ROUTY
+N	SET	0
+	REPT	5
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	1
+N	SET	N+230
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	2
+N	SET	N+230
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	3
+N	SET	N+230
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	DCB	88-84,$4E71
+	
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	4
+	DCB	13-12,$4E71
+N	SET	N+230
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6	5
+;
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6
+N	SET	N+230
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	6
+N	SET	N+230
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	7
+N	SET	N+230
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	8
+N	SET	N+230
+	DCB	88-84,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6	9
+	DCB	13-12,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	9
+N	SET	N+230
+	ENDR
+;AFFICHE LA DERNIERE LIGNE
+
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	1
+	DCB	88-73,$4E71
+	
+	MOVEQ	#0,D0	1
+	MOVE.L	D0,-230(A0)	4
+	MOVE.L	D0,-230+8(A0)	4
+	MOVE.L	D0,-230+16(A0)	4
+	MOVE.L	D0,-230+24(A0)	4
+	MOVE.L	D0,-230*2(A0)	4
+	MOVE.L	D0,-230*2+8(A0)	4
+	MOVE.L	D0,-230*2+16(A0)	4
+	MOVE.L	D0,-230*2+24(A0)	4
+
+	MOVE.L	D0,-230*3(A0)	4
+	MOVE.L	D0,-230*3+8(A0)	4
+	MOVE.L	D0,-230*3+16(A0)	4
+	MOVE.L	D0,-230*3+24(A0)	4
+
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12,$4E71
+
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+
+	DCB	88-4*4-18,$4E71
+	
+	MOVE.L	D0,-230*4(A0)	4
+	MOVE.L	D0,-230*4+8(A0)	4
+	MOVE.L	D0,-230*4+16(A0)	4
+	MOVE.L	D0,-230*4+24(A0)	4
+
+	MOVE.L	SCREEN2,A0	5
+	LEA	160(A0),A0	2
+	ADDA.L	(A5)+,A0	4
+	LEA	BUF_CUBES,A1	3
+	ADDA.L	(A2)+,A1	4
+
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12-4-5,$4E71
+
+	RTS
+
+ROUTY2
+N	SET	0
+	REPT	5
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	1
+N	SET	N+230
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	2
+N	SET	N+230
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	3
+N	SET	N+230
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	DCB	88-84,$4E71
+	
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	4
+	DCB	13-12,$4E71
+N	SET	N+230
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6	5
+;
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6
+N	SET	N+230
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	6
+N	SET	N+230
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	7
+N	SET	N+230
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	8
+N	SET	N+230
+	DCB	88-84,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6	9
+	DCB	13-12,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	9
+N	SET	N+230
+	ENDR
+;AFFICHE LA DERNIERE LIGNE
+
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+
+	MOVE.L	(A1)+,N(A0)	6
+	MOVE.L	(A1)+,8+N(A0)	6
+	MOVE.L	(A1)+,16+N(A0)	6
+	MOVE.L	(A1)+,24+N(A0)	6	1
+	DCB	88-24-18-1-4*8,$4E71
+	
+	MOVEQ	#0,D0	1
+	MOVE.L	D0,-230(A0)	4
+	MOVE.L	D0,-230+8(A0)	4
+	MOVE.L	D0,-230+16(A0)	4
+	MOVE.L	D0,-230+24(A0)	4
+	MOVE.L	D0,-230*2(A0)	4
+	MOVE.L	D0,-230*2+8(A0)	4
+	MOVE.L	D0,-230*2+16(A0)	4
+	MOVE.L	D0,-230*2+24(A0)	4
+
+	MOVE.L	SCREEN2,A0	5
+	LEA	160+4(A0),A0	2
+	ADDA.L	(A5)+,A0	4
+	LEA	BUF_CUBES2,A1	3
+	ADDA.L	(A2)+,A1	4
+
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12-4-5,$4E71
+	RTS
+
+
+GERE_FACE
+;1) Teste si la face est visible
+  	lea.l	face_en_cours,a1
+	move	(a1),d3
+	sub	4(a1),d3
+	move	2(a1),d4
+	sub	6(a1),d4
+	move	4*2(a1),d0
+	sub	4(a1),d0
+	move	10(a1),d5
+	sub	6(a1),d5
+	muls	d3,d5	(X1-X2)*(Y3-Y2)
+	muls	d0,d4	(X3-X2)*(Y1-Y2)
+	sub.l	d4,d5	produit vectoriel
+;(X1-X2)*(Y3-Y2)-(X3-X2)*(Y1-Y2)
+;=(X1Y3-X1Y2-X2Y3+X2Y2)-(X3Y1-X3Y2-X2Y1+X2Y2)
+;=X1Y3 - X1Y2 - X2Y3 +X2Y1 - X3Y1 + X3Y2
+	bgt.s	visible
+cachee	rts
+COL	DC	0
+visible
+
+;	DIVU	#527,D5
+;	swap	d5
+;	clr	d5
+;	swap	d5
+;	ADD	D5,D5
+;	CMPI	#70,D5
+;	BLT.S	DSF
+;	MOVE	#$777,(A6)
+;	BRA.S	PART2
+;DSF	LEA	COLORS,A0
+;	ADD	D5,A0
+;	MOVE	(A0),(A6)
+PART2
+;2) Efface les tableaux
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVEQ	#0,D4
+	MOVEQ	#0,D5
+	MOVEQ	#0,D6
+	MOVEQ	#0,D7
+	SUBA.L	A1,A1
+	SUBA.L	A2,A2
+	SUBA.L	A3,A3
+	SUBA.L	A4,A4
+	SUBA.L	A5,A5
+	SUBA.L	A6,A6
+	LEA	TAB,A0
+N	SET	0
+	REPT	7
+	MOVEM.L	D0-D7/A1-A6,N(A0)
+N	SET	N+14*4
+	ENDR
+	MOVEM.L	D0-D1,N(A0)
+	LEA	TAB2,A0
+N	SET	0
+	REPT	7
+	MOVEM.L	D0-D7/A1-A6,N(A0)
+N	SET	N+14*4
+	ENDR
+	MOVEM.L	D0-D1,N(A0)
+
+;3) Cr‚e les nouveaux tableaux
+	LEA	ADR_RTS,A4
+;	LEA	MINI_TABLO,A6
+;	MOVE	2(A6),D0	Y_MIN
+;	MOVE	D0,D1
+;	MULU	#160,D0
+;	MOVE	D0,MODY
+;	MULU	#?;D1
+;	MOVE	D1,MOD_Y_LECTURE_TAB
+
+**********
+	LEA	face_en_cours,a0
+	MOVE	2(A0),D6	Y1
+	CMP	2+4(A0),D6
+	BGT	D6_WIN
+;Y2>Y1	CAS 1 ET 2
+
+	LEA	TAB,A3
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVE	(A0),D0
+	MOVE	4(A0),D2
+	MOVE	2(A0),D1
+	MOVE	6(A0),D3
+	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+
+	MOVE	Y2(A0),D6
+	CMP	Y3(A0),D6
+	BGT	D6_W
+;Y3>Y2	CAS 1
+	LEA	TAB,A3
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+
+	MOVE	Y3(A0),D3
+	MOVE	X3(A0),D2
+	MOVE	Y2(A0),D1
+	MOVE	X2(A0),D0
+	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+
+	JSR	CALCUL
+
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVE	Y3(A0),D3
+	CMP	Y4(A0),D3
+	BGT.S	D3W
+
+	LEA	TAB,A3
+	MOVE	Y3(A0),D1
+	MOVE	X3(A0),D0
+	MOVE	Y4(A0),D3
+	MOVE	X4(A0),D2
+	BRA.S	CONT0
+D3W	
+	LEA	TAB2,A3
+	MOVE	Y3(A0),D3
+	MOVE	X3(A0),D2
+	MOVE	Y4(A0),D1
+	MOVE	X4(A0),D0
+	
+CONT0	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVE	Y4(A0),D3
+	CMP	Y1(A0),D3
+	BGT.S	D3Q
+	LEA	TAB,A3
+	MOVE	Y4(A0),D1
+	MOVE	X4(A0),D0
+	MOVE	Y1(A0),D3
+	MOVE	X1(A0),D2
+	BRA.S	CONT1
+D3Q	
+	LEA	TAB2,A3
+	MOVE	Y4(A0),D3
+	MOVE	X4(A0),D2
+	MOVE	Y1(A0),D1
+	MOVE	X1(A0),D0
+CONT1	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+	BRA	DONE
+
+D6_W	;Y2>Y3 CAS 2
+	LEA	TAB2,A3
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+;	MOVE	Y2(A0),D3
+;	CMP	Y3(A0),D3
+;	BGT.S	D3E
+;	MOVE	Y2(A0),D1
+;	MOVE	X2(A0),D0
+;	MOVE	Y3(A0),D3
+;	MOVE	X3(A0),D2	
+;	BRA.S	CONT5
+D3E	MOVE	Y2(A0),D3
+	MOVE	X2(A0),D2
+	MOVE	Y3(A0),D1
+	MOVE	X3(A0),D0
+CONT5	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+	
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVE	Y3(A0),D3
+	CMP	Y4(A0),D3
+	BGT.S	D3F
+	LEA	TAB,A3
+	MOVE	Y3(A0),D1
+	MOVE	X3(A0),D0
+	MOVE	Y4(A0),D3
+	MOVE	X4(A0),D2
+	BRA.S	CONT4
+D3F	
+	LEA	TAB2,A3
+	MOVE	Y3(A0),D3
+	MOVE	X3(A0),D2
+	MOVE	Y4(A0),D1
+	MOVE	X4(A0),D0
+CONT4	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+
+	MOVE	Y1(A0),D3
+	CMP	Y4(A0),D3
+	BGT.S	D3D
+	LEA	TAB2,A3
+	MOVE	Y1(A0),D1
+	MOVE	X1(A0),D0
+	MOVE	Y4(A0),D3
+	MOVE	X4(A0),D2
+	BRA.S	CONT2
+D3D	
+	LEA	TAB,A3
+	MOVE	Y1(A0),D3
+	MOVE	X1(A0),D2
+	MOVE	Y4(A0),D1
+	MOVE	X4(A0),D0
+CONT2	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+	BRA	DONE
+
+D6_WIN	;Y1>Y2	CAS 3 ET 4
+	LEA	TAB2,A3
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVE	4(A0),D0
+	MOVE	(A0),D2
+	MOVE	2(A0),D3
+	MOVE	6(A0),D1
+	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+
+	MOVE	4+2(A0),D6	Y2
+	CMP	8+2(A0),D6	Y3,Y2
+	BGT	D6_WINB
+;CAS 4	Y3>Y2
+	LEA	TAB,A3
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVE	4(A0),D0
+	MOVE	6(A0),D1
+	MOVE	8(A0),D2
+	MOVE	10(A0),D3
+	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVE	Y4(A0),D3
+	CMP	Y3(A0),D3
+	BGT.S	D3R
+	LEA	TAB2,A3
+	MOVE	X3(A0),D2
+	MOVE	X4(A0),D0
+	MOVE	Y3(A0),D3
+	MOVE	Y4(A0),D1
+	BRA.S	CONT6
+D3R	
+	LEA	TAB,A3
+	MOVE	X3(A0),D0
+	MOVE	X4(A0),D2
+	MOVE	Y3(A0),D1
+	MOVE	Y4(A0),D3
+CONT6	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVE	Y4(A0),D3
+	CMP	Y1(A0),D3
+	BGT.S	D3P
+	LEA	TAB,A3
+	MOVE	X1(A0),D2
+	MOVE	X4(A0),D0
+	MOVE	Y4(A0),D1
+	MOVE	Y1(A0),D3
+	BRA.S	CONT7
+D3P	
+	LEA	TAB2,A3
+	MOVE	Y4(A0),D3
+	MOVE	X1(A0),D0
+	MOVE	X4(A0),D2
+	MOVE	Y1(A0),D1
+CONT7	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+	BRA	DONE
+
+D6_WINB	;Y2>Y3	CAS 3
+	LEA	TAB2,A3
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVE	4(A0),D2
+	MOVE	10(A0),D1
+	MOVE	8(A0),D0
+	MOVE	6(A0),D3
+	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVE	Y4(A0),D3
+	CMP	Y3(A0),D3
+	BGT.S	D3Y
+	LEA	TAB2,A3
+	MOVE	Y4(A0),D1
+	MOVE	Y3(A0),D3
+	MOVE	X3(A0),D2
+	MOVE	X4(A0),D0
+	BRA.S	CONT8
+D3Y	
+	LEA	TAB,A3
+	MOVE	Y4(A0),D3
+	MOVE	X3(A0),D0
+	MOVE	X4(A0),D2
+	MOVE	Y3(A0),D1
+CONT8	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVE	Y1(A0),D3
+	CMP	Y4(A0),D3
+	BGT.S	D3Z
+	LEA	TAB2,A3
+	MOVE	X4(A0),D2
+	MOVE	X1(A0),D0
+	MOVE	Y1(A0),D1
+	MOVE	Y4(A0),D3
+	BRA.S	CONT9
+D3Z	
+	LEA	TAB,A3
+	MOVE	Y1(A0),D3
+	MOVE	X4(A0),D0
+	MOVE	X1(A0),D2
+	MOVE	Y4(A0),D1
+CONT9	MOVE	D1,D4
+	ADD	D4,D4
+	ADD	D4,A3
+	JSR	CALCUL
+
+DONE
+	LEA	face_en_cours,a0
+	MOVE	2(A0),D0	Y1
+	MOVE	2+4(A0),D1	Y2
+	MOVE	2+4*2(A0),D2	Y3
+	MOVE	2+4*3(A0),D3	Y4
+	JSR	TRIE_MIN
+**
+;tri … faire avant pour Jumper+tot en cas de clip, mais tab a modifier
+;apres le calcul...
+	CMP	#Y_CLIP,D4
+	BLT.S	OK_OK
+	BRA	cachee
+OK_OK	TST	D4
+	BGE.S	NO_CLIP
+	MOVEQ	#0,D4
+NO_CLIP	ADD	D4,D4
+	MOVE	D4,MOD_DEP_TAB
+	MULU	#80,D4
+	MOVE	D4,MODY
+
+	LEA	face_en_cours,a0
+	MOVE	2(A0),D0	Y1
+	MOVE	2+4(A0),D1	Y2
+	MOVE	2+4*2(A0),D2	Y3
+	MOVE	2+4*3(A0),D3	Y4
+	JSR	TRIE_MAX
+	TST	D4
+	BGE.S	OK_OK_OK
+	BRA	cachee
+OK_OK_OK	LEA	TAB,A3
+	LEA	TAB2,A4
+	CMPI	#Y_CLIP,D4
+	BLE.S	NO_CLIP2
+	MOVE	#Y_CLIP,D4
+NO_CLIP2	ADD	D4,D4
+	ADD	D4,A3
+	ADD	D4,A4
+	MOVE	#0,(A3)
+	MOVE	#320,(A4)
+
+***
+;4) Affiche la face
+;	bra	cachee
+T	;MOVE	#$001,$FFFF8240.W
+;	MOVE	#$555,$FFFF8240.W
+
+	MOVE.L	SCREEN2,A6	6? 7?
+MODY	EQU	*+2
+	LEA	0(A6),A6
+MOD_PLAN	EQU	*+2
+	LEA	0(A6),A6
+	LEA	-160(A6),A6	2
+	LEA	-48-16-160*70(A6),A6
+	MOVE.L	#$FFFFFFFF,D1	3?
+
+	LEA	TABL,A3	3?
+	LEA	TABL2,A2	3?
+	LEA	TABLE,A4	3?
+	MOVE	#%1111111111111000,D5
+
+	LEA	TAB,A5
+MOD_DEP_TAB	EQU	*+2
+	LEA	0(A5),A5
+	MOVE.L	A7,SAUVEA7
+	LEA	RETOUR,A7
+	BRA	ICI
+
+	DS.L	256
+;	MOVE	#200-1,D3	2
+
+ICI	
+RETOUR
+	LEA	160(A6),A6	2
+	MOVE.L	A6,A0	1
+;MOD2	EQU	*+2
+	MOVE	(A5)+,D6	2
+;MOD	EQU	*+2
+	MOVE	400+800-2(A5),D7	2
+
+
+	TST	D6
+	BGE.S	TO1
+	MOVEQ	#1,D6
+TO1	CMP	#320,D6
+	BLE.S	TO2
+	MOVE	#319,D6
+TO2	TST	D7
+	BGE.S	TO1V
+	MOVEQ	#1,D7
+TO1V	CMP	#320,D7
+	BLE.S	TO2V
+	MOVE	#319,D7
+TO2V
+	SUB	D6,D7	1
+	BLT	OOPS
+
+
+;	ADD	D7,D7	1
+;	ADD	D7,D7	1
+	lsl	#6,d7
+
+	ADD.b	(A3,D6.W),D7	4
+
+	ADD	D6,D6	1
+	ADDA	(A2,D6.W),A0	5
+
+	MOVE.L	(A4,D7.W),A1	5
+	JMP	(A1)	2+61
+OOPS	;MOVE	#$770,$FFFF8240.W
+	BRA	ICI
+
+SAUVEA7	DC.L	0
+RETOUR_ULTIME
+	MOVE.L	SAUVEA7,A7
+	RTS
+
+TIME	DC.L	0
+
+	even
+key	dc.b	0
+	even 
+;FLAG	DC	0
+TRIE_MAX	CMP	D0,D1
+	BGT.S	AD1_WIN_A
+;	BLT.S	AD0_WIN_A
+;	ADDQ	#1,FLAG1
+AD0_WIN_A	CMP	D2,D0
+	BGT.S	AD0_WIN_B
+;	BLT.S	AD2_WIN_A
+;	ADDQ	#1,FLAG2
+AD2_WIN_A	CMP	D3,D2
+	BGT.S	AD2_WIN_B
+;	BLT.S	AD3_WIN_A
+;	ADDQ	#1,FLAG3
+AD3_WIN_A	MOVE	D3,D4
+;	TST	FLAG3
+;	BNE.S	OK0
+;	TST	FLAG2
+;	BNE.S	OK1
+;	TST	FLAG1
+;	BNE.S	OK2
+;	;4 Y EGAUX=> PROB
+;	MOVE	#$700,$FFFF8240.W
+;	JMP	FIN
+;OK2	;D3=D2=D1
+;OK1	;D3=D2
+;	MOVE	4*3(A0),D6
+;	SUB	4*2(A0),D6
+;	B
+OK0	MOVE	4*3(A0),D5
+	RTS
+AD2_WIN_B	MOVE	D2,D4
+	MOVE	4*2(A0),D5
+	RTS
+AD0_WIN_B	CMP	D3,D0
+	BGT.S	AD0_WIN_C
+AD3_WIN_B	MOVE	D3,D4
+	MOVE	4*3(A0),D5
+	RTS
+AD0_WIN_C	MOVE	D0,D4
+	MOVE	(A0),D5
+	RTS
+AD1_WIN_A	CMP	D2,D1
+	BGT.S	AD1_WIN_B
+AD2_WIN_C	CMP	D3,D2
+	BGT.S	AD2_WIN_B
+	MOVE	D3,D4
+	MOVE	4*3(A0),D5
+	RTS
+AD1_WIN_B	CMP	D3,D1
+	BGT.S	AD1_WIN_C
+	MOVE	D3,D4
+	MOVE	4*3(A0),D5
+	RTS
+AD1_WIN_C	MOVE	D1,D4
+	MOVE	4(A0),D5
+	RTS
+
+
+TRIE_MIN	CMP	D0,D1
+	BLT.S	D1_WIN_A
+D0_WIN_A	CMP	D2,D0
+	BLT.S	D0_WIN_B
+D2_WIN_A	CMP	D3,D2
+	BLT.S	D2_WIN_B
+D3_WIN_A	MOVE	D3,D4
+	MOVE	4*3(A0),D5
+	RTS
+D2_WIN_B	MOVE	D2,D4
+	MOVE	4*2(A0),D5
+	RTS
+D0_WIN_B	CMP	D3,D0
+	BLT.S	D0_WIN_C
+D3_WIN_B	MOVE	D3,D4
+	MOVE	4*3(A0),D5
+	RTS
+D0_WIN_C	MOVE	D0,D4
+	MOVE	(A0),D5
+	RTS
+D1_WIN_A	CMP	D2,D1
+	BLT.S	D1_WIN_B
+D2_WIN_C	CMP	D3,D2
+	BLT.S	D2_WIN_B
+	MOVE	D3,D4
+	MOVE	4*3(A0),D5
+	RTS
+D1_WIN_B	CMP	D3,D1
+	BLT.S	D1_WIN_C
+	MOVE	D3,D4
+	MOVE	4*3(A0),D5
+	RTS
+D1_WIN_C	MOVE	D1,D4
+	MOVE	4(A0),D5
+	RTS
+
+CALCUL	LEA	ADR_RTS,A4
+	MOVEQ	#0,D4
+	CMP	D0,D2
+	BGT.S	D2_P_G
+	EXG.L	D0,D2
+	BRA	OTHER
+D2_P_G	SUB.W	D0,D2	DELTA X
+	SUB.W	D1,D3	DELTA Y
+	BNE.S	NON_NUL
+	RTS
+NON_NUL
+	MOVE	D2,D4
+
+	ASL	#7,D4	*128
+;	EXT.L	D4
+	DIVS.W	D3,D4	*X(+1)=(DX/DY)+X
+	MOVE	#9,D2
+	EXT.L	d4
+	ASL.L	D2,D4
+	
+	ADD	D3,D3
+	ADD	D3,D3
+	NEG	D3
+	SWAP	D4
+	
+;	ADD	D0,D0
+;	ADD	D0,D0
+	SUB	D1,D1
+	JMP	(A4,D3)
+
+	REPT	401*2
+	MOVE	D0,(A3)+
+	ADDX.L	D4,D0
+	ENDR
+ADR_RTS
+	RTS
+
+OTHER	LEA	ADR_RTS2,A4
+	SUB.W	D0,D2	DELTA X
+	SUB.W	D1,D3	DELTA Y
+	BNE.S	NON_NUL2
+	RTS
+NON_NUL2
+	MOVE	D3,D5
+	ADD	D5,D5
+	ADD	D5,A3
+	MOVE	D2,D4
+	
+	ASL	#7,D4	*128
+;	EXT.L	D4
+	DIVS.W	D3,D4	*X(+1)=(DX/DY)+X
+	MOVE	#9,D2
+	EXT.L	d4
+	ASL.L	D2,D4
+	
+	ADD	D3,D3
+	ADD	D3,D3
+	NEG	D3
+	SWAP	D4
+	
+;	ADD	D0,D0
+;	ADD	D0,D0
+	SUB	D1,D1
+	JMP	(A4,D3)
+
+	REPT	401*2
+	MOVE	D0,-(A3)
+	ADDX.L	D4,D0
+	ENDR
+ADR_RTS2
+	RTS
+
+MINI_TABLO	DS.L	8
+	DS	200*2
+TAB	DS	200
+	DS	200*2
+TAB2	DS	200
+	DS	200*2
+TABE	DC.L	$99999999,0,0,0
+
+
+**
+ROUTINE	MOVEM.L	D0-D2/A0-A1,-(SP)
+	MOVE.L	SCREEN2,a1
+	MOVEQ	#0,D2
+	SWAP	D0
+	SWAP	D1
+	CLR	D0
+	CLR	D1
+	SWAP	D0
+	SWAP	D1
+
+;	MOVE	xp,D0
+;	MOVE	yp,d1
+
+	TST	D0
+	BGE.S	TOK1
+	MOVE	#-1,D1
+	MOVEQ	#0,D0
+TOK1	CMPI	#320,D0
+	BLT.S	TOK2
+	MOVE	#-1,D1
+	MOVEQ	#0,D0
+TOK2
+	CMPI	#-1,D1
+	BGE.S	TOK3
+	MOVE	#-1,D1
+	MOVEQ	#0,D0
+TOK3	CMPI	#199,D1
+	BLE.S	TOK4
+	MOVEQ	#0,D1
+	MOVE	#-1,D1
+TOK4	MULU	#160,D1
+	DIVS	#16,D0
+	MOVE	D0,D2
+	MULU	#8,D2
+	ADD.L	D2,D1
+	SWAP	D0
+	CMPI	#$7,D0
+	BGT.S	PLUS_UN
+	BRA.S	PLUS_LOIN
+PLUS_UN	ADD.L	#1,D1
+	SUB.L	#8,D0
+PLUS_LOIN
+	LEA	KK,A0
+	LSL	#3,D0
+	JSR	(A0,D0.W)
+
+;	CMPI	#0,ZA
+;	BGT.S	PLD
+;	BRA.S	NOPLD
+;PLD	ADD	#2,D1
+;NOPLD	;MOVE	D1,(A2)+
+
+	OR.B	D0,(A1,D1.W)
+
+	MOVEM.L	(SP)+,D0-D2/A0-A1
+	RTS
+
+KK	MOVE.B	#%10000000,D0
+	NOP
+	RTS
+	MOVE.B	#%01000000,D0
+	NOP
+	RTS
+	MOVE.B	#%00100000,D0
+	NOP
+	RTS	
+	MOVE.B	#%00010000,D0
+	NOP
+	RTS	
+	MOVE.B	#%00001000,D0
+	NOP
+	RTS	
+	MOVE.B	#%00000100,D0
+	NOP
+	RTS
+	MOVE.B	#%00000010,D0
+	NOP
+	RTS
+	MOVE.B	#%00000001,D0
+	NOP
+	RTS
+
+	*-----sous programe------*	
+calcrot
+;	sub.w	#1,attvbl
+;	beq.s	calcrots	
+	bra	finacal
+calcrots
+	move.w	#10,attvbl
+	moveq	#0,d0
+	move.b	key,d0
+	
+	cmp.w	#7,d0
+	bgt.s	finacal
+	beq.s	changobj
+	subq	#1,d0
+	
+	lea.l	adag1,a0
+	moveq.l	#1,d1
+	and.w	d0,d1
+	bne.s	suitadcal
+	
+	sub.w	d1,d0
+	add.w	d0,a0
+	sub.w	#2,(a0)
+	bra.s	finacal
+suitadcal
+	sub.w	d1,d0
+	add.w	d0,a0
+	add.w	#2,(a0)
+	bra.s	finacal
+changobj	
+	add.w	#8,numobj
+	lea.l	paobj,a0
+	add.w	numobj,a0
+	move.l	(a0)+,d0	
+	bgt.s	schangobj	
+	move.w	#-8,numobj
+	bra.s	changobj
+schangobj	
+;	move.l	d0,ptchang2+2
+	addq.l	#2,d0
+;	move.l	d0,ptchang1+2
+	move.l	(a0),ptchang3+2	
+	clr.l	adag1
+	clr.w	adag3
+	clr.w	ang1
+	clr.w	ang2
+	clr.w	ang3
+
+finacal	
+	move.w	ang1,d0
+	add.w	adag1,d0
+	and.w	#$1ff,d0
+	move.w	d0,ang1
+	
+	move.w	ang2,d0
+	add.w	adag2,d0
+	and.w	#$1ff,d0
+	move.w	d0,ang2
+	
+	move.w	ang3,d0
+	add.w	adag3,d0
+	and.w	#$1ff,d0
+	move.w	d0,ang3
+
+	rts
+adag1	dc.w	2
+adag2	dc.w	4
+adag3	dc.w	0
+attvbl	dc.w	10
+numobj	dc.w	0	
+
+efecr	
+	MOVE.L	SCREEN2,A0
+	LEA	160*6(A0),A0
+	;MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVEQ	#0,D4
+	MOVEQ	#0,D5
+	MOVEQ	#0,D6
+	MOVEQ	#0,D7
+	SUBA.L	A1,A1
+	SUBA.L	A2,A2
+	SUBA.L	A3,A3
+	SUBA.L	A4,A4
+	SUBA.L	A5,A5
+	SUBA.L	A6,A6
+	MOVE	#46-1,D0
+.EFF	MOVEM.L	D1-D7/A1,(A0)
+	LEA	160(A0),A0
+	DBF	D0,.EFF
+	RTS
+	
+
+	******************
+	*matrix 3axe(zyx)*
+	******************
+calcpoint	
+	lea.l	tsin(pc),a0
+	lea.l	128(a0),a1
+ang1	equ	*+2
+	move.w	#0,d0
+ang2	equ	*+2
+	move.w	#0,d1
+ang3	equ	*+2	
+	move.w	#0,d2
+
+	move.w	(a0,d1.w),d3	-sinb
+	neg	d3
+	move.w	d3,modf3+2	
+
+	move.w	d0,d3		d3=a-b
+	sub.w	d1,d3		
+	add.w	d0,d1		d1=a+b
+
+	move.w	(a1,d1.w),d4	1/2(cos(a+b)+cos(a-b))
+	add.w	(a1,d3.w),d4	cosacosb
+	asr	d4
+	move.w	d4,modf1+2		
+	
+	move.w	(a0,d1.w),d4	-1:2(sin(a+b)+sin((a-b))
+	add.w	(a0,d3.w),d4	-sinacosb
+	asr	d4
+	neg	d4
+	move.w	d4,modf2+2		
+
+	sub.w	d0,d1
+	move.w	d1,d3		
+	sub.w	d2,d3		d3=b-c
+	add.w	d1,d2		d2=b+c
+	
+	move.w	(a0,d2.w),d4	-1:2(sin(b+c)-sin((b-c))
+	sub.w	(a0,d3.w),d4	-sinccosb
+	asr	d4
+	neg	d4
+	move.w	d4,modf6+2		
+	
+	move.w	(a1,d2.w),d4	1/2(cos(b+c)+cos(b-c))
+	add.w	(a1,d3.w),d4	cosbcosc
+	asr	d4
+	move.w	d4,modf9+2		
+
+	sub.w	d1,d2
+	move.w	d0,d3
+	sub.w	d2,d3		d3=a-c
+	add.w	d0,d2		d2=a+c
+	
+	move.w	(a0,d2.w),d4	1:2(sin(a+c)+sin(a-c))
+	add.w	(a0,d3.w),d4	sinacosc
+	asr	d4
+	move.w	d4,addmodf1
+	
+	move.w	(a1,d2.w),d4	1:2(cos(a+c)+cos(a-c))
+	add.w	(a1,d3.w),d4	cosacosc
+	asr	d4
+	move.w	d4,addmodf2
+	
+	move.w	(a1,d3.w),d4	1:2(cos(a-c)-cos(a+c))
+	sub.w	(a1,d2.w),d4	sinasinc
+	asr	d4
+	move.w	d4,addmodf3
+	
+	move.w	(a0,d2.w),d4	1:2(sin(a+c)-sin(a-c))
+	sub.w	(a0,d3.w),d4	cosasinc
+	asr	d4
+	move.w	d4,addmodf4
+
+	sub.w	d0,d2
+	move.w	#14,d3
+
+	move.w	(a1,d0.w),d4	-cosasinbsinc+sinacosc
+	muls.w	(a0,d1.w),d4
+	muls.w	(a0,d2.w),d4
+	asr.l	d3,d4
+	neg	d4
+addmodf1	equ	*+2
+	add.w	#0,d4
+	move.w	d4,modf4+2
+	
+	move.w	(a0,d0.w),d4	sinasinbsinc+cosacosc
+	muls.w	(a0,d1.w),d4
+	muls.w	(a0,d2.w),d4
+	asr.l	d3,d4
+addmodf2	equ	*+2
+	add.w	#0,d4
+	move.w	d4,modf5+2
+	
+	move.w	(a1,d0.w),d4	cosasinbcosc+sinasinc
+	muls.w	(a0,d1.w),d4
+	muls.w	(a1,d2.w),d4
+	asr.l	d3,d4
+addmodf3	equ	*+2
+	add.w	#0,d4
+	move.w	d4,modf7+2
+	
+	move.w	(a0,d0.w),d4	-sinasinbcosc+cosasinc
+	muls.w	(a0,d1.w),d4
+	muls.w	(a1,d2.w),d4
+	asr.l	d3,d4
+	neg	d4
+addmodf4	equ	*+2
+	add.w	#0,d4
+	move.w	d4,modf8+2
+	
+	lea.l	t_points,a0
+ptchang3	lea.l	tpoitesp1,a1
+	lea.l	tz+255*2,a2
+
+	move.w	#160,d5
+	move.w	#100,d6
+	
+	move.w	(a1)+,d7
+
+bmatrix
+	move.w	(a1)+,a3
+	move.w	(a1)+,a4
+	move.w	(a1)+,d4
+
+	move.w	a3,d0
+	move.w	a4,d1
+	move.w	d4,d2
+
+modf1	muls	#1<<7,d0
+modf2	muls	#0,d1
+modf3	muls	#0,d2
+	add.l	d1,d0
+	add.l	d2,d0
+	
+	move.w	a3,d1
+	move.w	a4,d2
+	move.w	d4,d3
+
+modf4	muls	#0,d1
+modf5	muls	#1<<7,d2
+modf6	muls	#0,d3
+	add.l	d2,d1
+	add.l	d3,d1
+	
+	move.w	a3,d2
+	move.w	a4,d3
+	
+modf7	muls	#0,d2
+modf8	muls	#0,d3
+modf9	muls	#1<<7,d4
+	add.l	d3,d2
+	add.l	d4,d2
+	
+	asr.w	#7,d2
+	add.w	d2,d2
+	
+	add.w	#20,d2
+	
+	muls	(a2,d2.w),d0
+	muls	(a2,d2.w),d1
+	
+	swap	d0
+	swap	d1
+	
+	add.w	d5,d0
+	add.w	d6,d1
+	
+	move.w	d0,(a0)+
+	move.w	d1,(a0)+
+;	JSR	ROUTINE
+	dbra.w	d7,bmatrix
+	rts
+	
+;	CLR.L	-(SP)
+;	MOVE	#$20,-(SP)
+;	TRAP	#1
+;	ADDQ.L	#6,SP
+;	
+;	MOVE.L	#VBK,$70.W
+;	
+;J	BRA.S	J
+;
+;VBK
+;	MOVE	#5000,D0
+;F	DBF	D0,F
+;	MOVEQ	#0,D0
+;	
+;	ST	$FFFF8240.W
+;	LEA	ADR_RTS,A4
+;	lea	TAB,A3
+;	MOVE	#-200,D0	X_DEP
+;	MOVE	#200,D2	X_FIN
+;
+;	MOVE	#0,D1	Y_DEP
+;	MOVE	#200,D3	Y_FIN=>(D3-D1) MOTS INSCRITS
+;
+;	JSR	CALCUL
+;	
+;	nop
+;
+;	SF	$FFFF8240.W
+;	RTE
+;
+;CALCUL
+;	MOVEQ	#0,D4
+;	SUB.W	D0,D2	DELTA X
+;	SUB.W	D1,D3	DELTA Y
+;	BNE.S	NON_NUL
+;	RTS
+;NON_NUL
+;	MOVE	D2,D4
+;	
+;	ASL	#7,D4	*128
+;;	EXT.L	D4
+;	DIVS.W	D3,D4	*X(+1)=(DX/DY)+X
+;	MOVE	#9,D2
+;	EXT.L	d4
+;	ASL.L	D2,D4
+;	
+;	ADD	D3,D3
+;	ADD	D3,D3
+;	NEG	D3
+;	SWAP	D4
+;	
+;;	ADD	D0,D0
+;;	ADD	D0,D0
+;	SUB	D1,D1
+;	JMP	(A4,D3)
+;
+;	REPT	201
+;	MOVE	D0,(A3)+
+;	ADDX.L	D4,D0
+;	ENDR
+;ADR_RTS
+;	RTS
+
+;TAB	DS	200
+;TABE	DC.L	$99999999,0,0,0
+
+	DATA
+;ZIK	INCBIN	B:\JESS.ZIK
+;	EVEN	
+	incbin	tsin7.aid
+tsin	incbin	tsin7.aid
+	incbin	tsin7.aid
+
+tz	incbin	tzoom.aid
+;TABLE_	DS.L	20*16*16
+
+*----------------------------------------------------
+
+paobj	dc.l	tpoly1,tpoitesp1,-1
+
+******************cube*********************
+
+tpoly1	dc.w	6-1
+	dc.l	face11+2,face12+2,face13+2,face14+2,face15+2,face16+2 	
+
+face11	dc.w	0,$5488,4,0,4,8,12
+face12	dc.w	0,$5888,4,16,0,12,28
+face13	dc.w	0,$5c88,4,12,8,24,28
+face14	dc.w	0,$5888,4,4,20,24,8
+face15	dc.w	0,$5c88,4,16,20,4,0 
+face16	dc.w	0,$4e71,4,28,24,20,16
+
+tpoitesp1
+	dc.w	8-1
+	dc.w	-40,-40,-40		1
+	dc.w	-40,40,-40		2
+	dc.w	40,40,-40		3	
+	dc.w	40,-40,-40		4
+	dc.w	-40,-40,40		5	
+	dc.w	-40,40,40		6	
+	dc.w	40,40,40		7
+	dc.w	40,-40,40		8
+
+COLORS
+	DCB	5,$111
+	DCB	5,$222
+	DCB	5,$333
+	DCB	5,$444
+	DCB	5,$555
+	DCB	5,$666
+	DCB	5,$777
+
+TABL
+	REPT	20
+;	DC.B	4*14
+;	DC	4*15*320	0
+	DC.B	0	1
+	DC.B	4	2
+	DC.B	4*2	3
+	DC.B	4*3	4
+	DC.B	4*4
+	DC.B	4*5
+	DC.B	4*6
+	DC.B	4*7
+	DC.B	4*8
+	DC.B	4*9
+	DC.B	4*10
+	DC.B	4*11
+	DC.B	4*12
+	DC.B	4*13
+	DC.B	4*14
+	DC.B	4*15
+	ENDR
+
+
+TABL2
+	REPT	17-1
+	DC	0
+	ENDR
+
+N	SET	8
+	REPT	19
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+	DC	N
+N	SET	N+8
+	ENDR
+
+CNT	DC.L	0
+TABLO	DCB	20,0
+	DC	$9999
+TABLO_COPIE	DCB	20,0
+
+PALETTE
+	REPT	10-1
+	DC	$100,$200,$300
+	ENDR
+
+	REPT	10
+	DC	$401,$502,$603
+	ENDR
+
+	REPT	10
+	DC	$704,$715,$726
+	ENDR
+
+	REPT	10
+	DC	$730,$740,$750
+	ENDR
+
+	REPT	10
+	DC	$710,$720,$730
+	ENDR
+
+TABLE_ADR
+	DC.L	8+230*80-230*278
+	DC.L	24+0+230*240-230*278
+	DC.L	24+152+230*205-230*278
+	
+	DC.L	24+16+230*10-230*278
+	DC.L	24+80+230*20-230*278
+	DC.L	24+160+230*30-230*278
+
+	DC.L	24+24+230*100-230*278
+	DC.L	24+72+230*80-230*278
+	DC.L	24+144+230*90-230*278
+	
+	DC.L	24+64+230*250-230*278
+	DC.L	24+128-230*35-230*278
+
+TABLE_ADR2
+
+	DC.L	8-230*20-230*300
+	DC.L	64+230*10-230*300
+	DC.L	152+230*30-230*300
+	
+	DC.L	16+230*70-230*300
+	DC.L	80+230*80-230*300
+	DC.L	160+230*100-230*300
+	
+	DC.L	24+230*200-230*300
+	DC.L	72+230*240-230*300
+	DC.L	144+230*220-230*300
+	
+	DC.L	0+230*250-230*300
+	DC.L	128-230*30-230*300
+
+
+	;DC.L	8+230*10
+	;DC.L	152+230*180
+	
+	;DC.L	64+230*30
+	;DC.L	120+230*20
+	
+	;DC.L	88+230*90
+	;DC.L	144+230*100
+
+	;DC.L	48+230*200
+	;DC.L	104+230*240
+	;DC.L	160+230*150
+
+	;DC.L	8+230*70
+
+	;DC.L	152+230*20
+
+
+
+	;DC.L	104+230*(-30)
+	;DC.L	168+230*140
+	;DC.L	80+230*50
+	;DC.L	48+230*10
+	;DC.L	8+230*240
+	;DC.L	120+230*180
+	;DC.L	152+230*70
+	;DC.L	96+230*100
+	;DC.L	40+230*80
+	;DC.L	16+230*10
+
+TABLE_OFF
+	DC.L	0
+	DC.L	46*4*4*21
+	DC.L	46*4*4*21*2	
+	DC.L	46*4*4*21*3
+	DC.L	46*4*4*21*4
+	DC.L	46*4*4*10
+	DC.L	46*4*4*31
+	DC.L	46*4*4*(21*2+10)
+	DC.L	46*4*4*(21*3+10)
+	DC.L	46*4*4*(21*4+10)
+	DC.L	46*4*4*(21*4+10)
+
+	BSS
+bss_deb
+SCREEN1	DS.L	1
+SCREEN2	DS.L	1
+POIT	DS.L	1
+t_points	ds.w	20*2	
+face_en_cours	ds.l	4
+TABLE	DS.L	20*16*16
+LA	DS.L	1
+;	DS.L	16
+
+ADR_RET	DS.L	1	*A LAISSER ICI!!! APRES TABLE_!!
+	DS.B	256
+	DS.B	300*230
+BUFECR	DS.B	64000
+	DS.B	300*230
+	DS.B	256
+BUFECR2	DS.B	64000
+	DS.B	50*230
+CODE	DS.B	250000
+BUF_CUBES	DS.B	100000
+BUF_CUBES2	DS.B	100000
+bss_end

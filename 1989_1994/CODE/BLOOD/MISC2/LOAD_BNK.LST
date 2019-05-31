@@ -1,0 +1,25 @@
+DIM spr$(150),long(150),high(150)
+GOSUB load_bnk("try.bnk")
+END
+> PROCEDURE load_bnk(nom$)
+  OPEN "i",#1,nom$
+  a%=XBIOS(2)+32000-160
+  BGET #1,a%,2
+  nb_spr=DPEEK(a%)
+  FOR i=0 TO nb_spr-1
+    BGET #1,a%,8
+    long(i)=DPEEK(a%)
+    high(i)=DPEEK(a%+2)
+    ' on saute l'offset qui ne sert a rien en GFA
+  NEXT i
+  FOR i=0 TO nb_spr-1
+    CLS
+    nb_mots=(((long(i)-1) AND &HFFF0)/16)+1
+    long=nb_mots*8
+    FOR y=0 TO high(i)-1
+      BGET #1,XBIOS(2)+y*160,long
+    NEXT y
+    GET 0,0,long(i)-1,high(i)-1,spr$(i)
+  NEXT i
+  CLOSE #1
+RETURN

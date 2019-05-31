@@ -1,0 +1,19 @@
+DIM a%(7)
+FOR n%=0 TO 7
+  a%(n%)=n%
+NEXT n%
+CLIP 10,10,300,180
+FOR t%=205 TO 0 STEP -10
+  FOR n%=0 TO 3600 STEP 90
+    DEFFILL (n%/90+t%/10) MOD 8+2
+    PELLIPSE 160,100,t%,t%/1.6,n%,n%+90
+  NEXT n%
+NEXT t%
+DO
+  FOR c%=0 TO 7
+    VSETCOLOR c%+2,a%(c%) MOD 8,0,0
+    DEC a%(c%)
+  NEXT c%
+  FOR n%=0 TO 1000
+  NEXT n%
+LOOP

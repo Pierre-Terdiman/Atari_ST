@@ -1,0 +1,16 @@
+' Auteur: Fran‡ois Bollengier
+' GFA-PUNCH
+' ST MAGAZINE
+' box peut etre remplacer par line
+'
+a:
+INPUT "mode: (1->640):",mode
+IF mode<1 OR mode>640 THEN
+  GOTO a
+ENDIF
+CLS
+GRAPHMODE 3
+FOR i=0 TO 99999 STEP RANDOM(8)+2
+  BOX i MOD mode,i MOD 400,639-i MOD 640,399-i MOD 400
+NEXT i
+coordonnees:

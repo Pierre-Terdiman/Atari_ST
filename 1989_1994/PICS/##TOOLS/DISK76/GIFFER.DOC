@@ -1,0 +1,43 @@
+        Giffer: A program to display GIF images on a mono-ST
+
+Giffer will display GIF images on an Atari ST with monochome monitor
+using a variety of dithering methods, including Floyd-Steinberg.
+It can be used from a shell or the desktop.
+
+This archive will contain GIFFER.TTP, the program,
+and ALBERT.GIF, a sample GIF image.
+
+To use Giffer from the desktop, you should install with these steps:
+- select GIFFER.TTP (single click it).
+- invoke "Install Application" from the menu bar (under Utilities).
+- type "GIF" as the extension (no return).
+- click the INSTALL button.
+You can now view your .GIF files by double-clicking the .GIF files.
+Once the image appears you can press a digit from 0 through 3
+to select other dithering methods (see below).
+Pressing any other key will return to the desktop.
+
+To use Giffer from a shell, use
+        giffer [-i] [-v] [-l] [-r] [-[0123]] file ...
+After displaying the image, Giffer will wait for a key press
+as described above. There are several command options available:
+        -i: only print information about the image; don't display.
+        -v: print information about the image before displaying.
+        -l, -r: rotate the image 90 degress left or right.
+        -[0123]: select a different dithering method.
+
+Dithering is a technique to display grey-level images on a two-level
+display.
+The dithering methods are:
+        0: black and white, no dithering. Useful if image already dithered.
+        1: a 16 by 16 regular dither. This gives 256 grey levels.
+           Only 30-40 are really distinguishable. This is the default.
+        2: a 2 by 2 regular dither. This gives 5 grey levels.
+        3: Floyd-Steinberg dither. This gives many grey levels
+           but has less loss of detail than the regular dithers.
+           It is also a bit slower.
+
+Giffer was compiled with GCC and dLibs. Giffer is unrelated to a program
+of the same name for the Mac. GIF is a trademark of Compuserve.
+
+                Eric Gisin, egisin@math.Waterloo.EDU

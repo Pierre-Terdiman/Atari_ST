@@ -1,0 +1,23 @@
+' AUTEUR: FRANCOIS PLANQUE (ZOOM)
+' GFA-PUNCH ST MAGAZINE
+' Tous GFA, BASSE RESOLUTION
+HIDEM                       ! Actionnez
+PBOX 0,0,319,199            ! le piston
+COLOR 2                     ! avec...
+FOR a=200 DOWNTO 0          ! la souris
+  CIRCLE 160,100,a          ! F.PLANQUE
+NEXT a
+REPEAT
+  MOUSE x,y,k
+  IF y>n
+    INC n
+    COLOR 1
+    CIRCLE 160,100,n
+  ENDIF
+  IF y<n
+    DEC n
+    COLOR 2
+    CIRCLE 160,100,n+1
+  ENDIF
+UNTIL k
+EDIT

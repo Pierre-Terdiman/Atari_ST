@@ -1,0 +1,150 @@
+$ C+
+RESERVE 100000
+SPOKE &H484,PEEK(&H484) AND 254
+ecran%=XBIOS(2)
+buffer$=SPACE$(32000)
+buffer%=VARPTR(buffer$)
+FOR c%=0 TO 15
+  SETCOLOR c%,7,7,7
+NEXT c%
+sprites$=SPACE$(32066)
+sprites%=VARPTR(sprites$)
+BLOAD "sprites2.pi1",sprites%
+BMOVE sprites%+34,XBIOS(2),32000
+CLR sprites%,sprites$
+DIM op$(10),eclair$(10)
+GET 0,0,62,27,op$(1)
+GET 64,0,126,27,op$(2)
+GET 128,0,190,27,op$(3)
+GET 192,0,254,27,op$(4)
+GET 256,0,318,27,op$(5)
+GET 0,30,62,57,op$(6)
+GET 64,30,126,57,op$(7)
+GET 128,30,190,57,op$(8)
+GET 192,30,254,57,op$(9)
+GET 256,30,318,57,op$(10)
+GET 0,162,154,199,pyram$
+GET 155,162,312,199,mpyram$
+GET 0,59,33,115,eclair$(1)
+GET 35,59,68,115,eclair$(2)
+GET 70,59,103,115,eclair$(3)
+GET 105,59,138,115,eclair$(4)
+GET 140,59,173,115,eclair$(5)
+GET 175,59,208,115,eclair$(6)
+GET 210,59,243,115,eclair$(7)
+GET 245,59,278,115,eclair$(8)
+CLS
+FOR c%=1 TO 15
+  SETCOLOR c%,0,0,0
+NEXT c%
+FOR c%=7 TO 0 STEP -1
+  SETCOLOR 0,c%,c%,c%
+  PAUSE 2
+NEXT c%
+vaisseau$=SPACE$(32066)
+vaisseau%=VARPTR(vaisseau$)
+BLOAD "vaisseau.pi1",vaisseau%
+digit$=SPACE$(5000)
+digit%=VARPTR(digit$)
+BLOAD "DIGIT.INL",digit%
+OPEN "I",#1,"avenger.spl"   !                       OPEN "I",#1,"ZLOT.SAM"
+length%=LOF(#1)  !                               length%=LOF(#1)
+' sample$=SPACE$(length%)
+sample%=GEMDOS(72,L:length%)
+CLOSE #1                           !             CLOSE #1
+BLOAD "avenger.spl",sample%
+' F%=C:Digit% ( L:<adresse de d‚part de l'‚chantillon>,
+' L:<longueur de l'‚chantillon>,
+' W:<fr‚quence de reproduction>,
+' W:<nombre de r‚p‚titions>,
+' W:<volume sonore>,
+' L:*variable suiveuse ou -1)
+' o— les termes entre <> repr‚sentent une expression num‚rique.
+' Par exemple :
+f%=C:digit%(L:sample%,L:length%,W:10000,W:20,W:15,L:*follow%)
+' jouera l'‚chantillon charg‚ suivant l'exemple ci-dessus avec une fr‚quence de
+' 8000 Hz (= 8 kHz), et le r‚p‚tera 2 fois de suite, au volume maximum.
+' Le volume varie de 0 ( inaudible ) … 15 ( maximum ).
+' La gamme des fr‚quences accept‚es s'‚tend de 50 Hz … 19800 Hz. Vous pouvez
+' indiquer n'importe quelle valeur entre celles-ci dans la commande, la routine
+' f%=C:digit%(L:1,W:9000,W:-1)
+' VOID C:digit%(L:-1)
+VOID XBIOS(6,L:vaisseau%+2)
+DEFFILL 12
+PBOX 0,0,319,199
+FOR y%=32000-160 TO 0 STEP -160
+  VSYNC
+  BMOVE vaisseau%+34+y%,XBIOS(2),32160-y%-160
+NEXT y%
+FOR pause%=1 TO 50000
+NEXT pause%
+anim
+END
+PROCEDURE anim
+  VOID XBIOS(5,L:buffer%,L:-1,W:-1)
+  '  FOR n%=1 TO 10
+  '  BMOVE vaisseau%+34,buffer%,32000
+  '  PUT 156,112,op$(n%)
+  '  PAUSE 1
+  '  BMOVE buffer%,ecran%,32000
+  ' NEXT n%
+  n%=1
+  FOR y%=199 TO 162 STEP -1
+    BMOVE vaisseau%+34,buffer%,32000
+    PUT 105,y%,mpyram$,4
+    PUT 105,y%,pyram$,7
+    IF n%<11
+      PUT 156,112,op$(n%)
+    ELSE
+      PUT 156,112,op$(10)
+    ENDIF
+    BMOVE buffer%,ecran%,32000
+    INC n%
+  NEXT y%
+  FOR pause%=1 TO 50000
+  NEXT pause%
+  '  VOID XBIOS(5,L:ecran%,L:-1,W:-1)
+  FOR fois%=1 TO 10
+    FOR ec%=1 TO 8
+      BMOVE vaisseau%+34,buffer%,32000
+      PUT 156,112,op$(10)
+      PUT 105,162,mpyram$,4
+      PUT 105,162,pyram$,7
+      PUT 172,113,eclair$(ec%)
+      BMOVE buffer%,ecran%,32000
+    NEXT ec%
+  NEXT fois%
+  FOR fois%=1 TO 20
+    BMOVE vaisseau%+34,buffer%,32000
+    PUT 156,112,op$(10)
+    PUT 105,162,mpyram$,4
+    PUT 105,162,pyram$,7
+    BMOVE buffer%,ecran%,32000
+  NEXT fois%
+  FOR n%=10 TO 1 STEP -1
+    BMOVE vaisseau%+34,buffer%,32000
+    PUT 156,112,op$(n%)
+    PUT 105,162,mpyram$,4
+    PUT 105,162,pyram$,7
+    BMOVE buffer%,ecran%,32000
+  NEXT n%
+  FOR fois%=1 TO 30
+    BMOVE vaisseau%+34,buffer%,32000
+    PUT 105,162,mpyram$,4
+    PUT 105,162,pyram$,7
+    BMOVE buffer%,ecran%,32000
+  NEXT fois%
+  FOR y%=162 TO 199
+    BMOVE vaisseau%+34,buffer%,32000
+    PUT 105,y%,mpyram$,4
+    PUT 105,y%,pyram$,7
+    BMOVE buffer%,ecran%,32000
+  NEXT y%
+  FOR y%=0 TO 32000-160 STEP 160
+    VSYNC
+    BMOVE vaisseau%+34+y%,XBIOS(2),32160-y%-160
+  NEXT y%
+  VOID C:digit%(L:-1)
+  CLEAR
+  EDIT
+RETURN

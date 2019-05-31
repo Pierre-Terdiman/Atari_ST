@@ -1,0 +1,223 @@
+README file accompanying version 3e of 
+Neil Smith's ST 68K Reference.
+
+Official bits
+-------------
+
+The program ST 68K Reference Version 
+3e, associated files and all associated 
+documents are the copyright of Neil 
+Smith, 1990 & 1991. This program is 
+distributed by Budgie UK, you should 
+consult their documentation for their 
+terms and conditions.
+
+While every attempt has been made to 
+ensure that the information contained 
+within the program is up to date and 
+correct, the author can make no 
+guarantee that this is the case. No 
+guarantee is made as to the suitability 
+of the program for any particular 
+purpose, and  the author can take no 
+responsibility for events occurring as 
+a result of the use or abuse of this 
+program.
+
+The Program
+-----------
+
+The actual 'refv3.prg' program is a 
+bare minimum system for interrogating 
+the 'refv3.dat' database.
+
+The program was written in C and 
+compiled using the Lattice C version 5 
+compiler from HiSoft and Lattice.
+
+Simply double-clicking on the file name 
+or icon on the GEM desktop will run the 
+program. It should work in High and 
+Medium resolution.
+
+It was written on a Mega ST 1 with TOS 
+1.4. It does not make use of any 
+operating system features specific to 
+TOS 1.4 and should work with all TOS 
+versions. If you experience 
+difficulties please write to me, 
+(address below), with concise but 
+complete details of your machine setup. 
+Details of AUTO folder programs and 
+desk accessories along with TOS 
+version, amount of RAM, screen 
+resolution etc. are essential.
+
+The information within the database is 
+displayed in pages within a standard 
+GEM window. If more information on a 
+particular subject can be accessed then 
+a 'keyword' relating to that subject 
+will appear 'underlined'. Simply 
+double-clicking on this keyword, will 
+cause more information on the subject 
+to be displayed. This can be repeated 
+until there are no more links to new 
+areas.
+
+From any page, except the very first, 
+you can click on the window Close Box 
+to take you back to the previously 
+accessed page. This is the page that 
+you were looking at before this one, 
+not necessarily the page that occurs 
+before it in the database. This 
+'memory' for previously accessed pages 
+is currently limited to 20 pages worth.
+
+Clicking in the window Full Box will 
+always quit the program.
+
+The Database
+------------
+
+Actually writing the program was no 
+real problem, it was getting the 
+enthusiasm to create the database that 
+caused all the production delays. 
+
+Currently the file is over 250 kbytes 
+big when in its natural uncompressed 
+form. The limit on the file size is 
+about 2 Gigabytes. Within the file 
+there are over 480 windows worth of 
+information. The limit on the number of 
+windows of information is currently 
+about 65000, this can easily be 
+extended.
+
+The database gives details of all Bios, 
+Xbios, and Gemdos calls, all AES and 
+VDI calls that I could find reliable 
+information on and Line-A calls. The 
+68000, 68901, 6850 and YM2149 are 
+covered, and there are a number of 
+other sections.
+
+Accesses to the database are very quick 
+when compared to version 2. A typical 
+page access when running on my hard 
+disk is too quick to measure, and about 
+2 seconds on a floppy, quicker if you 
+can select which page you wish to 
+access before the drive motor stops :-)
+
+The program has to be able to find the 
+database. There are a number of places 
+where the program looks.
+
+1.   The directory of the parent 
+     program.
+
+2.   The root directory of the drive 
+     that it is run from.
+
+3.   The root directory of the boot 
+     device, (usually A:\ or C:\)
+
+4.   Directories specified by the 
+     environment variable PATH
+
+5.   Directories specified by the 
+     environment variable REFV3
+
+Suggestions
+-----------
+
+I am open to suggestions as to how the 
+program or database may be inproved. I 
+cannot guarantee when or even if these 
+will be implemented, but will make some 
+effort to work on anything sensible.
+
+Below are a few improvements that I am 
+considering for version 3.1
+
+1. Program type detection.
+The program will be able to detect 
+whether it was run as a GEM program, a 
+desk accessory or a TOS program and 
+adjust itself accordingly, and still 
+work.
+
+2. Multiple windows.
+Dragging with the window Move Bar will 
+not move the window but create another 
+that can be accessed simultaneously and 
+independently.
+
+3. Unlimited stack.
+Currently previous pages are remembered 
+on a finite size stack. This could be 
+made unlimited in size.
+
+4. Page cache.
+Previously accessed pages could be held 
+in memory for a short time so that if 
+there are accessed again there is no 
+need to go to the disk. This could be 
+especially useful for those limited to 
+floppies.
+
+5. Drag and Save.
+This facility would allow a user to 
+drag a box around a piece of text in 
+the database and then save it in a 
+separate file, perhaps for inclusion in 
+a program they are writing.
+
+ 
+The Database has changed significantly 
+from version 2. For a start it is 
+significantly larger. However the 
+increase in size is not proportional to 
+the increase in the number of pages. I 
+have squeezed each page in to a smaller 
+space and made the editing of the 
+database as a whole much simpler. This 
+means that I am open to suggestions for 
+inclusions in to the database.
+
+If you think that I have not covered a 
+subject in enough detail, (or even too 
+much detail), amendments can be made 
+very easily indeed. If there is a 
+subject that I have missed altogether 
+please let me know. If you have 
+reliable information on a subject then 
+please point me to it or send me a 
+copy. If it is electronically readable 
+then it will go in that much more 
+quickly.
+
+I know that there are some AES and VDI 
+calls that I have missed out because I 
+do not trust the information that I 
+have available. If anyone has reliable 
+information on these I would appreciate 
+it greatly. Additionally, I have never 
+actually used the AES, VDI or Line-A at 
+an assembly language level so if I have 
+omitted essential information please 
+tell me.
+
+
+Neil Smith
+
+42 Hayes Road,
+Bromley,
+Kent,
+BR2 9AA.
+
+ngs@ukc.ac.uk - JANET address
+

@@ -1,0 +1,18 @@
+a$=SPACE$(32066)
+a%=VARPTR(a$)
+BLOAD "logogen4.pi1",a%
+VOID XBIOS(6,L:a%+2)
+BMOVE a%+34,XBIOS(2),32000
+DIM f%(10)
+DO
+  f%(0)=0
+  f%(1)=0
+  f%(2)=160
+  f%(3)=100
+  f%(4)=MOUSEX
+  f%(5)=MOUSEY
+  f%(6)=f%(4)+160
+  f%(7)=f%(5)+100
+  f%(8)=3
+  BITBLT f%(),f%(),f%()
+LOOP

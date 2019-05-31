@@ -1,0 +1,20 @@
+buffer$=SPACE$(32066)
+buffer%=V:buffer$
+FILESELECT "a:\*.pi3","",f$
+BLOAD f$,buffer%
+FOR c%=0 TO 39
+  x%=c%
+  y%=c%*5
+  RESTORE
+  FOR f%=0 TO 3
+    READ sx%,sy%
+    FOR s%=0 TO 78-c%*2
+      ADD x%,sx%
+      ADD y%,sy%
+      FOR g%=0 TO 4
+        BMOVE buffer%+34+x%+(g%+y%)*80,XBIOS(2)+x%+(g%+y%)*80,1
+      NEXT g%
+    NEXT s%
+  NEXT f%
+NEXT c%
+DATA 1,0,0,5,-1,0,0,-5

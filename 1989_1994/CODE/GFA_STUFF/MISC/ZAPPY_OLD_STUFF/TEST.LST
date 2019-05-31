@@ -1,0 +1,22 @@
+Message$=Space$(40)+"THIS GAME WAS CRACKED BY CYANUR             HELLO TO :  THE BLADE RUNNERS, THE REPLICANTS, THE UNION, AND TO ALL THE ST-MANIACS LIKE ME !     PERSONAL HELLO TO LAURENT, NICOLAS, OLIVIER, ERIC, THIERRY, CEDRIC..."
+Message2$="  BIG KISSES TO MARIA WHITTAKER AND KIM BASINGER...      ULTRA-GIGA-HYPRA-SUPRA-PARANORMA-FANTASTICA-DELIRA GREETING TO STEVE BAK..."
+Message$=Message$+Message2$
+Message$=Message$+String$(40-(Len(Message$)-(Fix(Len(Message$)/40))*40),32)
+Dim Sp$(Fix(Len(Message$)/40))
+Slpoke &HFFFF8240,(Int(Rnd(0)*3)+5)*256+(Int(Rnd(0)*3)+5)*16+(Int(Rnd(0)*3)+5)
+For T%=Fix(Len(Message$)/40) Downto 0
+  Print Chr$(27)+"E"+Chr$(27)+"b1"+Mid$(Message$,T%*40+1,40)
+  Get 0,0,319,17,Sp$(T%)
+Next T%
+Repeat
+  For T%=0 To Fix(Len(Message$)/40)-1
+    For X%=0 To -319 Step -2
+      Put X%,182,Sp$(T%)
+      Put X%+320,182,Sp$(T%+1)
+      '      Vsync
+      Exit If Inp(-2)
+    Next X%
+    Exit If Inp(-2)
+  Next T%
+Until Inp(-2)
+Slpoke &HFFFF8240,&H7770600

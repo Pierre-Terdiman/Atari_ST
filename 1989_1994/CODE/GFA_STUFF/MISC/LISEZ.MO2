@@ -1,0 +1,205 @@
+************************************************************
+******************  ST V/KILLER V.2.20  ********************
+**********   By Georges R.WOODSIDE , MAY 1989  *************
+************************************************************
+
+
+   Traduction par Marc RICHEZ , 8 rue Mabillon 75006 Paris  
+    (Informations et renseignements uniquement par courrier)
+    (par autorisation speciale de l'auteur).
+
+   Cette disquette contient :
+
+           1) ST V/KILLER.PRG
+
+           2) FLU.PRG
+
+           3) Dossier Info "lisez moi"
+
+
+      CETTE DISQUETTE EST UN DOMAINE PUBLIC SOUHAITE PAR
+      L'AUTEUR , NE PEUT EN AUCUN CAS ETRE VENDU .
+
+
+           ATTENTION !!!!!!!!!!!!!!!!
+
+
+           L'utilisation de ce programme peut ˆtre dange-
+   gereux , il est absolument impossible d'effectuer une
+   distinction radicale entre un virus , et une disquette
+   dite de jeu o— … programme d'ouverture automatique .
+           Si vous proc‚dez … une desinfection sur de
+   telles disquettes , vous perdrez irr‚mediablement la 
+   totalit‚ du jeu o— du programme en question .
+           Le moyen le plus simple est de savoir aupa-
+   ravant quelle disquette vous allez contr“ler .
+           Si celle ‡i , par experience , demarre auto-
+   matiquement , sans cliquer sur une ic“ne , NE LA
+   TOUCHEZ PAS SOUS AUCUN PRETEXTE .
+           De mˆme , ne vous hasardez pas … manipuler 
+   une disquette utilisant des codes speciaux de format-
+   age telles que celles utilisants des protections contre
+   la copie o— le piratage .
+           Dans tous les autres cas , ce programme identi-
+   fiera chaque disquette ayant un d‚marrage automatique
+   comme suspecte et anormale .
+
+
+**************  DESCRIPTION ET MODE D'EMPLOI  **************
+
+
+
+           Le ST Virus Killer est … l'heure actuelle le pro-
+   gramme le plus convivial et performant pour detecter et
+   d‚truire les disquettes infect‚es par des virus .
+           L'emploi de ce logiciel est d'une extrŠme facili-
+   t‚ , grace … la souris , en cliquant sur les ic“nes .
+           Lorsque le logiciel est mis en place , il suffit
+   de cliquer une fois sur l'ic“ne drive A o— drive B pour
+   obtenir une analyse complŠte de la disquette mise en place
+   au pr‚alable . Face au tableau qui apparait pour vous
+   donner une information , vous trouvez tout autour 9 
+   ic“nes , chacunes repondent … une information pr‚cise .
+           1) Drive A : pour analyser dans le lecteur A
+           2) Drive B : " "  " " " " " " "  "  " " " "B
+           3) Info : message de l'auteur .
+           4) Help : informations sur le logiciel .
+           5) Display : pour regarder le contenu d'une
+                     disquette ( tr‚s int‚ressant ) .
+           6) Print: pour imprimer un virus et l'envoyer
+                     pour analyser .
+           7) to fill: pour cr‚er un fichier sur disquette
+                     et l'envoyer pour analyser .
+           8) Kill : pour proc‚der … la d‚sinfection de la
+                     disquette contamin‚e .
+           9) Exit : pour quitter le programme .
+
+   Une analyse peut comporter trois r‚sultats diff‚rents :
+
+           1) Un visage souriant : tout va bien , rien … 
+                     signaler ! 
+           2) Un point d'interrogation : Le V/killer a 
+                    d‚tect‚ une disquette non propre mais
+                    non contamin‚e , dans ce cas un net-
+                    toyage s'impose d'office sans danger
+                    en cliquant sur " Kill" .
+           3) Un visage de diable apparait : 2 possibilit‚es
+                     A) Le V/killer a d‚tect‚ un virus connu
+                        une sonnerie d'alerte se d‚clenche ,
+                        une fenˆtre apparait avec la mention
+                        "Virus known", virus connu !
+                        Cliquer sur cette fenˆtre pour
+                        avoir une information pr‚cise du
+                        virus et ses effets sur votre ordi-
+                        nateur !(en anglais) cliquer sur
+                        "Kill" pour d‚truire le virus .
+
+                     B) Le V/killer a d‚tect‚ un parasite
+                        sur la disquette dont il ne peut
+                        donner aucune explication ? ,il peut
+                        s'agir d'un nouveau virus non connu 
+                        par le logiciel , o— d'une disquette
+                        de jeu ? … vous de faire la dif-
+                        f‚rence , vous le savez d‚j… , n‚an-
+                        moins il est bon de faire une copie
+                        avant toute destruction et de me
+                        l'envoyer aux fins d'analyses .
+
+
+*******************   A PROPOS DES VIRUS  ******************
+
+
+           D'abord un peu de technique !!!!!
+
+           Votre ordinateur , chaque fois que vous le mettez
+   en route avec une disquette , va chercher rapidement des
+   informations sur celle ‡i ainsi que son contenu , ces in-
+   formations sont inscrites dans une partie de la disquette
+   appel‚e "boot-secteur" (starter) .
+           Cette partie de la disquette vous est inacces-
+   sible normallement , sauf avec un logiciel specialis‚
+   comme le V/killer par exemple .
+           Un virus est un petit programme cach‚ dans le
+   boot-secteur , cr‚‚ par des programmeurs astucieux
+   aux seules fins de s'amuser et de vous ennuyer …
+   votre insu !
+           Votre ordinateur , lui , suit fid‚lement la rou-
+   tine prescrite par le virus sans que vous le sachiez !
+   ayant soin de ne pas se d‚clencher trop rapidement
+   pour ne point vous ‚veiller sur ce qui va se passer !
+           Le programme " FLU.PRG " vous permettra de vous
+   initier aux caract‚ristiques de ces virus et … l'avenir
+   de savoir les d‚tecter facilement . Ce programme est une
+   simulation absolument sans aucun danger .
+
+           George R.WOODSIDE est un des quatre chasseurs de
+   virus mondialement connu , ‚tant lui mˆme un programmeur
+   chevronn‚ , il a mis au point ce logiciel qui dor‚navant
+   vous met … l'abri de telles calamnit‚s . Ce logiciel
+   peut d‚tecter 17 versions diff‚rentes de virus connus
+   sur les 30 actuellement recens‚s . Soyez rassur‚ , il
+   n'existe actuellement en france que 3 d'entres eux qui
+   soient r‚ellement propag‚s :
+           1) le KEY VIRUS : pas dangereux r‚ellement car
+              il attend un code sur une disquette pour en-
+              trer en action et d‚truire le boot vous em-
+              pˆchant d'acceder … nouveau aux dossiers de
+              votre disquette , la chance de trouver ce
+              code est de 1/100.000 probablement du fait
+              que ce code $ est d'origine am‚ricaine donc
+              difficile … trouver en france .
+           2) le MOUSE INVERSION : pas dangereux du tout ,
+              provoque au bout de la 5e ouverture d'un
+              dossier sur la disquette utilis‚e une inver-
+              sion de la souris (bas/haut & vice versa) .
+           3) l'ANTI-VIRUS : comme son nom l'indique ,
+              con‡u … l'origine pour avertir de la bonne
+              marche de l'ordinateur par un flash visuel et
+              un beep sonore ( voir FLU.PRG) .
+   A noter que tous les virus ont pour objectif essentiel
+   de se propager sur toute disquette non prot‚g‚e par son
+   loquet coulissant , ayez soin de toujours prot‚ger vos
+   disquettes en interdisant l'‚criture (si possible !) .
+
+           Ce logiciel peut detecter 17 Virus les plus
+   connus sur ST :
+
+           1) KEY VIRUS          10) FIFTH GENERATION
+           2) KEY VALUE VIRUS    11) BHP VIRUS
+           3) BLOT VIRUS         12) GREEN GOBLIN VIRUS
+           4) FREEZE VIRUS       13) KOBOLD 2 VIRUS
+           5) MAD VIRUS          14) LABEL VIRUS
+           6) ACA VIRUS          15) MAULWORF VIRUS
+           7) SCREEN VIRUS       16) OLI VIRUS
+           8) MOUSE INV.VIRUS    17) PIRATE TRAP VIRUS
+           9) ANTI VIRUS
+
+           Dans chaque circonstance le logiciel vous ex-
+   pliquera quelles sont les caract‚ristiques de ces virus
+   une fois rencontr‚s .
+           De mˆme il est capable de reconnaŒtre la situation
+   dans laquelle la m‚moire de l'ordinateur serait contamin‚e
+   au moment d'une analyse de V/killer , ce‡i , afin de vous
+   vous ‚viter une r‚contamination au moment mˆme ou vous
+   effectuez un nettoyage sur vos disquettes .
+           Il suffit … ce moment l… d'‚teindre l'ordinateur
+   et de le rallumer au bout de 20 secondes avec la dis-
+   quette V/killer .
+           Cette disquette est immunis‚e contre ces virus
+   par un boot special , NE LE DETRUISEZ PAS en l'analy-
+   sant avec votre V/killer .
+           A part les trois virus cit‚s ‡i dessus comme 
+   ‚tant les plus connus en france , faites moi parvenir
+   vos disquettes contamin‚es afin de cr‚er une logithŠ-
+   que en collaboration avec ST MAGAZINE dans le cadre
+   de la recherche que nous effectuons dans ce domaine
+   pour mieux pr‚venir et expliquer les causes aux dif-
+   f‚rents utilisateurs de L'ATARI ST
+
+                      BONNE CHANCE !!!!!!!
+
+   Remerciements … George R.WOODSIDE
+   Copyright Marc RICHEZ  Paris  Juillet 1989
+
+**************************** END ***************************
+

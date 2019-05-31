@@ -1,0 +1,2248 @@
+*Face1 - disk2
+	;INCBIN	MAP.DAT
+	;INCBIN	CIRCLES.DAT
+	;INCBIN	PASSAGE3.DAT
+	;iNCBIN	OBVIOUS.DAT
+Q1 = 45980
+Q2 = 70820
+Q3 = 285124
+Q4 = 2668
+
+*Face0 - disk 3
+
+M1 = 18472
+M2 = 2658
+M3 = 278948
+M4 = 61000
+M5 = 23620
+
+*Face1 - disk 3
+	;incbin	disk3_01.pak
+	;incbin	disk3_02.pak
+	;incbin	disk3_03.pak
+	;incbin	disk3_04.pak
+	;incbin	disk3_05.pak
+	;incbin	disk3_06.pak
+	;incbin	disk3_07.pak
+	;incbin	disk3_08.pak
+	;incbin	vga10.pak
+R1 = 47218
+R2 = 34642
+R3 = 43808
+R4 = 27006
+R5 = 55422
+R6 = 61058
+R7 = 18112
+R8 = 64374
+R9 = 50580
+
+*Face 1: disk 4
+S1 = 65826
+S2 = 63228
+S3 = 59948
+S4 = 57926
+S5 = 52690
+S6 = 51526
+S7 = 49252
+*Face 0: disk 4
+T1 = 46282
+T2 = 41298
+T3 = 45404
+T4 = 14022
+T5 = 40544
+T6 = 6732
+T7 = 11892
+T8 = 23878
+T9 = 48276
+T10 = 42422
+T11 = 34998
+T12 = 38250
+
+*Face 1:
+	;INCBIN	DISK3_23.PAK
+	;INCBIN	DISK3_18.PAK
+	;INCBIN	DISK3_27.PAK
+	;INCBIN	DISK3_30.PAK
+	;INCBIN	DISK3_31.PAK
+	;INCBIN	DISK3_12.PAK
+	;INCBIN	DISK3_25.PAK
+*Face 0:
+	;INCBIN	DISK3_15.PAK
+	;INCBIN	DISK3_16.PAK
+	;INCBIN	DISK3_19.PAK
+	;INCBIN	DISK3_20.PAK
+	;INCBIN	DISK3_21.PAK
+	;INCBIN	DISK3_22.PAK
+	;INCBIN	DISK3_24.PAK
+	;INCBIN	DISK3_26.PAK
+	;INCBIN	DISK3_28.PAK
+	;INCBIN	DISK3_29.PAK
+	;INCBIN	DISK3_32.PAK
+	;INCBIN	VGA16.PAK
+	
+FACE_INIT	=	1	0 ou 1
+PIST_INIT	=	0	0=bootsecteur
+
+MODE:	EQU	1	FROM A0 TO A0
+PIC_ALGO:	EQU	0
+DEC_SPACE:	EQU	$80	 ;MAX IS $7FFE (no odd value!)
+RESTORE_SPACE:	EQU	0
+
+	CLR.L	-(SP)
+	MOVE	#$20,-(SP)
+	TRAP	#1
+	ADDQ	#6,SP
+
+	CLR	-(SP)
+	PEA	-1.W
+	PEA	-1.W
+	MOVE	#5,-(SP)
+	TRAP	#14
+	LEA	12(SP),SP
+****
+	LEA	BSS_DEB,A0
+	LEA	BSS_END,A1
+KILL_IT	CLR.L	(A0)+
+	CMP.L	A1,A0
+	BLE.S	KILL_IT
+	MOVE	#$2700,SR
+	MOVE.L	#FIN,$008.W
+	MOVE.L	#FIN,$00C.W
+	MOVE.L	#FIN,$010.W
+	MOVE.L	#FIN,$014.W
+	MOVE.L	#FIN,$018.W
+	MOVE.L	#FIN,$01C.W
+	MOVE.L	#FIN,$020.W
+
+	LEA	NEWPILE,A7
+	MOVEQ	#0,D0
+	JSR	ZIK
+DEBUT	
+	CLR.L	Y_VALUE
+	CLR.L	MOD_OFF7
+	CLR	DECAL_VALUE
+	CLR	MODFAD+2
+	CLR	MODFAD2+2
+	MOVE	#3,PNTFAD
+	MOVE	#5,CNTFAD
+	MOVE	#-32,MOD2+4
+	MOVE	#-32,MOD2B+2
+	MOVE	#-32,MOD1+4
+	MOVE	#-32,MOD1B+2
+	CLR.W	MODDEG1+2
+	CLR.W	MODDEG2+2
+	CLR	FLAG_FINI
+	JSR	COLORS_OFF
+	MOVE.L	#VBL_ZIK,$70.W
+	MOVE	#$2300,SR
+	move.l	#RTE,$120.W
+	move.l	#RTE,$134.W
+
+	MOVE.L	#BUFFER2,D0
+	CLR.B	D0
+	MOVE.L	D0,SCREEN2
+	MOVE.L	#BUFFER,D0
+	CLR.B	D0
+	MOVE.L	D0,SCREEN1
+
+	move.l	SCREEN2,d0
+	lsr.l	#8,d0
+	LEA	$FFFF8201.W,A0
+	movep	d0,(a0)
+	MOVE.L	SCREEN2,A0
+	MOVE	#7999,D0
+.EFF	CLR.L	(A0)+
+	DBF	D0,.EFF
+MOD_TXT	LEA	TEXT_1,A0
+	JSR	PUT_TEXT
+	MOVE.L	A0,MOD_TXT+2
+	MOVE	#$60FE,BOUCLE
+
+	MOVE.L	#$31415926,$426.W
+	;MOVE.L	#RESET_RT,$42A.W
+
+	LEA	BUFFER,A0
+	MOVE	#27600-1,D0
+.EFF2	CLR.L	(A0)+
+	CLR.L	(A0)+
+	DBF	D0,.EFF2
+
+	JMP	trui
+HOP	
+RTE	RTE
+COLORS_OFF
+	CLR.L	$FFFF8240.W
+	MOVE.L	#$05660000,$FFFF8244.W
+	CLR.L	$FFFF8248.W
+	CLR.L	$FFFF824C.W
+	CLR.L	$FFFF8250.W
+	CLR.L	$FFFF8254.W
+	CLR.L	$FFFF8258.W
+	CLR.L	$FFFF825C.W
+	RTS
+
+VBL_ZIK	MOVE	#1,VBL_FLAG
+	MOVEM.L	D0-A6,-(SP)
+	JSR	RT_ZIK
+	LEA	FAD,A0
+MODFAD	LEA	0(A0),A0
+	CMPI	#-1,2(A0)
+	BEQ.S	.OUT
+	SUBQ	#1,PNTFAD
+	BNE.S	.OUT
+	MOVE	#3,PNTFAD
+	ADDQ	#2,MODFAD+2
+.OUT	MOVE	(A0),$FFFF8242.W
+	MOVEM.L	(SP)+,D0-A6
+	RTE
+PNTFAD	DC	3
+FAD	DC	$000,$111,$222,$333,$444,$555,$666,$777
+	DCB	10,$777
+	DC	$677,$566,$455,$344,-1
+VBL_ZIK2	MOVE	#1,VBL_FLAG
+	MOVEM.L	D0-A6,-(SP)
+	JSR	RT_ZIK
+	LEA	FAD2,A0
+MODFAD2	LEA	0(A0),A0
+	CMPI	#-1,2(A0)
+	BEQ.S	.OUT
+	SUBQ	#1,PNTFAD
+	BNE.S	.OUT
+	MOVE	#3,PNTFAD
+	ADDQ	#2,MODFAD2+2
+.OUT	MOVE	(A0),$FFFF8242.W
+	MOVEM.L	(SP)+,D0-A6
+	RTE
+FAD2	DC	$344,$233,$122,$111,$001,$0,-1
+
+RESET_RT	MOVE	#$2700,SR
+	LEA	NEWPILE,A7
+	CLR.B	$FFFFFA07.W
+	CLR.B	$FFFFFA09.W
+	MOVE.L	#RTE,$70.W
+	move.l	#RTE,$120.W
+	move.l	#RTE,$134.W
+	move.l	#RTE,$68.W
+	MOVE.L	#$31415926,$426.W
+	;MOVE.L	#RESET_RT,$42A.W
+	MOVE.B	#2,$FFFF820A.W
+	CLR.B	$FFFF8260.W
+	MOVE.B	#$00,$FFFFFA0F.W
+	MOVE.B	#$1E,$FFFFFA13.W
+	MOVE.B	#$00,$FFFFFA1B.W
+	MOVE.B	#$47,$FFFFFA21.W
+	MOVE.B	#$64,$FFFFFA15.W
+	MOVE.B	#$48,$FFFFFA17.W
+	MOVE.B	#$00,$FFFFFA19.W
+	MOVE.B	#$FF,$FFFFFA1F.W
+
+	move	#$2420,$ffff8604.w
+	move.b	#$00,$ffff8609.w
+	move.b	#$7b,$ffff860b.w
+	move.b	#$c4,$ffff860d.w
+	MOVE.B	#$3,$FFFFFC04.W
+	MOVE.B	#$95,$FFFFFC04.W
+	MOVE.B	#$3,$FFFFFC00.W
+	MOVE.B	#$96,$FFFFFC00.W
+	MOVE	#$C8,D0
+.E	NOP
+	DBF	D0,.E
+	JMP	DEBUT
+trui
+	LEA	NEWPILE,A7
+	move.l	#RTE,$120.W
+	move.l	#RTE,$134.W
+	move	#$2300,sr
+	CLR.L	MOD_OFF7
+
+ONCE_MORE	LEA	BUFPAK,A0
+	MOVE	#(110400+1000)/4,D0
+.EEER	CLR.L	(A0)+
+	DBF	D0,.EEER
+	
+	JSR	CHARGEZ
+TAILLE	EQU	*+2
+	MOVE.L	#0,D0
+	LSR.L	#1,D0
+	SUBQ	#1,D0
+	LEA	BUFPAK,A1
+RECOP	MOVE	(A0)+,(A1)+
+	DBF	D0,RECOP
+
+	LEA	ADR_LOAD,A0
+	MOVE	#100000/4,D0
+.F	CLR.L	(A0)+
+	DBF	D0,.F
+	JSR	PREP_IMG
+FLAG_TWIN	EQU	*+2
+	MOVE	#0,D0
+	BNE.S	ONCE_MORE
+
+	JMP	AFF_IMG
+*****************
+VSYNC	CMPI.W	#1,VBL_FLAG
+	BLT.S	VSYNC
+	CLR.W	VBL_FLAG
+	RTS
+VBL_FLAG	DC	0
+RELOC
+	LEA	BUFPAK,A0
+	MOVE.L	A0,A1
+	ADD.L	2(A0),A1
+	ADD.L	6(A0),A1
+	LEA	31(A1),A1
+	MOVEQ	#0,D0
+
+	LEA	BUFPAK+28,A0
+	MOVE.L	A0,D1
+	
+RELOCATION	MOVE.B	(A1)+,D0
+	BEQ.S	RELOC_END
+	CMP.W	#1,D0
+	BNE.S	RELOC1
+	ADD.W	#254,A0
+	BRA.S	RELOCATION
+RELOC1	ADD.W	D0,A0
+	ADD.L	D1,(A0)
+	BRA.S	RELOCATION
+RELOC_END	RTS
+
+FIN	MOVE.L	4.W,A0
+	JMP	(A0)
+;	MOVE	#$700,$FFFF8240.W
+;	MOVE	#$2700,SR
+;.Z	CMPI.B	#$3B,$FFFFFC02.W
+;	BNE.S	.Z
+;	JMP	RESET_RT
+DISK_CHG	
+	MOVE.L	A0,MODADRDEP
+DISK_CHG2	JSR	VSYNC
+	CMPI.B	#$39,$FFFFFC02.W
+	BNE.S	DISK_CHG2
+	LEA	WRONG_EFF,A0
+	JSR	PUT_TEXT
+	JSR	CHARGEZ
+	LEA	ADR_LOAD,A0
+	CMPI.L	#'DSK4',2(A0)
+	BEQ.S	.C_EST_BON
+	LEA	WRONG_DISK,A0
+	JSR	PUT_TEXT
+	MOVE.L	MODADRDEP,A0
+	LEA	-18(A0),A0
+	MOVE.L	A0,MODADRDEP
+	BRA.S	DISK_CHG2
+.C_EST_BON	MOVE.L	#VBL_ZIK2,$70.W
+	MOVE	#19,D0
+.WAIT	JSR	VSYNC
+	DBF	D0,.WAIT
+	PEA	DEBUT
+	RTS
+	
+CHARGEZ
+	CLR.L	AJOUT
+MODADRDEP	EQU	*+2
+	LEA	DATA_FILES,A0
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	;MOVE	#FACE_INIT,D0	FACE
+	;MOVE	#PIST_INIT,D1	PISTE
+	;MOVE	#BLOC_INIT,D2	SECT A LIRE
+	MOVE	(A0)+,D0
+	CMPI	#$43,D0
+	BEQ	DISK_CHG
+	CMPI	#$42,D0
+	BNE.S	.PAS_LA_FIN
+.POPO	BRA.S	.POPO
+.PAS_LA_FIN	MOVE	(A0)+,D1
+	MOVE	(A0)+,D2
+	MOVE	(A0)+,OFF7_DEP
+	MOVE.L	(A0)+,TAILLE
+	MOVE	(A0)+,FLAG_TWIN
+	MOVE	(A0)+,DECAL_VALUE
+	MOVE	(A0)+,COEFF_CRB
+	MOVE.L	A0,MODADRDEP
+	JSR	TRACK_LOADING
+	LEA	ADR_LOAD,A0
+OFF7_DEP	EQU	*+2
+	LEA	0(A0),A0
+	RTS
+
+TRACK_LOADING	
+	LEA	FACE(PC),A0
+	MOVE	D0,(A0)
+	LEA	PISTE(PC),A1
+	LEA	PISTE2(PC),A2
+	MOVE	D1,(A1)
+	MOVE	D1,(A2)
+	LEA	NB_SECT(PC),A0
+	CMPI.L	#10,D2
+	BLE.S	PAS_PLUS_DE_10
+	MOVE.L	D2,D3
+	DIVS	#10,D3
+	MOVEQ	#0,D4
+	MOVEQ	#0,D5
+	MOVE	D3,D4	NB * 10 SECT A LIRE
+	SWAP	D3
+	MOVE	D3,D5	ET RESTE
+	SUBQ.L	#1,D4
+AGAIN	
+	MOVEM.L	D4/A0-A2,-(SP)
+	MOVE	#10,(A0)
+	JSR	LOADING
+	LEA	AJOUT(PC),A3
+	ADD.L	#512*10,(A3)
+	MOVEM.L	(SP)+,D4/A0-A2
+	ADDQ	#1,(A1)
+	ADDQ	#1,(A2)
+;r	cmpi.b	#$39,$fffffc02.w
+;	bne.s	r
+;e	cmpi.b	#$39,$fffffc02.w
+;	beq.s	e
+	DBF	D4,AGAIN
+	TST.L	D3
+	BEQ.S	FINIz
+	TST	D5
+	BEQ.S	FINIz
+	MOVE	D5,(A0)
+	JSR	LOADING
+	BRA.S	FINIz
+PAS_PLUS_DE_10	MOVE	D2,(A0)
+	JSR	LOADING
+FINIz	RTS
+
+LOADING
+;	lea	ADR_LOAD.W,a0
+	LEA	ADR_LOAD,A0
+AJOUT	EQU	*+2
+	ADDA.L	#0,A0
+	movea.l	a0,a1
+	lea	$FFFF8604.W,a6
+	st	$43E.W
+	moveq	#0,d0
+FACE	EQU	*+2
+	move	#0,D1
+	bsr	Set_drive
+Tracks:	move.w	#$86,d2
+PISTE	EQU	*+2
+	move.w	#0,d3
+	bsr.S	WD_write
+	move.w	#$80,d2
+	moveq	#%00010001,d3
+	bsr.s	WD_write
+Wait_Tracks:	bsr.S	Wait_done
+	moveq	#0,d0
+CHARGE:	move.l	a0,d1
+	move.b	d1,$FFFF860D.W
+	lsr.l	#8,d1
+	move.b	d1,$FFFF860B.W
+	lsr.l	#8,d1
+	move.b	d1,$FFFF8609.W
+DMA_in:	move.w	#$90,2(a6)
+	move.w	#$190,2(a6)
+	move.w	#$90,d2
+	moveq	#1,d3
+	bsr.s	WD_write
+	move.w	#$82,d2
+PISTE2	EQU	*+2
+	move.w	#0,d3
+	bsr.s	WD_write
+	addq.w	#1,d0
+	move.w	#$84,d2
+	move.w	d0,d3
+	bsr.s	WD_write
+	move.w	#$80,d2
+	move.w	#%10000000,d3
+	bsr.s	WD_write
+	bsr.s	Wait_done
+	adda.l	#512,a0
+NB_SECT	EQU	*+2
+	cmpi.w	#0,d0
+	bne.s	CHARGE
+	move.b	#7,d0
+	bsr.s	Select
+	sf	$43E.W
+	movea.l	a1,a0
+	RTS
+;	jmp	(a0)
+WD_write:	move.w	d2,2(a6)
+	move.w	d3,(a6)
+Attend:	moveq	#40,d1
+Attend1:dbf	d1,Attend1
+	rts
+Wait_done:	bsr.s	Attend
+Wait:	btst	#5,$FFFFFa01.W
+	bne.s	Wait
+	rts
+;Set_drive:	moveq	#5,d0
+;Select:	move.w	sr,-(a7)
+;	ori.w	#$700,sr
+;	move.b	#$e,$ffFF8800.W
+;	move.b	$ffFF8800.W,d1
+;	andi.b	#$f8,d1
+;	or.b	d0,d1
+;	move.b	d1,$ffFF8802.W
+;	move.w	(a7)+,sr
+;	rts
+Set_drive:
+	move.w	d0,d4
+	cmpi.w	#1,d0
+	bgt.s	End_set
+	addq.b	#1,d4
+	lsl.b	#1,d4
+	or.w	d1,d4
+	eori.b	#7,d4
+	andi.b	#7,d4
+	MOVE.L	D4,D0
+;	moveq	#5,d0		Selectionner le drive A	
+Select:	move.w	sr,-(a7)
+	ori.w	#$700,sr
+	move.b	#$e,$fFFf8800.W
+	move.b	$fFFf8800.W,d1
+	andi.b	#$f8,d1
+	or.b	d0,d1
+	move.b	d1,$fFFf8802.W
+	move.w	(a7)+,sr
+End_set	rts
+
+DATA_FILES
+***
+
+	DC	1
+	DC	0+(R1/5120)
+	DC	(R2/512)+11
+	DC	R1-((R1/5120)*5120)
+	DC.L	R2
+	DC	0
+	DC	16
+	DC	128
+
+	DC	1	FACE
+	DC	0	PISTE
+	DC	(R1/512)+11	NB SECT
+	DC	0	OFFSET
+	DC.L	R1	TAILLE
+	DC	0	FLAG
+	DC	8+8	DECALAGE
+	DC	281
+
+	DC	1
+	DC	0+((R1+R2)/5120)
+	DC	(R3/512)+11
+	DC	(R1+R2)-(((R1+R2)/5120)*5120)
+	DC.L	R3
+	DC	0
+	DC	8+8
+	DC	243
+
+	DC	1
+	DC	0+((R1+R2+R3)/5120)
+	DC	(R4/512)+11
+	DC	(R1+R2+R3)-(((R1+R2+R3)/5120)*5120)
+	DC.L	R4
+	DC	0
+	DC	16+8
+	DC	0
+
+	DC	1
+	DC	0+((R1+R2+R3+R4+R5+R6+R7+R8)/5120)
+	DC	(R9/512)+11
+	DC	(R1+R2+R3+R4+R5+R6+R7+R8)-(((R1+R2+R3+R4+R5+R6+R7+R8)/5120)*5120)
+	DC.L	R9
+	DC	0
+	DC	16
+	DC	128
+
+	DC	1
+	DC	0+((R1+R2+R3+R4)/5120)
+	DC	(R5/512)+11
+	DC	(R1+R2+R3+R4)-(((R1+R2+R3+R4)/5120)*5120)
+	DC.L	R5
+	DC	0
+	DC	16+8
+	DC	281
+
+	DC	1
+	DC	0+((R1+R2+R3+R4+R5)/5120)
+	DC	(R6/512)+11
+	DC	(R1+R2+R3+R4+R5)-(((R1+R2+R3+R4+R5)/5120)*5120)
+	DC.L	R6
+	DC	0
+	DC	16+8
+	DC	243
+
+	DC	1
+	DC	0+((R1+R2+R3+R4+R5+R6+R7)/5120)
+	DC	(R8/512)+11
+	DC	(R1+R2+R3+R4+R5+R6+R7)-(((R1+R2+R3+R4+R5+R6+R7)/5120)*5120)
+	DC.L	R8
+	DC	0
+	DC	24
+	DC	281
+
+	DC	1
+	DC	0+((R1+R2+R3+R4+R5+R6)/5120)
+	DC	(R7/512)+11
+	DC	(R1+R2+R3+R4+R5+R6)-(((R1+R2+R3+R4+R5+R6)/5120)*5120)
+	DC.L	R7
+	DC	0
+	DC	24
+	DC	0
+;DATA_FILES
+
+	DC	0
+	DC	1+((M1+M2+M3)/5120)
+	DC	(M4/512)+11
+	DC	(M1+M2+M3)-(((M1+M2+M3)/5120)*5120)
+	DC.L	M4
+	DC	1
+	DC	8
+	DC	384
+
+	DC	0
+	DC	1+((M1+M2+M3+M4)/5120)
+	DC	(M5/512)+11
+	DC	(M1+M2+M3+M4)-(((M1+M2+M3+M4)/5120)*5120)
+	DC.L	M5
+	DC	0
+	DC	8
+	DC	384
+
+	DC	$43
+
+	DC	0	FACE
+	DC	0	PISTE
+	DC	1	NB SECT
+	DC	0	OFFSET
+	DC.L	512	TAILLE
+	DC	0	FLAG
+	DC	0	DECALAGE
+	DC	0	COEFF*256
+	
+**DISK4
+
+	DC	1	FACE
+	DC	0	PISTE
+	DC	(S1/512)+11	NB SECT
+	DC	0	OFFSET
+	DC.L	S1	TAILLE
+	DC	1	FLAG
+	DC	16	DECALAGE
+	DC	384	COEFF*256
+	
+	DC	0
+	DC	1+((T1+T2+T3+T4+T5+T6)/5120)
+	DC	(T7/512)+11
+	DC	(T1+T2+T3+T4+T5+T6)-(((T1+T2+T3+T4+T5+T6)/5120)*5120)
+	DC.L	T7
+	DC	0
+	DC	16-230*11
+	DC	384
+
+	DC	1
+	DC	0+(S1/5120)
+	DC	(S2/512)+11
+	DC	S1-((S1/5120)*5120)
+	DC.L	S2
+	DC	0
+	DC	16
+	DC	256
+
+	DC	1
+	DC	0+((S1+S2)/5120)
+	DC	(S3/512)+11
+	DC	(S1+S2)-(((S1+S2)/5120)*5120)
+	DC.L	S3
+	DC	0
+	DC	16
+	DC	279
+
+	DC	1
+	DC	0+((S1+S2+S3)/5120)
+	DC	(S4/512)+11
+	DC	(S1+S2+S3)-(((S1+S2+S3)/5120)*5120)
+	DC.L	S4
+	DC	0
+	DC	8
+	DC	256
+
+	DC	1
+	DC	0+((S1+S2+S3+S4)/5120)
+	DC	(S5/512)+11
+	DC	(S1+S2+S3+S4)-(((S1+S2+S3+S4)/5120)*5120)
+	DC.L	S5
+	DC	0
+	DC	16
+	DC	279
+
+	DC	1
+	DC	0+((S1+S2+S3+S4+S5)/5120)
+	DC	(S6/512)+11
+	DC	(S1+S2+S3+S4+S5)-(((S1+S2+S3+S4+S5)/5120)*5120)
+	DC.L	S6
+	DC	0
+	DC	16
+	DC	279
+
+	DC	1
+	DC	0+((S1+S2+S3+S4+S5+S6)/5120)
+	DC	(S7/512)+11
+	DC	(S1+S2+S3+S4+S5+S6)-(((S1+S2+S3+S4+S5+S6)/5120)*5120)
+	DC.L	S7
+	DC	0
+	DC	16
+	DC	200
+
+	DC	0	FACE
+	DC	1	PISTE
+	DC	(T1/512)+11	NB SECT
+	DC	0	OFFSET
+	DC.L	T1	TAILLE
+	DC	0	FLAG
+	DC	16	DECALAGE
+	DC	279
+
+	DC	0
+	DC	1+(T1/5120)
+	DC	(T2/512)+11
+	DC	T1-((T1/5120)*5120)
+	DC.L	T2
+	DC	0
+	DC	16+8
+	DC	200
+
+	DC	0
+	DC	1+((T1+T2)/5120)
+	DC	(T3/512)+11
+	DC	(T1+T2)-(((T1+T2)/5120)*5120)
+	DC.L	T3
+	DC	1
+	DC	16+8
+	DC	390
+
+	DC	0
+	DC	1+((T1+T2+T3)/5120)
+	DC	(T4/512)+11
+	DC	(T1+T2+T3)-(((T1+T2+T3)/5120)*5120)
+	DC.L	T4
+	DC	0
+	DC	16+8
+	DC	390
+
+	DC	0
+	DC	1+((T1+T2+T3+T4)/5120)
+	DC	(T5/512)+11
+	DC	(T1+T2+T3+T4)-(((T1+T2+T3+T4)/5120)*5120)
+	DC.L	T5
+	DC	1
+	DC	16+8+8
+	DC	420
+
+	DC	0
+	DC	1+((T1+T2+T3+T4+T5)/5120)
+	DC	(T6/512)+11
+	DC	(T1+T2+T3+T4+T5)-(((T1+T2+T3+T4+T5)/5120)*5120)
+	DC.L	T6
+	DC	0
+	DC	16+8+8
+	DC	420
+
+
+	DC	0
+	DC	1+((T1+T2+T3+T4+T5+T6+T7)/5120)
+	DC	(T8/512)+11
+	DC	(T1+T2+T3+T4+T5+T6+T7)-(((T1+T2+T3+T4+T5+T6+T7)/5120)*5120)
+	DC.L	T8
+	DC	0
+	DC	16
+	DC	50
+
+	DC	0
+	DC	1+((T1+T2+T3+T4+T5+T6+T7+T8)/5120)
+	DC	(T9/512)+11
+	DC	(T1+T2+T3+T4+T5+T6+T7+T8)-(((T1+T2+T3+T4+T5+T6+T7+T8)/5120)*5120)
+	DC.L	T9
+	DC	0
+	DC	16+8
+	DC	230
+
+	DC	0
+	DC	1+((T1+T2+T3+T4+T5+T6+T7+T8+T9)/5120)
+	DC	(T10/512)+11
+	DC	(T1+T2+T3+T4+T5+T6+T7+T8+T9)-(((T1+T2+T3+T4+T5+T6+T7+T8+T9)/5120)*5120)
+	DC.L	T10
+	DC	0
+	DC	16
+	DC	256
+
+	DC	0
+	DC	1+((T1+T2+T3+T4+T5+T6+T7+T8+T9+T10)/5120)
+	DC	(T11/512)+11
+	DC	(T1+T2+T3+T4+T5+T6+T7+T8+T9+T10)-(((T1+T2+T3+T4+T5+T6+T7+T8+T9+T10)/5120)*5120)
+	DC.L	T11
+	DC	0
+	DC	16
+	DC	268
+
+	DC	0
+	DC	1+((T1+T2+T3+T4+T5+T6+T7+T8+T9+T10+T11)/5120)
+	DC	(T12/512)+11
+	DC	(T1+T2+T3+T4+T5+T6+T7+T8+T9+T10+T11)-(((T1+T2+T3+T4+T5+T6+T7+T8+T9+T10+T11)/5120)*5120)
+	DC.L	T12
+	DC	0
+	DC	0
+	DC	256
+	DC	$42
+*********** DISK 3
+
+depack:	movem.l	d0-a6,-(a7)
+	cmp.l	#"ATM5",(a0)+
+	bne	not_packed
+	link	a2,#-28
+	move.l	(a0)+,d0
+	ifne	MODE
+	lea	4(a0,d0.l),a5
+	move.l	d0,-(a7)
+	elseif
+	move.l	a1,a5
+	add.l	d0,a5
+	endc
+	move.l	a5,a4
+	ifne	MODE
+	ifne	DEC_SPACE
+	lea	DEC_SPACE(a4),a5
+	endc
+	endc
+	lea	-$c(a4),a4
+	move.l	(a0)+,d0
+	move.l	a0,a6
+	add.l	d0,a6
+	ifne	PIC_ALGO
+	moveq	#0,d0
+	move.b	-(a6),d0
+	move	d0,-2(a2)
+	ifne	RESTORE_SPACE
+	lsl	#2,d0
+	sub	d0,a4
+	endc
+	elseif
+	ifne	RESTORE_SPACE
+	clr	-2(a2)
+	endc
+	subq	#1,a6
+	endc
+	ifne	RESTORE_SPACE
+	lea	buff_marg(pc),a3
+	move	-2(a2),d0
+	lsl	#2,d0
+	add	#DEC_SPACE+$C,d0
+	bra.s	.save
+.save_m:	move.b	(a4)+,(a3)+
+	subq	#1,d0
+.save:	bne.s	.save_m
+	movem.l	a3-a4,-(a7)
+	endc
+	ifne	PIC_ALGO
+	pea	(a5)
+	endc
+	move.b	-(a6),d7
+	bra	take_type
+decrunch:	move	d3,d5
+take_lenght:	add.b	d7,d7
+.cont_take:	dbcs	d5,take_lenght
+	beq.s	.empty1
+	bcc.s	.next_cod
+	sub	d3,d5
+	neg	d5
+	bra.s	.do_copy1
+.next_cod:	moveq	#3,d6
+	bsr.s	get_bit2
+	beq.s	.next_cod1
+	bra.s	.do_copy
+.next_cod1:	moveq	#7,d6
+	bsr.s	get_bit2
+	beq.s	.next_cod2
+	add	#15,d5
+	bra.s	.do_copy
+.empty1:	move.b	-(a6),d7
+	addx.b	d7,d7
+	bra.s	.cont_take
+.next_cod2:	moveq	#13,d6
+	bsr.s	get_bit2
+	add	#255+15,d5
+.do_copy:	add	d3,d5
+.do_copy1:	lea	decrun_table(pc),a4
+	move	d5,d2
+	bne.s	bigger
+	add.b	d7,d7
+	bne.s	.not_empty
+	move.b	-(a6),d7
+	addx.b	d7,d7
+.not_empty:	bcs.s	.ho_kesako
+	moveq	#1,d6
+	bra.s	word
+.ho_kesako:	moveq	#3,d6
+	bsr.s	get_bit2
+	tst.b	-28(a2)
+	beq.s	.ho_kesako1
+	move.b	10-28(a2,d5.w),-(a5)
+	bra	tst_end
+.ho_kesako1:	move.b	(a5),d0
+	btst	#3,d5
+	bne.s	.ho_kesako2
+	bra.s	.ho_kesako3
+.ho_kesako2:	add.b	#$f0,d5
+.ho_kesako3:	sub.b	d5,d0
+	move.b	d0,-(a5)
+	bra	tst_end
+get_bit2:	clr	d5
+.get_bits:	add.b	d7,d7
+	beq.s	.empty
+.cont:	addx	d5,d5
+	dbf	d6,.get_bits
+	tst	d5
+	rts
+.empty:	move.b	-(a6),d7
+	addx.b	d7,d7
+	bra.s	.cont
+bigger:	moveq	#2,d6
+word:	bsr.s	get_bit2
+contus:	move	d5,d4
+	move.b	14(a4,d4.w),d6
+	ext	d6
+	tst.b	1-28(a2)
+	bne.s	.spe_ofcod1
+	addq	#4,d6
+	bra.s	.nospe_ofcod1
+.spe_ofcod1:	bsr.s	get_bit2
+	move	d5,d1
+	lsl	#4,d1
+	moveq	#2,d6
+	bsr.s	get_bit2
+	cmp.b	#7,d5
+	blt.s	.take_orof
+	moveq	#0,d6
+	bsr.s	get_bit2
+	beq.s	.its_little
+	moveq	#2,d6
+	bsr.s	get_bit2
+	add	d5,d5
+	or	d1,d5
+	bra.s	.spe_ofcod2
+.its_little:	or.b	2-28(a2),d1
+	bra.s	.spe_ofcod3
+.take_orof:	or.b	3-28(a2,d5.w),d1
+.spe_ofcod3:	move	d1,d5
+	bra.s	.spe_ofcod2
+.nospe_ofcod1:	bsr.s	get_bit2
+.spe_ofcod2:	add	d4,d4
+	beq.s	.first
+	add	-2(a4,d4.w),d5
+.first:	lea	1(a5,d5.w),a4
+	move.b	-(a4),-(a5)
+.copy_same:	move.b	-(a4),-(a5)
+	dbf	d2,.copy_same
+	bra.s	tst_end
+make_jnk:	add.b	d7,d7
+	bne.s	.not_empty
+	move.b	-(a6),d7
+	addx.b	d7,d7
+.not_empty:	bcs.s	string
+	move.b	-(a6),-(a5)
+tst_end:	cmp.l	a5,a3
+	bne.s	make_jnk
+	cmp.l	a6,a0
+	beq.s	work_done
+take_type:	moveq	#0,d6
+	bsr	get_bit2
+	beq.s	.nospe_ofcod
+	move.b	-(a6),d0
+	lea	2-28(a2),a1
+	move.b	d0,(a1)+
+	moveq	#1,d1
+	moveq	#6,d2
+.next:	cmp.b	d0,d1
+	bne.s	.no_off_4b
+	addq	#2,d1
+.no_off_4b:	move.b	d1,(a1)+
+	addq	#2,d1
+	dbf	d2,.next
+	st	1-28(a2)
+	bra.s	.spe_ofcod
+.nospe_ofcod:	sf	1-28(a2)
+.spe_ofcod:	moveq	#0,d6
+	bsr	get_bit2
+	beq.s	.relatif
+	lea	10-28(a2),a1
+	moveq	#15,d0
+.next_f:	move.b	-(a6),(a1)+
+	dbf	d0,.next_f
+	st	-28(a2)
+	bra.s	.freq
+.relatif:	sf	-28(a2)
+.freq:	clr	d3
+	move.b	-(a6),d3
+	move.b	-(a6),d0
+	lsl	#8,d0
+	move.b	-(a6),d0
+	move.l	a5,a3
+	sub	d0,a3
+	bra.s	make_jnk
+string:	bra	decrunch
+work_done:
+	ifne	PIC_ALGO
+	move.l	(a7)+,a0
+	pea	(a2)
+	bsr.s	decod_picture
+	move.l	(a7)+,a2
+	endc
+	ifne	RESTORE_SPACE
+	movem.l	(a7)+,a3-a4
+	endc
+	ifne	MODE
+	move.l	(a7)+,d0
+	bsr	copy_decrun
+	endc
+	ifne	RESTORE_SPACE
+	move	-2(a2),d0
+	lsl	#2,d0
+	add	#DEC_SPACE+$C,d0
+	bra.s	.restore
+.restore_m:	move.b	-(a3),-(a4)
+	subq	#1,d0
+.restore:	bne.s	.restore_m
+	endc
+	unlk	a2
+	movem.l	(a7)+,d0-a6
+ 	rts
+not_packed:
+	movem.l	(a7)+,d0-a6
+	RTS
+decrun_table:	dc.w	32,32+64,32+64+256,32+64+256+512,32+64+256+512+1024
+	dc.w	32+64+256+512+1024+2048,32+64+256+512+1024+2048+4096
+	dc.b	0,1,3,4,5,6,7,8
+	ifne	PIC_ALGO
+decod_picture:	move	-2(a2),d7
+.next_picture:	dbf	d7,.decod_algo
+	rts
+.decod_algo:	move.l	-(a0),d0
+	lea	0(a5,d0.l),a1
+.no_odd:	lea	$7d00(a1),a2
+.next_planes:	moveq	#3,d6
+.next_word:	move	(a1)+,d0
+	moveq	#3,d5
+.next_bits:	add	d0,d0
+	addx	d1,d1
+	add	d0,d0
+	addx	d2,d2
+	add	d0,d0
+	addx	d3,d3
+	add	d0,d0
+	addx	d4,d4
+	dbf	d5,.next_bits
+	dbf	d6,.next_word
+	movem	d1-d4,-8(a1)
+	cmp.l	a1,a2
+	bne.s	.next_planes
+	bra.s	.next_picture
+	endc
+	ifne	MODE
+copy_decrun:	lsr.l	#4,d0
+	lea	-12(a6),a6
+.copy_decrun:	rept	4
+	move.l	(a5)+,(a6)+
+	endr
+	dbf	d0,.copy_decrun
+	rts
+	endc
+	ifne	RESTORE_SPACE
+buff_marg:	dcb.b	$90+DEC_SPACE+$C
+	endc
+****
+PROG	;MOVE	#$700,$FFFF8240.W
+	JSR	RELOC
+
+	MOVE.L	#VBL_ZIK2,$70.W
+	MOVE	#19,D0
+.WAIT	JSR	VSYNC
+	DBF	D0,.WAIT
+
+	LEA	RT_ZIK,A0
+	JMP	BUFPAK
+PREP_IMG
+	LEA	BUFPAK,A0
+	JSR	depack
+	LEA	BUFPAK,A0
+	MOVEQ	#0,D0
+	MOVE.B	(A0),D0
+	CMPI.B	#$60,D0
+	BEQ	PROG
+	MOVE.L	SCREEN1,A1
+	LEA	1600(A1),A1
+MOD_OFF7	EQU	*+2
+	ADDA.L	#0,A1
+DECAL_VALUE	EQU	*+2
+	LEA	0(A1),A1
+
+	LEA	BUFPAK,A0
+	LEA	56*480(A0),A2
+	LEA	56*480(A2),A3
+	LEA	56*480(A3),A4
+	MOVE	#480-1,D1
+G2
+	MOVE.L	A1,A5
+	MOVE	#28-1,D0
+H2Z	MOVE	(A0)+,(A1)+
+	MOVE	(A2)+,(A1)+
+	MOVE	(A3)+,(A1)+
+	MOVE	(A4)+,(A1)+
+	;MOVE.L	(A1)+,(A0)+
+	;MOVE.L	(A1)+,(A0)+
+	DBF	D0,H2Z
+	MOVE.L	#-1,(A1)+
+	MOVE	#-1,(A1)+
+	LEA	230(A5),A1
+	DBF	D1,G2
+******
+	ADD.L	#480*230,MOD_OFF7
+	RTS
+AFF_IMG
+	MOVE.L	#DATA_HS,POIT
+	TST.L	$5A0.W
+	BEQ.S	.STF
+	MOVE.L	#PALETTE2,MODPAL1+2
+	MOVE.L	#PALETTE1,MODPAL2+2
+.STF
+	MOVE.L	#VBL_ZIK2,$70.W
+	MOVE	#19,D0
+.WAIT	JSR	VSYNC
+	DBF	D0,.WAIT
+	MOVE.L	#INTER_RTE,$68.W
+	CLR.B	$FFFFFA07.W
+	CLR.B	$FFFFFA09.W
+	CLR.B	$FFFFFA13.W
+	CLR.B	$FFFFFA15.W
+
+	MOVE.L	#VBLR_IR,$70.W
+	MOVE.L	#TB0_IR,$120.W
+
+	MOVE.B	#$12,$FFFFFC02.W
+
+	CLR.B	$FFFFFA1B.W
+	BSET	#0,$FFFFFA07.W
+	BSET	#0,$FFFFFA13.W
+
+BOUCLE	BRA.S	BOUCLE
+	MOVE	#1,FLAG_FINI
+	MOVE	#49,D0
+.WAIT	JSR	VSYNC
+	DBF	D0,.WAIT
+	JMP	DEBUT
+VBLR_IR	MOVE.L	D0,-(SP)
+	MOVE	#1,VBL_FLAG
+	CLR.B	$FFFFFA1B.W
+	MOVEQ	#0,D0
+	MOVEQ	#0,D1
+	MOVEQ	#0,D2
+	MOVEQ	#0,D3
+	MOVEQ	#0,D4
+	MOVEQ	#0,D5
+	MOVEQ	#0,D6
+	MOVEQ	#0,D7
+	MOVEM.L	D0-D7,$FFFF8240.W
+
+	MOVE.B	#0,$FFFFFA19.W
+	MOVE.B	#99,$FFFFFA1F.W		; BORDER HAUT
+	MOVE.B	#4,$FFFFFA19.W
+	BCLR	#3,$FFFFFA17.W
+	MOVE.L	#INTER_TMA,$134.W
+	ORI.B	#$20,$FFFFFA13.W
+	ORI.B	#$20,$FFFFFA07.W
+	JSR	RT_ZIK
+
+	TST	FLAG_FINI
+	BEQ.S	.OK
+	MOVE	#32,MOD2+4
+	MOVE	#32,MOD2B+2
+	MOVE	#32,MOD1+4
+	MOVE	#32,MOD1B+2
+	CLR	STE_EMUL
+.OK
+	TST	FLAG
+	BNE.S	RR
+MODPAL1	LEA	PALETTE1,A0
+MODDEG2	LEA	0(A0),A0
+MOD2	CMPI	#-1,-32(A0)
+	BEQ.S	NON
+	SUBI	#1,CNTFAD
+	BNE.S	NON2
+	MOVE	#5,CNTFAD
+MOD2B	ADD	#-32,MODDEG2+2
+	;BRA.S	NON2
+NON
+NON2
+	BRA.S	EE
+RR
+MODPAL2	LEA	PALETTE2,A0
+MODDEG1	LEA	0(A0),A0
+MOD1	CMPI	#-1,-32(A0)
+	BEQ.S	NONB
+	SUBI	#1,CNTFAD
+	BNE.S	NON2B
+	MOVE	#5,CNTFAD
+MOD1B	ADD	#-32,MODDEG1+2
+	;BRA.S	NON2B
+NONB	
+NON2B
+EE	CMPI.B	#$3B,$FFFFFC02.W
+	BNE.S	.STF
+	CLR	STE_EMUL
+	MOVE	#1,FLAG
+.STF	CMPI.B	#$3C,$FFFFFC02.W
+	BNE.S	.STE
+	CLR	STE_EMUL
+	CLR	FLAG
+.STE	CMPI.B	#$3D,$FFFFFC02.W
+	BNE.S	.NO
+	MOVE	#1,STE_EMUL
+.NO
+	TST	STE_EMUL
+	BEQ.S	.OUT
+	TST	FLAG_STE
+	BNE.S	.O
+	LEA	PAL1,A0
+	MOVE	#1,FLAG_STE
+	BRA.S	.OUT
+.O	LEA	PAL2,A0
+	CLR	FLAG_STE
+.OUT	MOVE.L	(SP)+,D0
+INTER_RTE	RTE
+FLAG_STE	DC	0
+FLAG	DC	0
+FLAG_FINI	DC	0
+CNTFAD	DC	5
+STE_EMUL	DC	0
+PAL1	DC	$000,$000,$111,$111,$222,$222,$333,$333
+	DC	$444,$444,$555,$555,$666,$666,$777,$777
+PAL2	DC	$000,$111,$111,$222,$222,$333,$333,$444
+	DC	$444,$555,$555,$666,$666,$777,$777,$777
+
+	DCB	16,-1
+PALETTE1B
+	DC	$000,$001,$111,$212,$222,$323,$333,$434
+	DC	$444,$545,$555,$656,$666,$767,$777,$777
+	DC	$000,$000,$000,$101,$111,$212,$222,$323
+	DC	$333,$434,$444,$545,$555,$656,$666,$666
+	DC	$000,$000,$000,$000,$000,$101,$111,$212
+	DC	$222,$323,$333,$434,$444,$545,$555,$555
+	DC	$000,$000,$000,$000,$000,$000,$000,$101
+	DC	$111,$212,$222,$323,$333,$434,$444,$444
+	DC	$000,$000,$000,$000,$000,$000,$000,$000
+	DC	$000,$101,$111,$212,$222,$323,$333,$333
+	DC	$000,$000,$000,$000,$000,$000,$000,$000
+	DC	$000,$000,$000,$101,$111,$212,$222,$222
+PALETTE1	DC	$000,$000,$000,$000,$000,$000,$000,$000
+	DC	$000,$000,$000,$000,$000,$101,$111,$111
+	DCB	16,0
+	DCB	16,-1
+PALETTE2B
+	DC	$000,$888,$111,$999,$222,$AAA,$333,$BBB
+	DC	$444,$CCC,$555,$DDD,$666,$EEE,$777,$FFF
+	DC	$000,$000,$000,$888,$111,$999,$222,$AAA
+	DC	$333,$BBB,$444,$CCC,$555,$DDD,$666,$EEE
+	DC	$000,$000,$000,$000,$000,$888,$111,$999
+	DC	$222,$AAA,$333,$BBB,$444,$CCC,$555,$DDD
+	DC	$000,$000,$000,$000,$000,$000,$000,$888
+	DC	$222,$999,$222,$AAA,$333,$BBB,$444,$CCC
+	DC	$000,$000,$000,$000,$000,$000,$000,$000
+	DC	$111,$888,$111,$999,$222,$AAA,$333,$BBB
+	DC	$000,$000,$000,$000,$000,$000,$000,$000
+	DC	$000,$000,$000,$888,$111,$999,$222,$AAA
+	DC	$000,$000,$000,$000,$000,$000,$000,$000
+	DC	$000,$000,$000,$000,$000,$888,$111,$999
+	DC	$000,$000,$000,$000,$000,$000,$000,$000
+	DC	$000,$000,$000,$000,$000,$000,$000,$888
+PALETTE2	DC	$000,$000,$000,$000,$000,$000,$000,$000
+	DC	$000,$000,$000,$000,$000,$000,$000,$000
+
+
+INTER_TMA:	CLR.B	$FFFFFA07.W
+	CLR.B	$FFFFFA09.W
+	MOVE	#$2100,SR
+full
+	LEA	$FFFF8209,A3
+	LEA	$FFFF8260,A6
+	LEA	$FFFF820A,A5
+
+	MOVEQ	#0,D7
+	MOVEQ	#2,D1
+
+	STOP	#$2100
+	MOVE	#$2700,SR
+	MOVE	#$2300,(SP)
+
+	MOVEQ	#29,D2
+SYNCHROA:	DBF	D2,SYNCHROA
+	NOP
+
+	MOVE.B	D7,(A5)
+	REPT	6
+	NOP
+	ENDR
+	MOVE.B	D1,(A5)
+
+*******
+
+	MOVEA.L	POIT,A2
+
+	MOVE.L	#$FFFF8209,A6
+	MOVE.L	#$FFFF8260,A4
+	MOVE.L	#$FFFF820A,A3
+	MOVEQ	#0,D1		
+	MOVEQ	#$10,D6
+	MOVE.L	#228-12+2-1-1-1,D4
+
+SYNCHRO	MOVE.B	(A6),D7
+	BEQ.S	SYNCHRO
+	SUB.W	D7,D6		
+	LSL.W	D6,D1		
+	DCB	97-3-4,$4E71
+
+	REPT	9
+	MOVE.L	(A2)+,A1	*3
+	JSR	(A1)	*4
+	ENDR
+	
+	DCB	7-1,$4E71
+	MOVEQ	#42-1,D1
+
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	88,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13-12,$4E71
+	MOVE.L	(A0)+,$FFFF8240.W	6
+	MOVE.L	(A0)+,$FFFF8244.W	6
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12-6,$4E71
+	MOVE.L	(A0)+,$FFFF8248.W	6
+
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	88-5*6-2,$4E71
+	MOVE.L	(A0)+,$FFFF824C.W
+	MOVE.L	(A0)+,$FFFF8250.W
+	MOVE.L	(A0)+,$FFFF8254.W
+	MOVE.L	(A0)+,$FFFF8258.W
+	MOVE.L	(A0)+,$FFFF825C.W
+	LEA	-32(A0),A0
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12-1,$4E71
+
+FULLSCREEN	NOP
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	88,$4E71
+
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12-4,$4E71
+	DBF	D4,FULLSCREEN
+
+	MOVE	A4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	88,$4E71
+
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	;	ICI=116	NOPS
+
+	CLR.B	$FFFF820A.W 
+	DCB	8,$4E71
+
+	MOVE	A4,(A4)
+	MOVE.B	#0,(A4)
+	MOVE	A4,(A3)
+	DCB	88-2,$4E71
+
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12-1,$4E71
+	
+.F	NOP
+	MOVE	A4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	88,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	12-4,$4E71
+	DBF	D1,.F
+SUITE	MOVE.L	D0,-(SP)
+
+	CMPI.B	#$44,$FFFFFC02.W
+	BNE.S	PAF10
+	CLR	AUTOMODE
+PAF10
+
+	CMPI.B	#$50,$FFFFFC02.W
+	BNE.S	PAS_HAUT
+	MOVEQ	#0,D0
+	MOVE	COEFF_CRB,D0
+	MULS	#220,D0
+	LSR.L	#8,D0
+	MULS	#230,D0
+	CMP.L	Y_VALUE,D0
+	BEQ.S	PAS_HAUT
+	ADD.L	#230,Y_VALUE
+	MOVE	#1,AUTOMODE
+PAS_HAUT	
+	CMPI.B	#$48,$FFFFFC02.W
+	BNE.S	PAS_BAS
+	TST.L	Y_VALUE
+	BEQ.S	PAS_BAS
+	SUB.L	#230,Y_VALUE
+	MOVE	#1,AUTOMODE
+PAS_BAS
+;	CMPI.B	#$4B,$FFFFFC02.W
+;	BNE.S	PAS_GA
+;	ADDQ.L	#8,Y_VALUE
+;PAS_GA	CMPI.B	#$4D,$FFFFFC02.W
+;	BNE.S	PAS_DR
+;	SUBQ.L	#8,Y_VALUE
+;PAS_DR
+	TST	AUTOMODE
+	BNE.S	NOT_AUTO
+
+	LEA	SINUS,A0
+MODSIN	EQU	*+2
+	LEA	0(A0),A0
+	CMPI	#$1234,(A0)
+	BNE.S	.GO
+	CLR	MODSIN
+	LEA	SINUS,A0
+.GO	MOVEQ	#0,D0
+	MOVE	(A0),D0
+	MOVEQ	#0,D1
+COEFF_CRB	EQU	*+2
+	MOVE	#256,D1
+	MULS	D1,D0
+	LSR.L	#8,D0
+	MULS	#230,D0
+	MOVE.L	D0,Y_VALUE
+
+	ADDQ	#2,MODSIN
+****
+NOT_AUTO	MOVEQ	#0,D0	
+	MOVEQ	#0,D1
+	MOVE.L	Y_VALUE,D0
+	
+	LSR.L	#8,D0
+	MOVE.L	D0,D1
+	LSL.L	#8,D1
+
+	MOVE.L	Y_VALUE,D0
+	SUB.L	D1,D0
+
+	LEA	DATA_HS,A0
+
+	TST.L	D0
+	BNE.S	DEJ
+	LEA	RIEN,A0
+	MOVE.L	A0,POIT
+	BRA.S	OKAY
+DEJ	SUBQ.L	#2,D0
+	MULU	#18,D0
+	ADDA.L	D0,A0
+	MOVE.L	A0,POIT
+
+OKAY
+;	move.l	SCREEN1,d0
+;	move.l	SCREEN2,SCREEN1		
+;	move.l	d0,SCREEN2
+
+	move.l	SCREEN1,d0
+	ADD.L	D1,D0
+	lsr.l	#8,d0
+	LEA	$FFFF8201.W,A0
+	movep	d0,(a0)
+	MOVE.L	(SP)+,D0
+	CMPI.B	#$39,$FFFFFC02.W
+	BNE.S	.TR
+	MOVE	#$4E71,BOUCLE
+.TR	RTE
+Y_VALUE	DC.L	0
+AUTOMODE	DC	0
+TB0_IR	RTE
+
+H0
+	DCB	128-4-3-4,$4E71
+	RTS
+
+H70
+	MOVE	A4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	3+17*5,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	NOP
+	RTS	=4 NOPS
+H44
+	DCB	3+18*5,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	NOP
+	RTS	=4 NOPS
+H24
+	MOVE	A4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	1+17*5,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	REPT	3
+	NOP
+	ENDR
+	RTS	=4 NOPS
+H2
+	NOP
+	DCB	18*5,$4E71
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	REPT	3
+	NOP
+	ENDR
+	RTS	=4 NOPS
+H80
+	MOVE	A4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	7*5,$4E71
+	MOVE	A4,(A4)
+	MOVE.B	#0,(A4)
+	DCB	3+9*5,$4E71
+
+	MOVE.b	#0,(A3)
+	MOVE	a4,(A3)
+	DCB	13,$4E71
+	MOVE	a4,(A4)
+	MOVE.B	#0,(A4)
+	NOP
+	RTS
+
+	;TEXTEUR AVEC LES FONTES 'CURSIVES' DE NEOPAINT.
+	;A0=ADRESSE DU TEXTE A AFFICHER
+	;N.B.:
+	;-1=fin du texte
+	;0 =changement de ligne
+	;1 = ECRIRE SUR LE PLAN 1
+	;2 = ECRIRE SUR LE PLAN 2
+	;3 = ECRIRE SUR LE PLAN 3
+	;4 = ECRIRE SUR LE PLAN 4
+	;5 = AFFICHAGE EN 'AND'
+	;6 = AFFICHAGE EN 'OR'
+
+PUT_TEXT	MOVE.L	A0,PT_TXT
+
+	MOVEQ	#0,D7	;X ACTUEL
+	MOVE.L	#0,A5	;Y_ACTUEL
+	CLR.W	OFFSET_PLAN_NB_1
+	CLR.W	OFFSET_PLAN_NB_2
+
+	MOVE.L	#AFF_RT_OR_1_MOT,AFF_RT_1_MOT
+	MOVE.L	#RT_AFF_OR,RT_AFF
+
+NEXT_LETTER	MOVE.L	PT_TXT,A0
+	MOVEQ	#0,D0
+	MOVE.B	(A0)+,D0
+	MOVE.L	A0,PT_TXT
+	CMPI.B	#-1,D0
+	BNE.S	.OK
+	RTS
+.OK	TST.B	D0
+	BNE.S	.PAS_LIG_SUIV
+	MOVEQ	#0,D7
+	LEA	24(A5),A5	;LIGNE SUIVANTE
+	BRA.S	NEXT_LETTER
+.PAS_LIG_SUIV	CMPI.W	#4,D0
+	BGT.S	.PAS_ACTION_PLANES
+	SUBQ.W	#1,D0
+	ADD.W	D0,D0
+	MOVE.W	D0,OFFSET_PLAN_NB_1
+	MOVE.W	D0,OFFSET_PLAN_NB_2
+	BRA.S	NEXT_LETTER
+.PAS_ACTION_PLANES
+	CMPI.B	#6,D0
+	BNE.S	.PAS_AFFICH_OR
+	MOVE.L	#AFF_RT_OR_1_MOT,AFF_RT_1_MOT
+	MOVE.L	#RT_AFF_OR,RT_AFF
+	BRA.S	NEXT_LETTER
+.PAS_AFFICH_OR	CMPI.B	#5,D0
+	BNE.S	.PAS_AFFICH_AND
+	MOVE.L	#AFF_RT_AND_1_MOT,AFF_RT_1_MOT
+	MOVE.L	#RT_AFF_AND,RT_AFF
+	BRA.S	NEXT_LETTER	
+.PAS_AFFICH_AND	SUBI.B	#32,D0
+	MULU.W	#10,D0	;PROVISOIRE, PUTAIN!
+	LEA	DIMENSIONS,A0
+	ADDA.W	D0,A0
+	MOVE.W	(A0)+,D0	;X1
+	MOVE.W	(A0)+,D1	;X2
+	MOVE.W	(A0)+,D2	;Y1
+	MOVE.W	(A0)+,D3	;Y2
+	MOVE.W	D0,D6
+	ANDI.W	#15,D6
+	MOVE.W	D1,D4
+	SUB.W	D0,D4	;LONGUEUR-1
+	ADDQ.W	#1,D4
+	MOVE.W	D4,-(SP)
+	SUB.W	D2,D3	;HAUTEUR-1
+	MULS.W	#40,D2
+	MOVE.W	D0,D4
+	MOVE.W	D1,D5
+	ANDI.W	#15,D4
+	ANDI.W	#15,D5
+	ADD.W	D4,D4
+	ADD.W	D5,D5
+	LEA	MASK_DEPART,A2
+	MOVE.W	(A2,D4.W),D4
+	LEA	MASK_ARRIVêE,A2
+	MOVE.W	(A2,D5.W),D5
+	ANDI.W	#$FFF0,D0
+	LSR.W	#4,D0
+	ANDI.W	#$FFF0,D1
+	LSR.W	#4,D1
+	SUB.W	D0,D1	;NB DE MOTS-1
+	BGT	SUP_1
+	;ROUTINE POUR LES FONTES SUR 1 MOTS
+	MOVE.W	D6,DEC_PRIM_1_MOT
+	LEA	FONTS,A1
+	MOVE.L	A1,A2
+	ADD.W	D0,D0
+	ADD.W	D0,D2
+	ADDA.W	D2,A2	;A2=ADRESSE DE DEPART POUR LE POINTAGE DE LA FONTE
+
+	LEA	BUF_FNT,A4
+	MOVE.W	D3,HAUT_1_MOT
+COPY_Y_1_MOT	MOVE.L	A2,A3
+	MOVE.W	(A3)+,D0	;1er MOT
+	AND.W	D4,D0
+	AND.W	D5,D0
+	MOVE.W	D0,(A4)+
+	LEA	40(A2),A2
+	DBRA	D3,COPY_Y_1_MOT
+
+	LEA	BUF_FNT,A2
+	ADDQ.W	#2,A2
+DEC_PRIM_1_MOT = *+2
+	MOVE.W	#$1234,D2
+	MOVE.W	HAUT_1_MOT,D5
+DECAL_Y_1_MOT	MOVE.L	A2,A1
+	MOVEQ	#0,D0
+	MOVE.W	-(A1),D0
+	ROL.L	D2,D0
+	MOVE.W	D0,(A1)
+	ADDQ.W	#2,A2
+	DBRA	D5,DECAL_Y_1_MOT
+
+	MOVE.L	SCREEN2,A2
+OFFSET_PLAN_NB_1 = *+2
+	ADDA.W	#$1234,A2
+	MOVE.W	(A0),D4
+	ADD.W	A5,D4
+	MULS.W	#160,D4
+	ADDA.W	D4,A2
+	MOVE.W	D7,D4
+	ANDI.W	#15,D4	;DECALAGE
+	MOVE.W	D7,D3
+	ANDI.W	#$FFF0,D3
+	LSR.W	#1,D3
+	ADD.W	D3,A2
+	LEA	BUF_FNT,A1
+HAUT_1_MOT = *+2
+	MOVE.W	#$1234,D6
+AFF_RT_1_MOT = *+2
+	JMP	$12345678
+
+AFF_RT_AND_1_MOT
+	MOVE.L	A2,A3
+	MOVEQ	#0,D0
+	MOVE.W	(A1)+,D0
+	ROR.L	D4,D0
+	NOT.W	D0
+	AND.W	D0,(A3)
+	ADDQ.W	#8,A3
+	SWAP	D0
+	NOT.W	D0
+	AND.W	D0,(A3)
+	LEA	160(A2),A2
+	DBRA	D6,AFF_RT_AND_1_MOT
+	BRA	CONJONCTURE
+
+AFF_RT_OR_1_MOT	MOVE.L	A2,A3
+	MOVEQ	#0,D0
+	MOVE.W	(A1)+,D0
+	ROR.L	D4,D0
+	OR.W	D0,(A3)
+	ADDQ.W	#8,A3
+	SWAP	D0
+	OR.W	D0,(A3)
+	LEA	160(A2),A2
+	DBRA	D6,AFF_RT_OR_1_MOT
+	BRA	CONJONCTURE
+
+	;ROUTINE POUR LES FONTES SUR PLUS DE 1 MOTS
+SUP_1	MOVE.W	D6,DEC_PRIM
+	ADD.W	D0,D0
+	MOVE.W	D1,LONG
+	SUBQ.W	#1,D1
+	LEA	FONTS,A1
+	MOVE.L	A1,A2
+	ADD.W	D0,D2
+	ADDA.W	D2,A2	;A2=ADRESSE DE DEPART POUR LE POINTAGE DE LA FONTE
+	LEA	BUF_FNT,A4
+	MOVE.W	D3,HAUT
+COPY_Y	MOVE.L	A2,A3
+	MOVE.W	(A3)+,D0	;1er MOT
+	AND.W	D4,D0
+	MOVE.W	D0,(A4)+
+	MOVE.W	D1,D6
+COPY_X	MOVE.W	(A3)+,(A4)+
+	DBRA	D6,COPY_X
+	MOVE.W	-(A4),D0
+	AND.W	D5,D0
+	MOVE.W	D0,(A4)+
+	LEA	40(A2),A2
+	DBRA	D3,COPY_Y
+
+	LEA	BUF_FNT,A2
+	MOVE.W	D1,D3
+	ADDQ.W	#2,D3
+	ADD.W	D3,D3
+	ADDA.W	D3,A2
+DEC_PRIM = *+2
+	MOVE.W	#$1234,D2
+	MOVE.W	HAUT,D5
+DECAL_Y	MOVE.L	A2,A1
+	MOVEQ	#0,D4
+	MOVE.W	D1,D6
+	ADDQ.W	#1,D6
+DECAL_X	MOVEQ	#0,D0
+	MOVE.W	-(A1),D0
+	ROL.L	D2,D0
+	OR.W	D4,D0
+	MOVE.W	D0,(A1)
+	SWAP	D0
+	MOVE.W	D0,D4
+	DBRA	D6,DECAL_X
+	ADDA.W	D3,A2
+	DBRA	D5,DECAL_Y
+
+	MOVE.L	SCREEN2,A2
+OFFSET_PLAN_NB_2 = *+2
+	ADDA.W	#$1234,A2
+	MOVE.W	(A0)+,D4
+	ADD.W	A5,D4
+	MULS.W	#160,D4
+	ADDA.W	D4,A2
+	MOVE.W	D7,D4
+	ANDI.W	#15,D4	;DECALAGE
+	MOVE.W	D7,D3
+	ANDI.W	#$FFF0,D3
+	LSR.W	#1,D3
+	ADD.W	D3,A2
+	LEA	BUF_FNT,A1
+HAUT = *+2
+	MOVE.W	#$1234,D6
+.AFFY	MOVE.L	A2,A3
+	MOVEQ	#0,D1
+LONG = *+2
+	MOVE.W	#$1234,D5
+RT_AFF = *+2
+	JSR	$12345678
+	DBRA	D6,.AFFY
+	BRA	CONJONCTURE
+
+RT_AFF_AND
+.AFF	MOVEQ	#0,D0
+	MOVE.W	(A1)+,D0
+	ROR.L	D4,D0
+	OR.W	D1,D0
+	NOT.W	D0
+	AND.W	D0,(A3)
+	ADDQ.W	#8,A3
+	SWAP	D0
+	MOVE.W	D0,D1
+	DBRA	D5,.AFF
+	NOT.W	D1
+	AND.W	D1,(A3)
+	LEA	160(A2),A2
+	RTS
+
+RT_AFF_OR
+.AFF	MOVEQ	#0,D0
+	MOVE.W	(A1)+,D0
+	ROR.L	D4,D0
+	OR.W	D1,D0
+	OR.W	D0,(A3)
+	ADDQ.W	#8,A3
+	SWAP	D0
+	MOVE.W	D0,D1
+	DBRA	D5,.AFF
+	OR.W	D1,(A3)
+	LEA	160(A2),A2
+	RTS
+
+CONJONCTURE	ADD.W	(SP)+,D7	;NOUVEAU X ACTUEL
+
+	BRA	NEXT_LETTER
+RT_ZIK	MOVEM.L	D0-A6,-(SP)
+	JSR	ZIK+8
+	MOVEM.L	(SP)+,D0-A6
+	RTS
+
+	DATA
+FONTS	INCBIN	FONTS.FNT
+
+MASK_DEPART	DC.W	$FFFF,$7FFF,$3FFF,$1FFF
+	DC.W	$FFF,$3FF,$7FF,$1FF
+	DC.W	$FF,$7F,$3F,$1F
+	DC.W	$F,7,3,1
+
+MASK_ARRIVêE	DC.W	$8000,$C000,$E000,$F000
+	DC.W	$F800,$FC00,$FE00,$FF00
+	DC.W	$FF80,$FFC0,$FFE0,$FFF0
+	DC.W	$FFF8,$FFFC,$FFFE,$FFFF
+
+BUF_FNT	DS.W	4*25
+
+	;X DEPART, X ARRIVêE, Y DEPART, Y ARRIVêE
+DIMENSIONS	DC.W	0,10,0,1,0	;SPACE
+	DC.W	40,49,95,110,0	;!   *
+	DC.W	0,1,0,1,0
+	DC.W	110,128,97,109,2   ;#   *
+	DC.W	0,1,0,1,0
+	DC.W	0,1,0,1,0
+	DC.W	0,1,0,1,0
+	DC.W	96,101,95,101,0	;'   *
+	DC.W	0,8,95,113,0	;(   *
+	DC.W	9,17,95,113,0	;)   *
+	DC.W	0,1,0,1,0
+	DC.W	61,73,98,108,3	;+   *
+	DC.W	23,27,107,111,12  ;,   *
+	DC.W	74,81,103,104,8	;-   *
+	DC.W	18,22,107,110,12  ;.   *
+	DC.W	0,1,0,1,0
+	DC.W	0,12,73,87,1	;0   *
+	DC.W	16,25,73,87,1	;1   *
+	DC.W	27,39,73,87,1	;2   *
+	DC.W	40,55,73,87,1	;3   *
+	DC.W	56,70,73,87,1	;4   *
+	DC.W	71,85,73,87,1	;5   *
+	DC.W	88,99,73,87,1	;6   *
+	DC.W	104,116,73,87,1	;7   *
+	DC.W	118,131,73,87,1	;8   *
+	DC.W	135,147,73,87,1	;9   *
+	DC.W	103,109,102,110,7   ;:   *
+	DC.W	0,1,0,1,0
+	DC.W	0,1,0,1,0
+	DC.W	83,95,100,106,5	;=   *
+	DC.W	0,1,0,1,0
+	DC.W	29,39,95,110,0	;?   *
+	DC.W	0,1,0,1,0
+	DC.W	0,21,0,16,0	;A   *
+	DC.W	22,39,0,15,0	;B   *
+	DC.W	40,55,0,18,0	;C   *
+	DC.W	57,75,0,15,0	;D   *
+	DC.W	76,93,0,17,0	;E   *
+	DC.W	94,110,0,19,0	;F   *
+	DC.W	111,128,0,21,0	;G   *
+	DC.W	129,150,0,15,0	;H   *
+	DC.W	151,163,0,15,0	;I   *
+	DC.W	164,179,0,20,0	;J   *
+	DC.W	180,200,0,15,0	;K   *
+	DC.W	201,219,0,17,0	;L   *
+	DC.W	220,247,0,16,0	;M   *
+	DC.W	248,267,0,16,0	;N   *
+	DC.W	269,283,0,15,0	;O   *
+	DC.W	284,301,0,16,0	;P   *
+	DC.W	0,17,23,38,0	;Q   *
+	DC.W	18,36,23,39,0	;R   *
+	DC.W	37,55,23,38,0	;S   *
+	DC.W	56,72,23,38,0	;T   *
+	DC.W	73,93,23,38,0	;U   *
+	DC.W	94,111,23,38,0	;V   *
+	DC.W	112,135,23,38,0	;W   *
+	DC.W	136,153,23,38,0	;X   *
+	DC.W	154,171,23,43,0	;Y   *
+	DC.W	172,187,23,43,0	;Z   *
+	REPT	6
+	DC.W	0,1,0,1,0
+	ENDR
+	DC.W	0,12,56,64,7	;a   *
+	DC.W	13,23,49,64,0	;b   *
+	DC.W	24,33,56,64,7	;c   *
+	DC.W	34,46,51,64,2	;d   *
+	DC.W	48,57,56,64,7	;e   *
+	DC.W	58,68,51,69,2	;f   *
+	DC.W	68,80,56,70,7	;g   *
+	DC.W	81,92,49,64,0	;h   *
+	DC.W	93,101,52,64,3	;i   *
+	DC.W	102,112,52,69,3	;j   *
+	DC.W	113,124,50,64,1	;k   *
+	DC.W	125,133,51,64,2	;l   *
+	DC.W	134,150,56,64,7	;m   *
+	DC.W	151,162,56,64,7	;n   *
+	DC.W	163,172,56,64,7	;o   *
+	DC.W	173,186,52,69,3	;p   *
+	DC.W	187,198,56,70,7	;q   *
+	DC.W	199,207,56,64,7	;r   *
+	DC.W	208,217,56,64,7	;s   *
+	DC.W	218,227,53,64,4	;t   *
+	DC.W	228,239,56,64,7	;u   *
+	DC.W	240,250,56,64,7	;v   *
+	DC.W	251,266,56,64,7	;w   *
+	DC.W	266,275,56,64,7	;x   *
+	DC.W	276,287,56,69,7	;y   *
+	DC.W	288,298,56,69,7	;z   *
+	REPT	7
+	DC.W	0,1,0,1,0
+	ENDR
+	DC.W	50,59,98,110,3	;Ç   *
+
+PT_TXT	DS.L	1
+ZIK	INCBIN	TEX1.MUS
+	EVEN
+SINUS	INCBIN	SINUS.CRB
+	DC	$1234
+DATA_HS
+ DC.L H44,H44,H2,H2,H2,H80,H0,H0,H0
+ DC.L H44,H44,H2,H2,H80,H0,H0,H0,H0
+ DC.L H44,H44,H2,H80,H0,H0,H0,H0,H0
+ DC.L H44,H44,H80,H0,H0,H0,H0,H0,H0
+ DC.L H44,H24,H24,H2,H80,H0,H0,H0,H0
+ DC.L H44,H24,H24,H80,H0,H0,H0,H0,H0
+ DC.L H24,H2,H2,H2,H2,H2,H0,H0,H0
+ DC.L H24,H2,H2,H2,H2,H0,H0,H0,H0
+ DC.L H24,H2,H2,H2,H0,H0,H0,H0,H0
+ DC.L H24,H2,H2,H0,H0,H0,H0,H0,H0
+ DC.L H24,H2,H0,H0,H0,H0,H0,H0,H0
+ DC.L H24,H0,H0,H0,H0,H0,H0,H0,H0
+ DC.L H70,H44,H24,H24,H24,H80,H80,H0,H0
+ DC.L H70,H44,H2,H2,H2,H80,H0,H0,H0
+ DC.L H70,H44,H2,H2,H80,H0,H0,H0,H0
+ DC.L H70,H44,H2,H80,H0,H0,H0,H0,H0
+ DC.L H44,H2,H2,H2,H2,H2,H0,H0,H0
+ DC.L H44,H2,H2,H2,H2,H0,H0,H0,H0
+ DC.L H44,H2,H2,H2,H0,H0,H0,H0,H0
+ DC.L H44,H2,H2,H0,H0,H0,H0,H0,H0
+ DC.L H44,H2,H0,H0,H0,H0,H0,H0,H0
+ DC.L H44,H0,H0,H0,H0,H0,H0,H0,H0
+ DC.L H24,H24,H2,H0,H0,H0,H0,H0,H0
+ DC.L H24,H24,H0,H0,H0,H0,H0,H0,H0
+ DC.L H44,H44,H44,H2,H80,H0,H0,H0,H0
+ DC.L H44,H44,H44,H80,H0,H0,H0,H0,H0
+ DC.L H70,H70,H2,H2,H2,H80,H0,H0,H0
+ DC.L H70,H70,H2,H2,H80,H0,H0,H0,H0
+ DC.L H70,H70,H2,H80,H0,H0,H0,H0,H0
+ DC.L H44,H24,H2,H2,H2,H2,H0,H0,H0
+ DC.L H44,H24,H2,H2,H2,H0,H0,H0,H0
+ DC.L H44,H24,H2,H2,H0,H0,H0,H0,H0
+ DC.L H44,H24,H2,H0,H0,H0,H0,H0,H0
+ DC.L H44,H24,H0,H0,H0,H0,H0,H0,H0
+ DC.L H70,H0,H0,H0,H0,H0,H0,H0,H0
+ DC.L H24,H24,H24,H0,H0,H0,H0,H0,H0
+ DC.L H70,H44,H44,H2,H2,H80,H0,H0,H0
+ DC.L H70,H44,H44,H2,H80,H0,H0,H0,H0
+ DC.L H70,H44,H44,H80,H0,H0,H0,H0,H0
+ DC.L H44,H24,H24,H2,H80,H70,H0,H0,H0
+ DC.L H70,H44,H24,H24,H80,H0,H0,H0,H0
+ DC.L H44,H44,H2,H2,H0,H0,H0,H0,H0
+ DC.L H44,H44,H2,H0,H0,H0,H0,H0,H0
+ DC.L H44,H44,H0,H0,H0,H0,H0,H0,H0
+ DC.L H70,H24,H2,H2,H0,H0,H0,H0,H0
+ DC.L H70,H24,H2,H0,H0,H0,H0,H0,H0
+ DC.L H70,H24,H0,H0,H0,H0,H0,H0,H0
+ DC.L H24,H24,H24,H24,H0,H0,H0,H0,H0
+ DC.L H70,H70,H44,H2,H2,H2,H80,H0,H0
+ DC.L H70,H70,H44,H2,H2,H80,H0,H0,H0
+ DC.L H70,H70,H44,H2,H80,H0,H0,H0,H0
+ DC.L H70,H44,H2,H2,H2,H2,H2,H0,H0
+ DC.L H70,H44,H2,H2,H2,H2,H0,H0,H0
+ DC.L H70,H44,H2,H2,H2,H0,H0,H0,H0
+ DC.L H70,H44,H2,H2,H0,H0,H0,H0,H0
+ DC.L H70,H44,H2,H0,H0,H0,H0,H0,H0
+ DC.L H70,H44,H0,H0,H0,H0,H0,H0,H0
+ DC.L H24,H24,H24,H24,H24,H2,H2,H0,H0
+ DC.L H24,H24,H24,H24,H24,H2,H0,H0,H0
+ DC.L H24,H24,H24,H24,H24,H0,H0,H0,H0
+ DC.L H70,H44,H44,H44,H80,H0,H0,H0,H0
+ DC.L H70,H70,H70,H2,H2,H2,H80,H0,H0
+ DC.L H70,H70,H70,H2,H2,H80,H0,H0,H0
+ DC.L H70,H70,H70,H2,H80,H0,H0,H0,H0
+ DC.L H70,H44,H24,H2,H2,H2,H2,H0,H0
+ DC.L H44,H44,H44,H0,H0,H0,H0,H0,H0
+ DC.L H70,H44,H24,H2,H2,H0,H0,H0,H0
+ DC.L H70,H44,H24,H2,H0,H0,H0,H0,H0
+ DC.L H70,H44,H24,H0,H0,H0,H0,H0,H0
+ DC.L H70,H70,H0,H0,H0,H0,H0,H0,H0
+ DC.L H24,H24,H24,H70,H0,H0,H0,H0,H0
+ DC.L H70,H70,H44,H44,H2,H2,H80,H0,H0
+ DC.L H70,H70,H44,H44,H2,H80,H0,H0,H0
+ DC.L H70,H70,H44,H44,H80,H0,H0,H0,H0
+ DC.L H70,H70,H44,H24,H24,H2,H80,H0,H0
+ DC.L H70,H44,H44,H2,H2,H2,H0,H0,H0
+ DC.L H70,H44,H44,H2,H2,H0,H0,H0,H0
+ DC.L H70,H44,H44,H2,H0,H0,H0,H0,H0
+ DC.L H70,H44,H44,H0,H0,H0,H0,H0,H0
+ DC.L H70,H70,H24,H2,H2,H0,H0,H0,H0
+ DC.L H70,H70,H24,H2,H0,H0,H0,H0,H0
+ DC.L H70,H70,H24,H0,H0,H0,H0,H0,H0
+ DC.L H70,H24,H24,H24,H24,H0,H0,H0,H0
+ DC.L H24,H24,H24,H24,H24,H24,H24,H0,H0
+ DC.L H70,H70,H70,H44,H2,H2,H80,H0,H0
+ DC.L H44,H44,H44,H44,H2,H2,H0,H0,H0
+ DC.L H44,H44,H44,H44,H2,H0,H0,H0,H0
+ DC.L H44,H44,H44,H44,H0,H0,H0,H0,H0
+ DC.L H70,H70,H44,H2,H2,H2,H0,H0,H0
+ DC.L H70,H70,H44,H2,H2,H0,H0,H0,H0
+ DC.L H70,H70,H44,H2,H0,H0,H0,H0,H0
+ DC.L H70,H70,H44,H0,H0,H0,H0,H0,H0
+ DC.L H70,H44,H24,H24,H24,H0,H0,H0,H0
+ DC.L H70,H70,H24,H24,H0,H0,H0,H0,H0
+ DC.L H70,H70,H44,H44,H44,H80,H2,H0,H0
+ DC.L H70,H70,H44,H44,H44,H80,H0,H0,H0
+ DC.L H70,H70,H70,H44,H24,H2,H2,H80,H0
+ DC.L H44,H44,H44,H44,H24,H2,H2,H0,H0
+ DC.L H44,H44,H44,H44,H24,H2,H0,H0,H0
+ DC.L H44,H44,H44,H44,H24,H0,H0,H0,H0
+ DC.L H70,H44,H44,H44,H0,H0,H0,H0,H0
+ DC.L H70,H70,H70,H2,H2,H2,H0,H0,H0
+ DC.L H70,H70,H70,H2,H2,H0,H0,H0,H0
+ DC.L H70,H70,H70,H2,H0,H0,H0,H0,H0
+ DC.L H70,H70,H70,H0,H0,H0,H0,H0,H0
+ DC.L H24,H70,H70,H24,H24,H0,H0,H0,H0
+ DC.L H70,H24,H24,H24,H24,H24,H24,H0,H0
+ DC.L H44,H44,H44,H44,H44,H2,H2,H0,H0
+ DC.L H44,H44,H44,H44,H44,H2,H0,H0,H0
+ DC.L H44,H44,H44,H44,H44,H0,H0,H0,H0
+ DC.L H70,H70,H44,H44,H2,H2,H2,H0,H0
+ DC.L H70,H70,H44,H44,H2,H2,H0,H0,H0
+ DC.L H70,H70,H44,H44,H2,H0,H0,H0,H0
+ DC.L H70,H70,H44,H44,H0,H0,H0,H0,H0
+ DC.L H70,H44,H44,H24,H24,H24,H0,H0,H0
+ DC.L H70,H70,H70,H24,H2,H0,H0,H0,H0
+ DC.L H70,H70,H70,H24,H0,H0,H0,H0,H0
+ DC.L H24,H24,H24,H24,H70,H70,H0,H0,H0
+ DC.L H44,H44,H44,H44,H44,H24,H2,H2,H2
+ DC.L H44,H44,H44,H44,H44,H24,H2,H2,H0
+ DC.L H70,H44,H44,H44,H44,H2,H2,H0,H0
+ DC.L H70,H44,H44,H44,H44,H2,H0,H0,H0
+ DC.L H70,H44,H44,H44,H44,H0,H0,H0,H0
+ DC.L H70,H44,H44,H44,H24,H24,H2,H0,H0
+ DC.L H70,H70,H70,H44,H2,H2,H0,H0,H0
+ DC.L H70,H70,H70,H44,H2,H0,H0,H0,H0
+ DC.L H70,H70,H70,H44,H0,H0,H0,H0,H0
+
+RIEN	REPT	9
+	DC.L	H0
+	ENDR
+TEXT_1	DC.B	1,6
+
+	DC.B	0,0,"   Welcome to the official",0
+	dc.b	"      # Video Girl Ai #",0
+	dc.b	"         Slide-Show!",-1
+
+	dc.b	0,0,"KEYS:",0
+	dc.b	"f1 - STE Colors (greys)",0
+	dc.b	"f2 - STF Colors",0
+	dc.b	"f3 - STE Colors emulation....",0
+	DC.B	"     (for STF of course....)",-1
+
+	dc.b	0,0,"KEYS:",0
+	dc.b	"- Arrow keys to move the pic",0
+	dc.b	"- f10 for automode on",-1
+	
+	dc.b	0,0,"   Yes... ",0
+	dc.b	" STE colors are",0
+	dc.b	"           a lot better...!",-1
+
+	dc.b	"Japanese Greetings to...",0,0
+	dc.b	"Madoka+Hikaru, Ai+MoÇmi,",0
+	dc.b	"Ryo+Kaori, Hitomi+Ai+Rui,",0
+	dc.b	"Akira+Kay+Tetsuo+Kaneda,",0
+	dc.b	"A-Ko and C-Ko, Deunan,",0
+	dc.b	"Son Goku and familly....",-1
+
+	dc.b	"Musical Greetings to...",0,0
+	dc.b	"Elric: Joe Satriani, Steve",0
+	dc.b	"Vai, Allan Holdsworth,",0
+	dc.b	"Calvin Russel, Metallica,",0
+	dc.b	"Led Zeppelin, AC DC,",0
+	dc.b	"Sonic Youth, Leonard Cohen,",0
+	dc.b	"Aerosmith and Gary Moore.",-1
+
+	dc.b	"Zappy: -BJORK-",0
+	dc.b	"Dweezil Zappa, Morphine",0
+	dc.b	"   --Juliana Hatfield--",0
+	dc.b	"Joe Satriani, -HEART-",0
+	dc.b	"Steve Vai and Bad 4 Good",0
+	dc.b	"Whitesnake, Gary Moore,",0
+	dc.b	"Yngwie Malmsteen, ZZTop,",0
+	dc.b	"Van Halen, Saint Etienne,"
+	dc.b	-1
+	
+	dc.b	"Extreme, Sugarcubes, Ride,",0
+	dc.b	"Suede, #Liz Phair#, Pulp,",0
+	dc.b	"Sheryl Crow, Jan Cyrka,",0
+	dc.b	"Pat Benatar, Vinnie Moore,",0
+	dc.b	"Rickie Lee Jones, Breeders,",0
+	dc.b	"Deep Purple, Lemonheads,",0
+	dc.b	"Stevie Ray Vaughan, Del",0
+	dc.b	"Amitri and Kristin Hersh."
+	dc.b	-1
+
+	dc.b	0,"Zappy says:",0,0
+	dc.b	"     I HATE",0
+	dc.b	"   KEFTALES AND",0
+	DC.B	"   SHADEBOBS !!!",-1
+
+	DC.B	"Special Greets to Zerioul,",0
+	dC.b	"  Dan Nato and the other",0
+	dc.b	"    'members' of Holocaust....",0,0
+	dC.b	"Also greets to Olivier and",0
+	dc.b	"Nicolas (Paris 13).....",0
+	dc.b	"            ....and to Lionel.",-1
+	
+	dc.b	0,0,"   Insert Disk 4",0
+	dc.b	"      and press Space....",-1
+
+	DC.B	0,0,"AND NOW.....",0
+	dc.b	"The very last pictures.....",0,0
+	DC.B	"Video Girl Ai forever !",-1
+
+	dc.b	0," Greetings to all",0
+	dc.b	"      --Japfans-- !",0
+	dc.b	" Greetings to you, Douglas!",0
+	dc.b	"          ( Skaven )",0
+	dc.b	"  Also greets to Killer D!",-1
+
+	dc.b	0,"       -- Rick(ST) --",0
+	dc.b	"  What about scanning some",0
+	dc.b	"     'France Shoin'....?",0
+	dc.b	"  Especially the one with",0
+	dc.b	"    MadokaaaaaaaAAA......",-1
+
+	dc.b	0,0,"        -- Createur --",0,0
+	dc.b	"       Waiting for your",0
+	dc.b	"         Creation........",-1
+	
+	dc.b	0,"      -- Demomaker --",0,0
+	dC.b	"  Zappy: tes chemises elles",0
+	dc.b	"     sont pas belles!",0
+	dc.b	"  Elric: mais si, mais si!",-1
+
+	dc.b	0,"         -- Skynet --",0
+	dc.b	"    On s'en branle, Marcel!",0
+	dc.b	"         ...hmmm.. oops...",-1
+
+	dc.b	0,"  -- KEOPS and Severine --",0,0
+	dc.b	"          Long life!",-1
+
+	dc.b	"     ## Dtx Synchron ##",0
+	dc.b	  "        -- Pixelkiller --",0
+	dc.b	  "         ## Vulcan ##",0
+	dc.b	  "           -- Fury --",0
+	dc.b	  "     ## Karl and Sweep ##",0
+	dc.b	  "      -- Ben and Jess --",0,0
+	dc.b	"     SaluuuuUUuuUUut!",-1
+
+	dc.b	0,"        -Marco Polo-",0
+	dc.b	  "         -Stranger-",0
+	dc.b	  "          -Corwin-",0
+	dc.b	  "          -Nucleus-",0
+	dc.b	  " ....and all HMD members....",-1
+
+	dc.b	0,"          -ARD-",0
+	dc.b	  " and all Eagles Members!",-1
+
+	dc.b	0,"         -The Beast-",0
+	dc.b	  "       and -Ranma Chan-",0,0
+	dc.b	  "        Hope you like",0
+	dc.b	  "        Video Girl too!",-1
+
+	dc.b	0,"          -- Odin --",0
+	dc.b	"    Euh...   non, pas Odin...",-1
+
+	dc.b	0,0,"   Okay... I think this demo",0
+	dc.b	"   is now about to end...",-1
+	
+	dc.b	0,"  This was the first Japtro",0
+	dc.b	"  ever coded on a computer...",0
+	dc.b	"  Hope YOU will code a lot ",0
+	dc.b	"         of other ones...",-1
+	
+	dc.b	0,0,"       See you on PC...",0
+	dc.b	"  ...the ST... will never die...",-1
+
+	dc.b	0,0,"   And here comes the final ",0
+	dc.b	"           picture...",-1
+	
+	dc.b	"          # Japtro #",0
+	dc.b	"    Release date: 11.04.94",0
+	dc.b	"    Hoped date: 11.04.93...",0
+	dc.b	"    Members of Holocaust:",0
+	dc.b	"        Zappy - Elric",0
+	dc.b	"Contact us: Rtel, bal Zappy,",0
+	dc.b	"   Elric-Hc or Holocaust...",0
+	dc.b	"# # T H E    E N D # #",-1
+	EVEN	
+
+WRONG_DISK	DC.B	2,0,0,0,0,0
+	DC.B	"  This is not Disk 4,",0
+	dc.b	"      Asshole!",-1
+WRONG_EFF	DC.B	5,2,0,0,0,0,0
+	DC.B	"  This is not Disk 4,",0
+	dc.b	"      Asshole!",-1
+
+	BSS
+BSS_DEB
+	DS.L	256
+NEWPILE	DS.L	1
+POIT	DS.L	1
+SCREEN1	DS.L	1
+SCREEN2	DS.L	1
+	DS.B	256
+BUFFER2	DS.B	32000
+BUFPAK	DS.B	110400+1000
+ADR_LOAD	DS.B	100000
+	DS.B	256
+BUFFER	DS.B	(230+10)*480*2
+BSS_END

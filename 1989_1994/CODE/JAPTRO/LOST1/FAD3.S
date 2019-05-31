@@ -1,0 +1,102 @@
+Main:
+	clr.l	-(sp)
+	move.w	#$20,-(sp)
+	trap	#1
+	addq.l	#6,sp
+
+	lea.l	8,a0
+	move.l	#fini,d0
+	move.l	#fini,d1
+	move.l	#fini,d2
+	move.l	#fini,d3
+	move.l	#fini,d4
+	move.l	#fini,d5
+	move.l	#fini,d6
+	move.l	#fini,d7
+	movem.l	d0-d7,(a0)
+
+	CLR	-(SP)
+	PEA	-1.W
+	PEA	-1.W
+	move.w	#$5,-(sp)
+	trap	#14
+	lea.l	12(sp),sp
+	MOVE.L	#$01010101,$FFFF8240.W
+	MOVE.L	#$01010101,$FFFF8244.W
+	MOVE.L	$44E.W,A0
+	MOVE	#7999,D0
+OUTY2	CLR.L	(A0)+
+	DBF	D0,OUTY2
+
+	LEA	MSG,A0
+	MOVE.L	$44E.W,A1
+	MOVE	#200-1,D0
+AFY2	MOVE	#20-1,D1
+AFX2	MOVE	(A0)+,(A1)
+	ADDQ	#8,A1
+	DBF	D1,AFX2
+	DBF	D0,AFY2
+	JSR	DêCALE
+	MOVE.L	#VBL,$70.W
+B	BRA.S	B
+
+fini	move.l	4.w,a0
+	jmp	(a0)
+
+MINIBUF	DS	20
+DêCALE
+	MOVE.L	$44E.W,A0
+	MOVE	#200-1-8,D1
+	MOVE.L	A0,A1
+.Z
+	MOVE.L	A1,A0
+*
+	LEA	MINIBUF,A5
+N	SET	0
+	REPT	20
+	MOVE	N(A0),(A5)+
+N	SET	N+8
+	ENDR
+*
+	MOVE	#3-1,D7
+.X	LEA	MINIBUF,A5
+	MOVE	#20-1,D0
+.F	
+	ROXR	(A5)+
+	DBF	D0,.F
+	DBF	D7,.X
+*
+	MOVE.L	A1,A0
+	LEA	MINIBUF,A5
+N	SET	0
+	REPT	20
+	MOVE	(A5)+,N+2+160*3(A0)
+N	SET	N+8
+	ENDR
+*
+
+	LEA	160(A1),A1
+	DBF	D1,.Z
+	RTS
+
+VBL
+
+	LEA	FAD_END,A6
+MODFDEND	EQU	*+2
+	LEA	0(A6),A6
+	CMPI	#-1,(A6)
+	BEQ.S	.OUT
+	SUBQ	#1,BAZOUNGA
+	BNE.S	.OUT
+	MOVE	#5,BAZOUNGA
+	ADDQ	#2,MODFDEND
+	MOVE	(A6),$FFFF8242.W
+	MOVE	(A6),$FFFF8246.W
+	MOVE	-10(A6),$FFFF8244.W
+.OUT	RTE
+
+BAZOUNGA	DC	5
+	DCB	5,$101
+FAD_END	DC	$101,$212,$323,$434,$545,$656,$767,$777,-1
+
+MSG	INCBIN	MSG1.DAT

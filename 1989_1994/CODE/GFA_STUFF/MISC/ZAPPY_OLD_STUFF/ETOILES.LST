@@ -1,0 +1,16 @@
+HIDEM
+DIM x|(50),y|(50),a|(50)
+c$=MKI$(0)+MKI$(1)+MKI$(2)+MKI$(3)+MKI$(4)+MKI$(5)+MKI$(6)+MKI$(7)+MKI$(&H117)+MKI$(&H227)+MKI$(&H337)+MKI$(&H447)+MKI$(&H557)+MKI$(&H667)+MKI$(&H777)
+VOID XBIOS(6,L:VARPTR(c$))
+FOR t|=1 TO 50
+  x|(t|)=INT(RND*255)
+  y|(t|)=INT(RND*255)
+  a|(t|)=INT(RND*14)+1
+NEXT t|
+DO
+  FOR t|=1 TO 50
+    PSET 37+x|(t|),y|(t|),0
+    x|(t|)=(-x|(t|)-a|(t|))*(x|(t|)<242)
+    PSET 37+x|(t|),y|(t|),a|(t|)
+  NEXT t|
+LOOP

@@ -1,0 +1,12 @@
+FILESELECT "a:\*.pi3","",f$
+buf$=SPACE$(32066)
+buffer%=V:buf$
+BLOAD f$,buffer%
+BMOVE buffer%+34,buffer%,32000
+FOR f%=0 TO 79
+  FOR g%=0 TO 4
+    BMOVE buffer%+f%+(g%+f%*5)*80,XBIOS(2)+f%+(g%+f%*5)*80,80-f%
+    BMOVE buffer%+(g%+(80-f%)*5)*80,XBIOS(2)+(g%+(80-f%)*5)*80,80-f%
+  NEXT g%
+  VSYNC
+NEXT f%

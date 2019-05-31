@@ -1,0 +1,28 @@
+' Un GFA-Punch simple mais beau: Scrolling de texte synchro VBL
+' Auteur: SPEEDER(AND THE HORRIBLES)
+Message$=Space$(40)+"BONJOUR! NOUS REGRETTONS DE DEVOIR VOUS 
+INFORMER QU'A LA SUITE D'UNE MAUVAISE INDIGESTION VOTRE ST VA 
+IMPLOSER DANS QUELQUES SECONDES..."
+Message$=Message$+String$(40-(Len(Message$)-(Fix(Len(Message$)/40)
+)*40),32)
+Dim Sp$(Fix(Len(Message$)/40))
+Slpoke 
+&HFFFF8240,(Int(Rnd(0)*3)+5)*256+(Int(Rnd(0)*3)+5)*16+(Int(Rnd(0)*
+3)+5)
+For T&=Fix(Len(Message$)/40) Downto 0
+  Print Chr$(27)+"E"+Chr$(27)+"b1"+Mid$(Message$,T&*40+1,40)
+  Get 0,0,319,7,Sp$(T&)
+Next T&
+Repeat
+  For T&=0 To Fix(Len(Message$)/40)-1
+    For X&=0 To -319 Step -2
+      Put X&,192,Sp$(T&)
+      Put X&+320,192,Sp$(T&+1)
+      Vsync
+      Exit if Inp(-2)
+    Next X&
+    Exit if Inp(-2)
+  Next T&
+Until Inp(-2)
+Slpoke &HFFFF8240,&H7770600
+

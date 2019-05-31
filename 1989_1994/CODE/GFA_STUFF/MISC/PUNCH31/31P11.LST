@@ -1,0 +1,18 @@
+Fileselect "A:\*.PI1","",Sel$
+Hidem
+@Fondu(6,Sel$)
+Void Inp(2)
+Showm
+Edit
+Procedure Fondu(Vitesse%,Nom$)
+  Local I%,Reg%
+  For I%=0 To 15
+    Setcolor I%,&H0
+  Next I%
+  Bload Nom$,Xbios(2)-34
+  For I%=0 To 15
+    Reg%=Dpeek(I%*2+Xbios(2)-32)
+    Pause Vitesse%
+    Sdpoke &HFF8240+I%*2,Reg%
+  Next I%
+Return

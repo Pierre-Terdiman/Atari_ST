@@ -1,0 +1,9 @@
+
+
+
+This folder contains fonts which are all in GDOS format.  You can
+use these fonts with any program that uses GDOS fonts (ie, Degas
+Elite).  However, with those other programs, you'll have to edit your
+ASSIGN.SYS GDOS file.  With CYBER PAINT, neither GDOS nor the
+ASSIGN.SYS file is necessary.  
+

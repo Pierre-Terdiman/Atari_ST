@@ -1,0 +1,212 @@
+ON BREAK GOSUB end
+'          *******************************************************
+'          **               Defmouse Sprite Demo                **
+'          **            Graphics With  GFA Basic V2            **
+'          **                Program By B J Capel               **
+'          **               For ST Format Magazine              **
+'          **                     July  1989                    **
+'          *******************************************************
+'
+' This file will also run unmodified in GFA V3 if you have it!
+' Press Break (Alt-Shift-Control) to quit demo.
+'
+@setup
+DO
+  MOUSE across%,down%,button%
+  @check
+LOOP
+'
+PROCEDURE check
+  IF across%>102 AND across%<261 AND down%>1 AND down%<160 AND button%=1
+    mask=0
+    DEFFILL 1,1
+    @draw
+  ENDIF
+  IF across%>102 AND across%<261 AND down%>1 AND down%<160 AND button%=2
+    DEFFILL 1,2
+    mask=1
+    @draw
+  ENDIF
+  IF across%>112 AND across%<176 AND down%>169 AND down%<186 AND button%=1
+    @savsprite
+  ENDIF
+  IF across%>0 AND across%<80 AND down%>85 AND down%<165 AND button%=1
+    c=POINT(across%,down%)
+    @act_colour
+  ENDIF
+  IF across%>9 AND across%<71 AND down%>60 AND down%<75 AND button%=1
+    @build_sprite
+    DEFMOUSE a$
+    SHOWM
+    DO
+      MOUSE x%,y%,z%
+      IF x%>0 AND x%<80 AND y%>85 AND y%<165 AND z%=1
+        c=POINT(x%,y%)
+        @act_colour
+        @build_sprite
+        DEFMOUSE a$
+      ENDIF
+      EXIT IF z%=2
+    LOOP
+    SHOWM
+    COLOR 1
+    ERASE matrix()
+    ERASE mask_matrix()
+    ERASE sprite_data()
+    ERASE mask_data()
+    DIM matrix(15,15),mask_matrix(15,15),sprite_data(15),mask_data(15)
+    GOTO start
+  ENDIF
+RETURN
+PROCEDURE draw
+  px%=(across%-102)/10
+  py%=(down%-2)/10
+  @make_sprite
+  IF mask=0
+    COLOR spritecol
+    PLOT px%+20,py%+13
+    DEFFILL spritecol
+  ELSE
+    COLOR spritecol
+    PLOT px%+20,py%+13
+    COLOR maskcol
+    PLOT px%+50,py%+13
+  ENDIF
+  PBOX px%*10+3+offset%,py%*10+2,px%*10+11+offset%,py%*10+10
+  PAUSE 10
+RETURN
+PROCEDURE colours
+  FOR counter=0 TO 15
+    DEFFILL 1,1
+    PBOX a*20,r%,a*20+20,r%+20
+    DEFFILL counter
+    PBOX a*20+1,r%+1,a*20+19,r%+19
+    INC a
+    IF a=4
+      a=0
+      ADD r%,20
+    ENDIF
+  NEXT counter
+  @act_colour
+  PRINT AT(1,25);"Sprite Col";
+RETURN
+PROCEDURE act_colour
+  DEFFILL 15,1
+  BOX 9,169,71,186
+  DEFFILL c
+  PBOX 10,170,70,185
+RETURN
+PROCEDURE make_sprite
+  IF mask=0                                            ! If not drawing mask (left button)..
+    bitnum(px%)=2^(15-px%)                             ! Calculate value of bit
+    IF matrix(px%,py%)=0                               ! If grid position not set...
+      spritecol=1                                             ! Set colour to draw (blk)
+      ADD sprite_data(py%),bitnum(px%)                 ! Add value to current row
+      matrix(px%,py%)=1                                ! Set Grid position ON
+      mask_matrix(px%,py%)=0
+      maskcol=0
+      TEXT 270,py%*10+8,STR$(sprite_data(py%))+"     " ! Print word value of row
+      GOTO skip
+    ENDIF
+    IF matrix(px%,py%)=1                               ! If grid position set...
+      spritecol=0                                      ! Set colour to erase (wht)
+      maskcol=0
+      SUB sprite_data(py%),bitnum(px%)                 ! Deduct value from row
+      matrix(px%,py%)=0                                ! Set Grid position OFF
+      TEXT 270,py%*10+8,STR$(sprite_data(py%))+"     " ! Print word value of row
+    ENDIF                                              ! End loop
+    skip:
+  ENDIF                                                ! End loop
+  '
+  IF mask=1                                            ! If drawing mask (right button)...
+    bitnum(px%)=2^(15-px%)                             ! Calculate value of bit
+    IF mask_matrix(px%,py%)=0                          ! If mask grid pos. not set...
+      DEFFILL 1,,2                                     ! Set fill to pattern
+      maskcol=1
+      spritecol=0
+      ADD mask_data(py%),bitnum(px%)                   ! Add value to current row
+      IF matrix(px%,py%)=1
+        SUB sprite_data(py%),bitnum(px%)               ! Deduct value from row
+        matrix(px%,py%)=0
+      ENDIF
+      mask_matrix(px%,py%)=1                           ! Set grid position
+      TEXT 270,py%*10+8,STR$(sprite_data(py%))+"     " ! Print word value of row
+      GOTO skip2
+    ENDIF
+    IF mask_matrix(px%,py%)=1                          ! If mask grid pos. not set...
+      DEFFILL 0,1,0                                    ! Set fill to erase (none)
+      SUB mask_data(py%),bitnum(px%)                   ! Deduct value from row
+      mask_matrix(px%,py%)=0                           ! Set grid position
+      maskcol=0
+      spritecol=0
+      TEXT 270,py%*10+8,STR$(sprite_data(py%))+"     " ! Print word value of row
+    ENDIF                                              ! End loop
+    skip2:
+  ENDIF                                                ! End loop
+RETURN
+PROCEDURE build_sprite
+  a$=""
+  a$=MKI$(1)+MKI$(1)+MKI$(0)+MKI$(0)+MKI$(c)
+  FOR n=0 TO 15
+    a$=a$+MKI$(mask_data(n))
+  NEXT n
+  FOR n=0 TO 15
+    a$=a$+MKI$(sprite_data(n))
+  NEXT n
+RETURN
+PROCEDURE savsprite
+  build_sprite
+  line$(0)="c="+STR$(c)
+  line$(1)="a$=MKI$(1)+MKI$(1)+MKI$(0)+MKI$(0)+MKI$(c)"
+  line$(2)="FOR n=0 TO 15"
+  line$(3)="Read x,y"
+  line$(4)="a$=a$+MKI$(x*256+y)"
+  line$(5)="NEXT n"
+  line$(6)="FOR n=0 TO 15"
+  line$(7)="Read x,y"
+  line$(8)="a$=a$+MKI$(x*256+y)"
+  line$(9)="NEXT n"
+  line$(10)="Data"
+  FOR n=0 TO 64
+    line$(10)=line$(10)+STR$(ASC(MID$(a$,n+11,1)))+","
+  NEXT n
+  line$(10)=line$(10)+STR$(VAL(MID$(a$,n+11,1)))
+  line$(11)="defmouse a$"
+  line$(12)="do"
+  line$(13)="loop"
+  FILESELECT "\*.LST","",filename$
+  filename$=filename$+".LST"
+  OPEN "o",#1,filename$
+  FOR n=0 TO 13
+    PRINT #1,line$(n)
+  NEXT n
+  CLOSE #1
+RETURN
+PROCEDURE setup
+  DIM sprite_data(15),mask_data(15),bitnum(15),matrix(15,15),mask_matrix(15,15),line$(13)
+  SGET screen$
+  start:
+  CLS
+  offset%=100
+  r%=85
+  mask=0
+  BOX 19,12,36,29
+  BOX 49,12,66,29
+  PRINT AT(1,6);"Actual Size"
+  FOR x%=0 TO 16
+    LINE x%*10+2+offset%,2,x%*10+2+offset%,160
+    LINE 102,x%*10+1,262,x%*10+1
+  NEXT x%
+  @colours
+  DEFFILL 15
+  BOX 9,60,71,75
+  PRINT AT(4,9);"TEST"
+  DEFFILL 1
+  BOX 112,169,176,186
+  PRINT AT(17,23);"Save";
+RETURN
+PROCEDURE end
+  SETCOLOR 0,7,7,7
+  SETCOLOR 15,0,0,0
+  EDIT
+RETURN

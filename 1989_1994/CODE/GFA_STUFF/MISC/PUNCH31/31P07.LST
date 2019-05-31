@@ -1,0 +1,20 @@
+HIDEM
+DIM col%(512)
+FOR r%=7 DOWNTO 0
+  FOR v%=0 TO 7
+    FOR b%=0 TO 7
+      col%(i%)=VAL("&h"+STR$(r%)+STR$(v%)+STR$(b%))
+      INC i%
+    NEXT b%
+  NEXT v%
+NEXT r%
+REPEAT
+  VSYNC
+  FOR i%=1+nb1% TO 50+nb1%
+    SETCOLOR 0,col%(i%)
+  NEXT i%
+  INC nb1%
+  IF nb1%=462
+    nb1%=1
+  ENDIF
+UNTIL INKEY$<>""

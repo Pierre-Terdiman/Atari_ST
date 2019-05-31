@@ -1,0 +1,199 @@
+' 01/01/91      Basse r‚solution
+'  Permet de sauver une forme
+'
+fill$="n"
+sauve$="n"
+IF fill$="o"
+  RESERVE FRE(0)-658000
+  im_dat%=MALLOC(656000)
+  IF im_dat%<=0
+    PRINT "656000 oct. pas libres."
+    END
+  ENDIF
+  ON ERROR GOSUB fin
+  ON BREAK GOSUB fin
+ENDIF
+'
+ecran_gem%=XBIOS(2)
+col=128
+lig=6
+pas=4
+DIM xe&(pas-1,lig-1,col-1),ye&(pas-1,lig-1,col-1)
+DIM s$(pas-1)
+d=512
+ye=125
+ye_max&=0
+ye_min&=200
+FOR p=0 TO pas-1
+  FOR l=0 TO lig-1
+    FOR i=0 TO col-1
+      an=i*2*PI/col+p*2*PI/col/pas
+      r=110+26*COS(5*an+l*PI/5)
+      x=r*COS(an)
+      z=500+r*SIN(an)
+      y=115+26*SIN(5*an+l*PI/5)
+      xe&(p,l,i)=160+x*500/z
+      ye&(p,l,i)=100-140+y*500/z
+      ye_max&=MAX(ye_max&,ye&(p,l,i))
+      ye_min&=MIN(ye_min&,ye&(p,l,i))
+    NEXT i
+  NEXT l
+NEXT p
+'
+PRINT ye_min&,ye_max&,"Touche.."
+~INP(2)
+'
+FOR p=0 TO pas-1
+  CLS
+  FOR i=0 TO col-1
+    FOR l=0 TO lig-1
+      PLOT xe&(p,l,i),ye&(p,l,i)
+    NEXT l
+  NEXT i
+  IF fill$<>"o"
+    SGET s$(p)
+  ENDIF
+NEXT p
+'
+IF fill$<>"o"
+  ON BREAK GOSUB sauve_forme
+  FOR i=0 TO 20000
+    FOR p=0 TO pas-1
+      VSYNC
+      SPUT s$(p)
+    NEXT p
+  NEXT i
+ENDIF
+'
+PRINT FRE(0)
+ERASE s$()
+PRINT FRE(0)
+'
+nb_let=4
+DIM lettres|(nb_let-1,2)
+RESTORE
+FOR l=0 TO nb_let-1
+  FOR c=0 TO 2
+    READ lettres|(l,c)
+  NEXT c
+  READ rien
+NEXT l
+DATA &x11111
+DATA &x10001
+DATA &x01110
+DATA &x00000
+DATA &x11110
+DATA &x00101
+DATA &x11110
+DATA &x00000
+DATA &x11111
+DATA &x00001
+DATA &x11110
+DATA &x00000
+DATA &x00000
+DATA &x00000
+DATA &x00000
+DATA &x00000
+'
+DIM text|(16-1)
+RESTORE
+FOR i=0 TO 15
+  READ text|(i)
+NEXT i
+'
+im_dat_pt%=im_dat%
+DIM x&(3),y&(3)
+FOR decalage=0 TO 15
+  FOR p=0 TO pas-1
+    PAUSE 5
+    CLS
+    FOR c=0 TO col-1
+      col_dat|=text|(15-(16-decalage+c) MOD 16)
+      FOR l=0 TO lig-2
+        IF BTST(col_dat|,l)
+          x&(0)=xe&(p,l,c)
+          y&(0)=ye&(p,l,c)
+          x&(1)=xe&(p,l+1,c)
+          y&(1)=ye&(p,l+1,c)
+          x&(2)=xe&(p,l+1,(c+1) MOD col)
+          y&(2)=ye&(p,l+1,(c+1) MOD col)
+          x&(3)=xe&(p,l,(c+1) MOD col)
+          y&(3)=ye&(p,l,(c+1) MOD col)
+          POLYFILL 4,x&(),y&()
+        ENDIF
+      NEXT l
+    NEXT c
+    '
+    l_test=0
+    FOR line=76 TO 175
+      INC l_test
+      FOR mot=0 TO 39
+        DPOKE im_dat_pt%,DPEEK(ecran_gem%+line*160+mot*4)
+        im_dat_pt%=im_dat_pt%+2
+      NEXT mot
+    NEXT line
+    IF l_test<>100
+      END
+    ENDIF
+    IF im_dat_pt%-im_dat%>656000
+      END
+    ENDIF
+    '
+  NEXT p
+NEXT decalage
+'
+PRINT "Image data long: ";im_dat_pt%-im_dat%
+~INP(2)
+'
+IF sauve$="o"
+  BSAVE "para_scr.dat",im_dat%,im_dat_pt%-im_dat%
+ENDIF
+'
+SLPOKE &H140,im_dat%
+SDPOKE &H150,64                 ! nb d'images
+EXEC 0,"para_sca.prg","",""
+'
+GOSUB fin
+'
+PROCEDURE fin
+  ON BREAK CONT
+  ON ERROR
+  mf=MFREE(im_dat%)
+  IF mf<0
+    PRINT "Erreur lib‚ration bloc 640 Ko."
+    END
+  ENDIF
+  ON BREAK
+  RESERVE FRE(0)+658000-256
+RETURN
+'
+PROCEDURE sauve_forme
+  ON BREAK CONT
+  LOCAL e%,nom$,p,i,l
+  INPUT "Sauvegarde(o/n): ";nom$
+  IF nom$="o"
+    e%=XBIOS(2)
+    PRINT
+    INPUT "Nom du fichier : ";nom$
+    nom$="a:\"+nom$
+    OPEN "o",#1,nom$
+    FOR p=0 TO pas-1
+      FOR i=0 TO col-1
+        FOR l=0 TO lig-1
+          DPOKE e%,xe&(p,l,i)
+          DPOKE e%+2,ye&(p,l,i)
+          BPUT #1,e%,4
+        NEXT l
+      NEXT i
+      FOR l=0 TO lig-1
+        DPOKE e%,xe&(p,l,0)
+        DPOKE e%+2,ye&(p,l,0)
+        BPUT #1,e%,4
+      NEXT l
+    NEXT p
+    PRINT LOF(#1)
+    CLOSE #1
+  ENDIF
+  ON BREAK
+  PAUSE 10
+RETURN

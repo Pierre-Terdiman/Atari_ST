@@ -1,0 +1,83 @@
+' Le PRG est pr‚vu pour 1000 notes:
+'
+Dim Dur%(1000),P%(1000)
+'
+@Load_des
+Procedure Load_des
+  Fileselect "A:\*.DES","MUSIC_01.DES",Nom$
+  If Nom$<>"" And Nom$<>"\"
+    Goto Suite
+  Else
+    Edit
+  Endif
+  Suite:
+  '
+  Open "I",#1,Nom$
+  '
+  ' Controle de l'entete d'un fichier .DES
+  '
+  A$="D.E.S!"
+  For I%=1 To 6
+    A1%=Inp(#1)
+    A1$=Chr$(A1%)
+    B$=B$+A1$
+  Next I%
+  If A$<>B$
+    Alert 3,"Ceci est un faux fichier .DES",1,"OK",Bid
+    Edit
+  Endif
+  '
+  ' Decodage:
+  '
+  ' 1)Nombre d'accords:
+  '
+  Oct_frt%=Inp(#1)
+  Oct_fbl%=Inp(#1)
+  P%=Oct_frt%*255
+  Nb_acc%=P%+Oct_fbl%
+  '
+  For I%=0 To Nb_acc%-1
+    '
+    ' 2) Dur‚e commune … un accord:
+    '
+    Oct_frt1%=Inp(#1)
+    Oct_fbl1%=Inp(#1)
+    P1%=Oct_frt1%*255
+    Dur%(I%)=P1%+Oct_fbl1%
+    '
+    '
+    ' 3)P‚riode de chaque note de l'accord (3)
+    '
+    For J%=1 To 3
+      Oct_frt2%=Inp(#1)
+      Oct_fbl2%=Inp(#1)
+      P2%=Oct_frt2%*255
+      P%(Count%)=P2%+Oct_fbl2%
+      '
+      Inc Count%
+    Next J%
+  Next I%
+  '
+  Count%=0
+  Close #1
+  @Joue_accord
+  U=Inp(2)
+  Cls
+  Edit
+Return
+'
+'
+Procedure Joue_accord
+  Deftext 2
+  Text 1,6,"Nombre d'accords: "+Str$(Nb_acc%)
+  Text 200,6,"Nombre de notes: "+Str$(Nb_acc%*3)
+  For I%=0 To Nb_acc%-1
+    For J%=1 To 3
+      Sound J%,15,#P%(Count%)
+      Inc Count%
+    Next J%
+    Wave 7,0,0,0,Dur%(I%)
+    '
+  Next I%
+  Wave 0,0
+Return

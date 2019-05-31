@@ -1,0 +1,246 @@
+' Le PRG est prÇvu pour 1000 notes:
+If Xbios(4)<>1
+  Alert 3,"ONLY MEDIUM RESOLUTION",1,"OK",Lm
+  Edit
+Endif
+'
+Dim Dur(1000),P%(1000)
+'
+Nbr%=1                 !numÇro de canal
+Y%=2
+Repeat
+  If Y%>23
+    Get 0,0,639,6,Menu$
+    Cls
+    Put 0,0,Menu$
+    Y%=2
+  Endif
+  ' note:
+  '
+  Replay:
+  Print At(1,Y%);Nbr%;": Note:  ";
+  Form Input 3,N_ote$
+  N_ote$=Upper$(N_ote$)
+  If N_ote$=Chr$(27)       !sortie
+    @Alerte
+    Edit
+  Endif
+  @Decode_note
+  '
+  If Fl%<>1
+    Print At(14,Y%);" =>  Eqv ";N%;Spc(15)
+  Else
+    Fl%=0
+    Print Chr$(7);          !clochette
+    Print At(11,Y%);"   "
+    Print At(14,Y%);"     [SYNTAXE ERREUR]"
+    Goto Replay
+  Endif
+  '
+  ' octave:
+  Replay2:
+  Print At(27,Y%);"| Octave: ";
+  Form Input 1,O_ct$
+  Oct%=Val(O_ct$)
+  If O_ct$=Chr$(27)       !sortie
+    @Alerte
+    Edit
+  Endif
+  If Oct%<1 Or Oct%>8
+    Print Chr$(7);
+    Goto Replay2
+  Endif
+  '
+  ' durÇe:
+  Replay3:
+  If Nbr%=1                         !1 fois sur 3
+    Print At(1,Y%+1);"   DurÇe: ";
+    Form Input 3,D_uree$             !max 999.50¯s=20 sec.
+    Dur(Tour2%)=Val(D_uree$)
+    If D_uree$=Chr$(27)       !sortie
+      @Alerte
+      Edit
+    Endif
+    If Dur(Tour2%)<1
+      Print Chr$(7);
+      Goto Replay3
+    Endif
+    Nb_sec=Dur(Tour2%)/50
+    Print At(15,Y%+1);"=>  50äme(s) de seconde= ";Nb_sec;" seconde(s)."
+    Inc Tour2%
+  Endif
+  '
+  '
+  ' Petit algorithme de conversion octave,note =>pÇriode.
+  '
+  P%(Tour%)=Trunc(125000/(2^Oct%*440*(2^(N%/12))/(2^(10/12))/16)+0.5)
+  F%=125000/P%(Tour%)+0.5
+  Print At(38,Y%);"| PÇriode= ";P%(Tour%)
+  Print At(54,Y%);"| FrÇquence= ";F%;" Hz"
+  Sound Nbr%,15,#P%(Tour%),Dur(Tour2%-1)
+  Sound Nbr%,0
+  '
+  Inc Y%
+  If Nbr%=1
+    Inc Y%
+  Endif
+  Inc Nbr%
+  '
+  If Nbr%>3
+    Nbr%=1
+    Pause 50
+    @Joue_accord
+  Endif
+  '
+  Inc Tour%
+Until Mousek
+Edit
+'
+'
+Procedure Alerte
+  Alert 3,"Voulez-vous SAUVER votre|morceau avant de QUITTER ?",1,"SAVE|QUIT",Bid%
+  If Bid%=1
+    @Save
+  Else
+    Edit
+  Endif
+Return
+'
+Procedure Save
+  Nb_octets%=8+(8*Nb_acc%)
+  Nb_octets$=Str$(Nb_octets%)
+  Ale$="Le fichier que vous allez|sauvegarder va prendre:"
+  Ale$=Ale$+"|"+Nb_octets$+" octets !"
+  Alert 3,Ale$,1,"OK|QUIT",Bid3
+  If Bid3=2
+    Edit
+  Endif
+  '
+  '
+  Fileselect "A:\*.DES","MUSIC_01.DES",Nom$
+  If Nom$<>"" And Nom$<>"\"
+    Goto Suite
+  Else
+    Edit
+  Endif
+  Suite:
+  '
+  '
+  Open "O",#1,Nom$
+  '   Codage Octet Faible,Octet Fort:(16=>3822)
+  '
+  ' 1) Entete d'un fichier .DES     (6 Octets)
+  '
+  A$="442E452E5321"         !HEXA DE "D.E.S!"
+  For I%=1 To 12 Step 2     !Ceci sert Ö reconnaitre
+    A1$=Mid$(A$,I%,2)       !le fichier .DES
+    A1%=Val("&h"+A1$)
+    Out #1,A1%
+  Next I%
+  '
+  ' 2) NOMBRE D'ACCORDS:     (2 Octets)
+  Oct_frt%=Nb_acc%/255
+  Oct_fbl%=Nb_acc%-(255*Oct_frt%)
+  Out #1,Oct_frt%
+  Out #1,Oct_fbl%
+  '
+  ' Codage:
+  ' Si un accord n'est pas fini il n'est pas pris en compte.
+  '
+  ' (8 octets/accord:)
+  For I%=0 To Nb_acc%-1
+    '
+    ' 1) DurÇe commune Ö un accord:               (2 Octets)
+    Oct_frt1%=Dur(I%)/255
+    Oct_fbl1%=Dur(I%)-(255*Oct_frt1%)
+    Out #1,Oct_frt1%
+    Out #1,Oct_fbl1%
+    '
+    '
+    ' 3) PÇriode de chaque note de l'accord (3)   (2*3=6 octets)
+    '
+    For J%=1 To 3
+      Oct_frt2%=P%(Count%)/255
+      Oct_fbl2%=P%(Count%)-(255*Oct_frt2%)
+      Out #1,Oct_frt2%
+      Out #1,Oct_fbl2%
+      Inc Count%
+    Next J%
+  Next I%
+  '
+  ' Un fichier D.E.S a donc 16 octets minimum.
+  '
+  Close #1
+  U=Inp(2)
+  Cls
+  Edit
+Return
+'
+Procedure Joue_accord
+  Inc Nb_acc%
+  Nb_not%=Nb_acc%*3
+  Deftext 2
+  Text 1,6,"Nombre d'accords: "+Str$(Nb_acc%)
+  Text 200,6,"Nombre de notes: "+Str$(Nb_not%)
+  Sound 1,15,#P%(Tour%-2)
+  Sound 2,15,#P%(Tour%-1)
+  Sound 3,15,#P%(Tour%)
+  Wave 7,0,0,0,Dur(Tour2%-1)         !3 canaux simult.
+  '
+  Wave 0,0
+Return
+'
+Procedure Decode_note
+  ' DANS CET ANALYSEUR SYNTAXIQUE LES NOTES AVEC ## OU BB
+  ' SONT REFUSêES.
+  '
+  If N_ote$="DO" Or N_ote$="SI#"
+    N%=1
+  Else
+    If N_ote$="DO#" Or N_ote$="REB"
+      N%=2
+    Else
+      If N_ote$="RE"
+        N%=3
+      Else
+        If N_ote$="RE#" Or N_ote$="MIB"
+          N%=4
+        Else
+          If N_ote$="MI" Or N_ote$="FAB"
+            N%=5
+          Else
+            If N_ote$="FA" Or N_ote$="MI#"
+              N%=6
+            Else
+              If N_ote$="FA#" Or N_ote$="SOB"
+                N%=7
+              Else
+                If N_ote$="SOL"
+                  N%=8
+                Else
+                  If N_ote$="SO#" Or N_ote$="LAB"
+                    N%=9
+                  Else
+                    If N_ote$="LA"
+                      N%=10
+                    Else
+                      If N_ote$="LA#" Or N_ote$="SIB"
+                        N%=11
+                      Else
+                        If N_ote$="SI" Or N_ote$="DOB"
+                          N%=12
+                        Else
+                          Fl%=1
+                        Endif
+                      Endif
+                    Endif
+                  Endif
+                Endif
+              Endif
+            Endif
+          Endif
+        Endif
+      Endif
+    Endif
+  Endif
+Return

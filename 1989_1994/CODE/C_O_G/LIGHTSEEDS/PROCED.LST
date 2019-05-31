@@ -1,0 +1,71 @@
+DO
+  calc_x
+  PRINT x;" ";buf%;" ";x_value%
+  INC x
+  VOID INP(2)
+LOOP
+> PROCEDURE calc_x
+  CLR plus%
+  '  x_value%=INT(x/16)*8
+  v=(x/16)-INT(x/16)
+  IF v=0.0625
+    buf%=128
+  ENDIF
+  IF v=0.125
+    buf%=64
+  ENDIF
+  IF v=0.1875
+    buf%=32
+  ENDIF
+  IF v=0.25
+    buf%=16
+  ENDIF
+  IF v=0.3125
+    buf%=8
+  ENDIF
+  IF v=0.375
+    buf%=4
+  ENDIF
+  IF v=0.4375
+    buf%=2
+  ENDIF
+  IF v=0.5
+    buf%=1
+  ENDIF
+  IF v=0.5625
+    buf%=128
+    INC plus%
+  ENDIF
+  IF v=0.625
+    buf%=64
+    INC plus%
+  ENDIF
+  IF v=0.6875
+    buf%=32
+    INC plus%
+  ENDIF
+  IF v=0.75
+    buf%=16
+    INC plus%
+  ENDIF
+  IF v=0.8125
+    buf%=8
+    INC plus%
+  ENDIF
+  IF v=0.875
+    buf%=4
+    INC plus%
+  ENDIF
+  IF v=0.9375
+    buf%=2
+    INC plus%
+  ENDIF
+  IF v=0
+    buf%=1
+    x_value%=INT((x-16)/16)*8+1
+  ELSE
+    x_value%=INT(x/16)*8+plus%
+  ENDIF
+  '  PRINT #1," DC.B ";STR$(buf%)
+  '  PRINT #2," DC.B ";STR$(x_value%)
+RETURN

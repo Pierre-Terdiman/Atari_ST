@@ -1,0 +1,20 @@
+a$="GFA PUNCH !!!"
+d$=SPACE$(32000)
+d%=V:d$
+VOID XBIOS(5,L:d%,L:-1,-1)
+CLS
+l%=LEN(a$)
+c%=360/l%
+DIM l$(l%)
+PRINT AT(1,1);a$
+FOR f%=0 TO l%
+  GET f%*8,0,(f%+1)*8-1,16,l$(f%)
+NEXT f%
+CLS
+FOR g%=360 TO -360 STEP -5
+  FOR f%=0 TO l%
+    PUT COSQ(g%+f%*c%)*g%/2+200,SINQ(ABS(g%)+f%*c%)*g%/2+140,l$(f%),7
+  NEXT f%
+  BMOVE d%,XBIOS(2),32000
+  CLS
+NEXT g%

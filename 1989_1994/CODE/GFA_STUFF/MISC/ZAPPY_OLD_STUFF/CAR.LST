@@ -1,0 +1,14 @@
+DIM car$(36)
+a$=SPACE$(32066)
+a%=VARPTR(a$)
+BLOAD "100.pi1",a%
+VOID XBIOS(6,L:a%+2)
+BMOVE a%+34,XBIOS(2),32000
+FOR c%=0 TO 36
+  GET c%*4,53,c%*4+4,59,car$(c%)
+NEXT c%
+CLS
+FOR c%=0 TO 36
+  PUT 10,10,car$(c%)
+  VOID INP(2)
+NEXT c%

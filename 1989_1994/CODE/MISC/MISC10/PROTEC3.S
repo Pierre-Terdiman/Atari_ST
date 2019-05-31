@@ -1,0 +1,48 @@
+	OPT	O+,P+,A+
+	
+	PEA	0.W
+	MOVE	#$20,-(SP)
+	TRAP	#1
+	ADDQ.L	#6,SP
+
+;************************************************
+	
+	LEA	PNT,A0
+	MOVE.L	#$00020002,D5
+	MOVE	#($41F6/2),D6
+BOUCLE	ADD.L	D5,(A0)
+	DBF	D6,BOUCLE
+	ADD	#$8000-$41F8,2(A0)
+PNT	DS.L	1	
+
+
+	MOVE	(a0),d1
+	MOVE	d2,(a0)	ON SUPPOSE D2=0000
+	MOVE	d1,(a0)
+
+;	LIST
+
+	BRA.S	ICI
+	MOVE	d2,(a0)	ON SUPPOSE D2=0000
+	MOVE	d1,(a0)
+
+	DC	$2F7C
+	LEA	ADR,A2
+	MOVE	#$6002,(A2)
+	MOVE	d2,(a0)	ON SUPPOSE D2=0000
+	MOVE	d1,(a0)
+
+	RESET
+	MOVE	d2,(a0)	ON SUPPOSE D2=0000
+	MOVE	d1,(a0)
+
+ADR	DC	$2F7C
+	BRA.S	SUITE
+ICI	;FAIRE ICI UN APPEL BIDON...
+	NOP
+SUITE	
+	PEA	0.W
+	TRAP	#1
+
+;	MOVE.L	(A7)+,A0	=RTS
+;	JMP	(A0)

@@ -1,0 +1,19 @@
+c$=MKI$(0)+MKI$(&H700)+MKI$(&H711)+MKI$(&H722)+MKI$(&H733)+MKI$(&H744)+MKI$(&H755)+MKI$(&H766)+MKI$(&H777)+MKI$(&H667)+MKI$(&H557)+MKI$(&H447)+MKI$(&H337)+MKI$(&H227)+MKI$(&H117)+MKI$(&H7)
+VOID XBIOS(6,L:V:c$)
+DIM im$(64)
+FOR an2=0 TO 2*PI STEP 0.4
+  CLS
+  PRINT "Zappy Bibicy"
+  FOR x|=0 TO 96
+    FOR y|=0 TO 7
+      PSET x|+160,5*SIN(x|/10+an2)+100+y|,(-(8+y|)*(POINT(x|,y|)<>0))+(-y|*(POINT(x|,y|)=0))
+    NEXT y|
+  NEXT x|
+  GET 160,95,256,114,im$(INT(an2*2.5))
+NEXT an2
+CLS
+DO
+  c|=(-c|-1)*(c|<15)
+  PUT 160,100,im$(c|)
+  PAUSE 3
+LOOP

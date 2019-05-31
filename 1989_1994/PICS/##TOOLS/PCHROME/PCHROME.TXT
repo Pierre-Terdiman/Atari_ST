@@ -1,0 +1,448 @@
+ 
+
+
+
+                    Atari ST/E PhotoChrome  v3.00
+                    -----------------------------
+                          
+                   Concept, Design and Programming
+
+                          by Douglas Little.
+                                
+               (C) 1992 Pixel Twins Shareware Utilities.
+                          
+                          
+
+     You are now the proud owner of the PhotoChrome graphics card 
+emulator. It is the only one of its type currently available for the 
+Atari ST and is capable of out-performing all other screen modes 
+including the infamous HAM and HalfBrite displays on the Commodore 
+Amiga.
+     It's basic specification is the ability to load most IFF formats, 
+24-Bit True colour screens (16 million colours), GIF files and 
+VidiChrome digitised 'RGB' colour separations (4096 colours) before
+converting to one of six powerful screen modes.
+
+*---------------------------------------------------------------------*
+
+                        THE 6 CONVERSION MODES
+                        ----------------------
+
+        The six screen modes are...
+        
+1.      Spectrum 512   > 42/45 cols per scanline from 512 on an ST
+                         or STE.
+
+2.      Spectrum 4096  > 42/45 cols per scanline from 4096 on an STE.
+
+3.      PCS-ST         > 48 colours per scanline from 512 on an ST
+                         or STE.
+
+4.      PCS-STE        > 48 colours per scanline from 4096 on an STE.
+
+5.      Super HAM      > A full 4096 colours out of 4096 on an ST
+                         or STE.
+
+6.      STE PhotoChrome > 19200 colours out of 32768 on an STE.
+        
+     Modes 1 and 2 are basically real Spectrum-512 files. They are not 
+compressed, but Spectrum can do this if you need it. STE mode seems to 
+handle pictures better than I had expected, since with such a large 
+palette the colour assignments tend to be used up twice as quickly.
+
+     Modes 3 and 4 are my own custom versions of the Spectrum display. 
+They both have a few extra colours to play with, filling up the streaks 
+and dots Spectrum can often leave behind. This is my own 'PCS' format 
+(PhotoChrome Screen) and uses the best of 2 compression methods.
+
+     Modes 5 and 6 are actually impossible, so just accept they work 
+and don't ask too many questions!
+
+     SUPER HAM is an emulation of the Hold And Modify mode normally 
+exclusive to the Commodore Amiga. After some experimentation with my 
+own Amiga, I found that HAM is not actually as capable of displaying 
+€some of the more detailed colour images (especially with high levels of 
+contrast or lots of sharp lines) and so renamed my own format 'SUPER 
+HAM'. Many HAM pictures are of course better as they have many more 
+colours per line, but have to smudge and blend to obtain them.
+
+     PHOTOCHROME is only available when the source picture contains in 
+excess of 4096 colours (i.e. QRT 16-million colour pictures), and then 
+only to STE owners. However, if you do have an STE and some RAW files 
+knocking about (STF cover disk 35!) then you are in for a treat indeed! 
+Eat your heart out, VGA! This is the most powerful mode available short 
+of a real Graphics card, with 19200 colours on-screen at once from a 
+largish palette of 32768! (15-bit colour). The picture requires two 
+conversion passes, but is well worth the wait!
+
+     N.B. Pictures saved out as Super HAM or PhotoChrome tend to be 
+anywhere from large to enormous, even with fancy compression. Bear this 
+in mind when testing out the hatched and fractal stippling options! 
+(Check out PCSVIEW.DOC for info on better compression...)
+
+*---------------------------------------------------------------------*
+
+                               FEARURES
+                               --------
+
+1>      STIPPLING.            (COLOUR REDUCTION ONLY)
+
+     Generally, if the source picture holds more colours than the 
+destination format (i.e. RAW > SPU) then you are allowed stippling. 
+The three options are CLEAN - just leave the picture as it is, HATCHED 
+- use levels of hatching to make up in-between colours and FRACTAL - 
+the weird one. This uses fractal numbers to highlight/leave each pixel 
+on the screen, the result being that graduated colours look more obvious 
+but you get a weird 'oil-painting' effect. It really only works well 
+in PhotoChrome and super-HAM modes.
+
+2>      ERROR/FLICKER FREE.   (SUPER HAM/PHOTOCHROME ONLY)
+
+     Error-free mode makes a better job of mega-colourful pictures 
+but is not normally needed (a sort of last-resort). 'Flicker-free' 
+should be used where available, the only problem being that it chews 
+through the colour tables at an alarming rate (keep an eye on QRT 
+screens). N.B. STE PhotoChrome mode is fixed at ERROR-FREE in 60Hz, 
+since flicker is minimal with such a large palette.
+
+FLICKER-FREE mode CAN sometimes reduce the quality of the screen...
+
+3>      50/60 Hz MODES.       (SUPER HAM and QRT PICTURES ONLY)
+
+     Basically, everything runs at 50Hz, with a couple of exceptions. 
+QRT pictures tend to have a 60Hz aspect ratio (not fixed but the option 
+is there) causing the screen to look squashed at 50Hz. Also, PHOTOCHROME 
+mode looks best at 60Hz anyway, so it is left as the default frequency. 
+60Hz also helps when 'flicker-free' option has been avoided for 
+accuracy. To change the default, click on the 50Hz button. All screens 
+will now run at 50Hz regardless of how they might look. To switch modes 
+while viewing the picture, hit the '*' key.
+
+4>      SPECTRUM OPTIONS.
+
+     Spectrum 512 does not use all of it's available colours. Colour 0 
+€(background colour) is always black and colour 15 is reserved for drawing 
+and for the mouse pointer etc. leaving 14 variable colours for use in the 
+picture. There are 3 palette changes per line meaning (16-2)*3 or 42 
+cols available for alteration on each individual scanline of the 
+screen. The 'LEGAL COLOURS' option uses just these colours. The 'ALL 
+COLOURS' option however releases colour 15 for use, meaning (16-1)*3 or 
+45 cols per line. The only disadvantage is that Spectrum will crack up 
+if you try to load them in. Any pixels using colour 15 will turn bright 
+orange and look a right mess. You have been warned... (N.B. slideshows 
+should display these pictures no probs.)
+
+*---------------------------------------------------------------------*
+
+                              LIMITATIONS
+                              -----------
+
+     Hmmm, I'm not sure there are any, really..
+        
+     No, seriously, there are a few bits you should know about before 
+creating slideshows full of pretty pictures!
+
+     1> RAW's
+        
+     QRT screens can be any width or height (<=320*200) and will be 
+centred on the screen with a black border. If you use the 'flicker-
+free' option (SUPER HAM only) some loss of detail or palette-errors 
+might occur on very complex pictures. To avoid this you may have to use 
+the 'error-free' mode instead (at 60Hz there is very little flicker 
+anyway). To cut down any flicker you may still see, reduce the contrast 
+setting on your monitor.
+
+        2> GIF's
+        
+     The program can load GIF's of any height or width and will offer 
+the option to either squash the picture, or select a 320*200 zone. 
+320*200 GIF's will bypass this stage. To select a zone, use the arrow-
+keys and 'SPACE' when satisfied.
+
+        2> IFF's
+        
+     The program can load ILBM IFF's of any height or width but will 
+crop them to 320*200 (a later version will contain squash/interlace 
+options). The real bonus is that it eats up colours like nothing else. 
+All of the Amiga pictures I fed it looked identical to the originals, 
+with no loss of colour or detail! (HalfBrite 64 colour IFF's are 
+supported properly)
+
+        3> RGB's
+        
+     VidiChrome RGB screens suffer from very few limitations. Generally 
+you should choose the 'flicker-free' option all the time and if you 
+spot dots/errors on the screen (rare) you can resort to 60Hz and 
+'error-free' mode.
+
+        4> SYNC PROBLEMS.
+        
+     It came to my attention some time ago that both Spectrum-512 and 
+GFA Raytrace suffered from video-synchronisation problems. This caused 
+very irritating little dots or vertical lines to appear from time to 
+time and totally ruin the effect of the picture. It was also very 
+€embarrasing when trying to show off the ST's capabilities to other 
+members of the computer world (i.e. Amiga-people). These programs 
+are supplied with a 'SYNC.PRG' which, contrary to many peoples beliefs 
+does sod-all to fix the problem. All it does is TELL you whether your 
+ST is READY to display a picture or NOT, having no effect on the 
+machine at all. The only way to rectify a 'no-sync' situation is to 
+TURN OFF and reboot, resetting the video-clock hardware and hopefully 
+reversing the situation. Generally it takes a few tries before success, 
+and although I have seen a few ST's that ALWAYS boot up properly, the 
+effect on STE's is generally quite bad (just try to merge a colour 
+digitised picture in 4096 colour mode in VidiChrome and you'll probably 
+see what I mean).
+     Anyway, Since my own display code incorporates similar colour-
+switch techniques, PhotoChrome was initially prone to this bugging 
+effect. After a lot of work and an equal amount of problems it has been 
+solved, and as far as I know, is rectified on all ST's and STE's. All 
+pictures saved out from PhotoChrome (including Spectrum-512/4096) are 
+'immunised' against sync problems, regardless of which slideshow 
+program you choose to display them (they even load into Spectrum 
+itself! Although if you mess about with the picture, Spectrum will re-
+assign the colours and destroy the immunised structure of the screen.
+
+*---------------------------------------------------------------------*
+
+                           SAVING A PICTURE
+                           ----------------
+                                   
+     To save a screen, hit 'RETURN' or 'S' once it has been converted
+and is being displayed. The file will take a few seconds to compress
+before giving you a file selector. The program will check diskspace
+prior to saving the screen.
+     To switch 50/60 Hz on the same screen, hit the '*' key. This will
+be recorded into the file for displaying in the slideshow.
+     While selecting a part of a GIF picture, use the arrow keys and 
+'SPACE' when done.
+
+
+*------------------------------------------------------------------------*
+
+                           SHAREWARE THEORY
+
+                      --------------------------
+                      (or, at least, Dug's View!)
+                      --------------------------
+                                
+     If you know what Shareware is, then you can skip the next 200 odd
+bytes of text and read the next paragraph instead.
+        
+     The idea behind Shareware is actually quite simple...
+
+     Someone writes a program and gives it to someone, they either 
+dislike it, like it or love it. The people who dislike it don't use the 
+thing, and therefore certainly don't pay for it. Of the ones who do 
+like the program, MOST will feel it is worthwhile paying for, and SOME 
+will actually make donations to the author. Of the people who really 
+like it, most will probably make a donation, and will also recommend 
+and LEGALLY spread it to their friends, helping the author even more. 
+Basically, everybody's happy, although the whole thing does rely on one 
+thing being present somewhere along the line, that being HONESTY. It is 
+a risky thing to depend on the public's honesty to make a living, but 
+€in a situation like this, the usual motives for piracy are gone. Nobody 
+can feel cheated by shareware, since you pay for the software alone and 
+not the blurb normally supplied by the 'houses' with their 'spacious' 
+packaging and price-upping bound-manuals.
+
+        There is an attractive list of facts...
+
+1 -  It kills piracy, since you can't pirate something you're TRYING
+     to spread anyway! Spreading actually helps shareware by bringing
+     it to other people's attention.
+        
+2 -  You don't need to spend money on advertising. If it's good, it
+     will tend to get about on it's own. (A review or two always helps
+     start the ball rolling!)
+
+3 -  Customers only pay for what they use, they CANNOT be conned or
+     cheated into buying software which is no use. They get as much
+     time to evaluate it as they like, hopefully resulting in a small
+     donation to the author.
+
+*--------------------------------------------------------------------*
+*       PhotoChrome and Shareware                                    *
+*--------------------------------------------------------------------*
+
+     This program was a lot of work, but I do think it was worthwhile. 
+It's about time the ST started to antagonise the other machines
+normally hogging the world of fancy graphics and sound.
+     PhotoChrome was written during 1 month of intensive programming
+and testing and it would be nice to see some sort of return for my
+work. A donation of about œ2.00 - œ5.00 would suffice, and I am also
+anxious to know of peoples thoughts on the program. The more donations
+I recieve the more incentive I will have to continue with the series
+and produce updates.
+     As a little temptation, I am thinking of doing a something very
+special with the SUPER HAM and PHOTOCHROME modes. I have analysed the
+idea and it seems feasible. It will depend obviously on the support I
+recieve from this, (if it's not going to make me anything, it's an
+awful lot of wasted time!) but I will make a start on it anyway.
+
+     If anyone is thinking seriously of writing a rendering package
+for the ST/E machines, then please consider these screen formats as 
+worthwhile for inclusion. There is nothing worse than having an
+exceptional package held back by a low-quality output such as
+16-colours or a badly rastered screen!
+
+*------------------------------------------------------------------------*
+
+                               SOURCE (and grovelly bit)
+                               ------
+         A new file format is absoultely no use without software
+     to utilise it or available source for programmers to use
+     themselves. It is also annoying when the only type of source
+     available is an object or 'BIN' file instead of a listing
+     which greatly limits what you can do with it, unless you set
+     about disassembling it yourself. This, I think stems from
+     programmers being paranoid about other people seeing their code
+     and so, try to protect it by hiding it from others. This helps
+     nobody.
+
+         I have decided to supply the documented source for the
+€     PCSVIEW slideshow on disk for œ5.00 (see the address at bottom
+     of text) There is a need for the format to become a standard
+     (like Spectrum) and therefore needs to be widely available to
+     programmers. Please remember that this whole package is far more
+     powerful than anything of it's kind, and I'm making it available
+     for next to nothing!
+     
+*-----------------------------------------------------------------------*
+*       The interesting bit stops here,                                         *
+*-----------------------------------------------------------------------*
+
+                           THE PIXEL TWINS
+                           ---------------
+
+*-----------------------------------------------------------------------*
+*       And the plugs and stuff start here...                                   *
+*-----------------------------------------------------------------------*
+
+        A few last words...
+        
+     The Pixel Twins are a group of programmers/artists/enthusiasts 
+who produce bits and bobs for the ST/E machines. We do utilities, 
+demos, slideshows and other various thingies you would not normally 
+find in the shops.
+
+
+The Pixel Twins (and people for me to thank) are...
+
+ Douglas Little (DML)    - 68000 programmer/sometimes graphics artist.
+                           I write most of the P.T. 68000 stuff.
+                                          
+ Noel Wallace   (NOD)    - general ST enthusiast/artist/video man.
+                           lots of contacts, lots of info, lots of
+                           videotapes, churns out some nice colour
+                           dig-pics and lots of his own too...
+
+ Andrew Younger (Highlander)     (well, he does live in inverness...)
+                         - 68000 Programmer.
+                           Does plenty of ST and STE demo bits.
+                           currently helping me (and me helping him)
+                           with the next STE project.
+                                                  
+ P.C. Matthews  (PCM)    - STOS programmer/abstract artist.
+                           Does things in STOS most people have
+                           difficulty with in Assembly.
+                           Also has a soft spot for GFA Raytrace and
+                           QRT. This is the man responsible for
+                           the very strange RAW files supplied
+                           to the ST Format offices.
+                           (many thanks for your demo piccys, Phil!).
+
+ Lorraine Davidson (LD)  - Keeps everyone in check. (esp. NOD)
+
+ ED.                     - Also a STOS man, and learning 68000
+                           at the same time at a phenominal rate...
+
+ EGGG.                   - The PC owning artist and musician.
+      
+     I would also like to thank Kevin Ramage for the use of his 
+VidiChrome - ST and his GST-GOLD Genlock/Splitter hardware which 
+€made the bug testing and solving possible. It also helped produce
+the demo slideshows much needed for showing off this final version
+of the program. And thanks to Martin East who supplied some Amiga
+piccys for testing
+
+*+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*
+
+
+     Here is a list (not comprehensive) of some of the other things
+we have done...
+
+                              UTILITIES
+                              ---------
+        
+     There is a Pixel Twins utilities disk floating around on the P.D.
+containing a few bits and bobs. Of the most useful are the Graphics
+package, 'TecBrush' and the custom STOS-3D extension (apparently it
+is about 4-5 times faster than the real STOS-3D but you have to use
+CAD-3D or SCULPT to make the objects and a custom utility supplied
+to re-colour, optimise and shade them before use. There is also an old
+version of the disk which should be avoided at all costs...
+A fresh TPT Utilities Disk will be re-released containing new proggies
+and updated versions of PhotoChrome and associated slideshows etc.
+soon.
+
+*---------------------------------------------------------------------*
+
+                                          DEMOS
+                                          -----
+
+1>   MENTAL HANGOVER (THE PIXEL TWINS SCOOPEX CONVERSION)
+     1 Meg STE only.
+        
+     I'm quite proud of this one really, so I won't slag it off (yet).               
+If you want to see what a 1meg STE demo should look like, get this.
+It has so far had 2 excellent magazine reviews and last time I looked,
+was number 4 in the top ST demo list! (P.D. Magazine).
+
+2>   STUPENDOUS DEMO.
+     ST+STE,Half meg, Partially STE-only.
+
+     Another one of those P.D. show-off jobs containing no more point 
+or reason than an episode of 'Emmerdale farm' but lots of fun to watch
+and listen to.
+
+3>   TPT CHRISTMAS DEMO
+     Any ST/E.
+
+     A very funny seasonal STOS put-together with free dancing
+snowmen! Hmmmm...
+
+4>   ZOOLOOKOLOGIE DEMO
+     ST/STE/1MEG STE bits.
+
+     Sample demo. I have heard it has been banned, but I am not yet 
+sure. If it has, you won't be able to get it!
+
+5>   Nod & PCM are working on another STOS demo, and I must admit, it 
+     looks very good indeed.  (also works on anything)
+
+€6>   This one's top secret. I am currently developing the most immense
+     demonstration the STE (and even ST) has ever seen, and I am not
+     joking...       1meg STE only.
+
+7>   This one's so secret, I'm not going to say... It's a game anyway...
+        
+*---------------------------------------------------------------------*
+*       End of plugs.                                                 *
+*---------------------------------------------------------------------*
+
+     Well, that's it! you can get back to reading your ST Format
+     'cos I've run out of things to type. It's about time I got back
+     to work anyway...
+
+*---------------------------------------------------------------------*
+
+PCSVIEW SOURCE available from...
+
+Douglas Little
+160 Goremire Road,
+Carluke, Lanarkshire
+Scotland. ML8 4PN.
+
+(please indicate 'PHOTOCHROME SOURCE' on the envelope for a quick reply!)
+        

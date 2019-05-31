@@ -1,0 +1,19 @@
+DIM state!(40,25)
+ARRAYFILL state!(),FALSE
+count%=0
+buffer$=SPACE$(32066)
+buffer%=V:buffer$
+FILESELECT "a:\*.pi3","",f$
+BLOAD f$,buffer%
+BMOVE buffer%+34,buffer%,32000
+REPEAT
+  x%=INT(RND*40)
+  y%=INT(RND*25)
+  IF state!(x%,y%)=FALSE
+    state!(x%,y%)=TRUE
+    FOR s%=0 TO 16
+      BMOVE buffer%+y%*1280+s%*80+x%*2,XBIOS(2)+y%*1280+s%*80+x%*2,2
+    NEXT s%
+    INC count%
+  ENDIF
+UNTIL count%=1000

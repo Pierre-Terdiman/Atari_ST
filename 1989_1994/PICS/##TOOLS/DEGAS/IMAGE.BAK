@@ -1,0 +1,12 @@
+coul_img$=SPACE$(32)
+coul_img%=VARPTR(coul_img$)
+image$=SPACE$(26080)
+image%=VARPTR(image$)
+OPEN "i",#1,"a:\1.pi1"
+SEEK #1,2
+BGET #1,coul_img%,32
+VOID XBIOS(6,L:coul_img%)
+SEEK #1,34+1760
+BGET #1,image%,26080
+CLOSE #1
+BMOVE image%,XBIOS(2),26080

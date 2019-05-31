@@ -1,0 +1,26 @@
+' Punch Plus, Jean-Michel Colas
+' Couleur, GfA 3.
+' 32 secondes de patience, avant tout.
+' Attention au Ramdisk
+~XBIOS(5,L:(491520-32000),L:-1,L:0)
+c$=MKI$(0)+MKI$(1911)+MKI$(0)+MKI$(0)+MKI$(&H700)+MKI$(&H740)+MKI$
+(&H760)+MKI$(&H570)+MKI$(&H70)+MKI$(&H62)+MKI$(&H55)+MKI$(&H46)+MK
+I$(&H37)+MKI$(&H307)+MKI$(&H407)+MKI$(&H505)
+~XBIOS(6,L:(V:c$))
+DEFTEXT 2,16,0,32
+TEXT 22,152,"PUNCH"
+TEXT 214,28,"+"
+FOR a=120 TO 479 STEP 0.75
+  FOR b=80 DOWNTO 70-ABS(50-(a/6))
+    PSET 160+(b*COSQ(a)),75+((b/1.75)*SINQ(a)),INT(a/30)
+    PSET 110+((a-120)/3.428),129-((a-120)/3.265),19-INT(a/30)
+  NEXT b
+NEXT a
+~XBIOS(5,L:-1,L:(491520-32000),L:-1)
+DO
+  FOR i%=4 TO 15
+    SETCOLOR i%,DPEEK((V:c$)+8+((((i%-4)+n%) MOD 12)*2))
+  NEXT i%
+  INC n%
+  PAUSE 2
+LOOP

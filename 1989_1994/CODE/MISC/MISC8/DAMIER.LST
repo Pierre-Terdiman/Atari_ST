@@ -1,0 +1,54 @@
+' 16 juin 91
+'
+'
+DIM p&(40,40,1)
+DIM a$(23),pp&(40,40,1)
+DIM x&(3),y&(3)
+'
+'
+FOR i&=0 TO 40
+  FOR j&=0 TO 40
+    p&(i&,j&,0)=-25*16+i&*16
+    p&(i&,j&,1)=-25*16+j&*16
+  NEXT j&
+NEXT i&
+'
+FOR n&=0 TO 22
+  z=-22+n&
+  z=500-0.7*z*z
+  FOR i&=0 TO 40
+    FOR j&=0 TO 40
+      pp&(i&,j&,0)=160+p&(i&,j&,0)*500/z
+      pp&(i&,j&,1)=100+p&(i&,j&,1)*500/z
+    NEXT j&
+  NEXT i&
+  FOR i&=0 TO 39
+    FOR j&=1 TO 39 STEP 2
+      jj&=j&+ODD(i&)
+      x&(0)=pp&(i&,jj&,0)
+      y&(0)=pp&(i&,jj&,1)
+      x&(1)=pp&(i&+1,jj&,0)
+      y&(1)=pp&(i&+1,jj&,1)
+      x&(2)=pp&(i&+1,jj&+1,0)
+      y&(2)=pp&(i&+1,jj&+1,1)
+      x&(3)=pp&(i&,jj&+1,0)
+      y&(3)=pp&(i&,jj&+1,1)
+      POLYFILL 4,x&(),y&()
+    NEXT j&
+  NEXT i&
+  SGET a$(n&)
+  ' ~INP(2)
+  CLS
+NEXT n&
+'
+DO
+  FOR n&=0 TO 22
+    VSYNC
+    SPUT a$(n&)
+  NEXT n&
+  FOR n&=22 DOWNTO 0
+    VSYNC
+    SPUT a$(n&)
+  NEXT n&
+LOOP
+'

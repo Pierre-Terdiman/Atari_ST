@@ -1,0 +1,132 @@
+Corrections and Updates to the Degas
+Elite Manual
+October 1, 1986
+
+Appendix C revision Notes:
+
+GDOS and ASSIGN.SYS:
+
+     Due to last-minutes changes in
+GDOS by Atari Corp., the information on
+the ASSIGN.SYS file in Appendix C is
+not quite correct. Here are the
+corrections and a new sample file:
+
+
+*    You must put the names of all the
+font files you want to load, after the
+screen type descriptor (screen.sys
+sections 01, 02, 03, 04, shown below)
+for that resolution. Screen 01 is a
+default mode (unused in Degas Elite),
+02 is low resolution, 03 is medium
+resolution, 04 is high resolution
+(monochrome).  With this setup, you can
+set up your ASSIGN.SYS file so that you
+have specific fonts assigned to each
+resolution.
+
+*    The location of the font files
+must be specified by first specifying a
+path and folder on the first line.
+
+*    Comments may be included in the
+file if prefixed with a semicolon
+(";").
+
+     Here is the ASSIGN.SYS file that
+comes on your Degas Elite distribution
+disk:
+
+
+
+path = a:\fonts\     ;Pathname
+containing fonts
+;
+01p screen.sys          ;Default
+screen
+;
+;
+02p screen.sys          ;Low-resolution
+screen
+;
+COMPHS08.FNT
+COMPSS16.FNT
+COMPDS32.FNT
+COMPHD08.FNT
+COMPSD16.FNT
+COMPDD32.FNT
+;
+03p screen.sys
+;Medium-resolution screen
+;
+COMPHS08.FNT
+COMPSS16.FNT
+COMPDS32.FNT
+COMPHD08.FNT
+COMPSD16.FNT
+COMPDD32.FNT
+;
+04p screen.sys
+;High-resolution screen
+;
+COMPHS08.FNT
+COMPSS16.FNT
+COMPDS32.FNT
+COMPHD08.FNT
+COMPSD16.FNT
+COMPDD32.FNT
+;
+21 fx80.sys
+31 META.SYS
+^Z
+
+The Font Conversion Program:
+
+     When you pick the DEGAS font file
+to convert, FONTCONV.PRG displays a
+dialog where you enter the name of the
+font for both the normal width and
+double width (extended) fonts. These
+are assigned unique font identifier
+numbers. You can also enter a
+four-character font filename prefix or
+let the program use a default.
+
+
+     For example, the COMPUTER.FNT file
+defaults to COMP for the prefix, and
+will generate COMPHS08.FNT (Half
+height, Single width, 8 points high),
+COMPSS16.FNT (Single height & width, 16
+points), COMPDS32.FNT (Double height,
+Single width, 32 points) as the first
+font file group - these are assigned
+the first font identifier number. The
+extended (double-width) font is
+COMPHD08.FNT (Half/Double, 8 points),
+COMPSD16.FNT (Single height, Double
+width, 16 points) and COMPDD16.FNT
+(Double height & width, 32 points). You
+can click on the appropriate buttons in
+the dialog to output only the font
+sizes you want.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

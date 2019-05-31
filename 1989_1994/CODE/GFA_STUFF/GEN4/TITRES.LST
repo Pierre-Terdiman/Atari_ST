@@ -1,0 +1,45 @@
+gen4$=SPACE$(32066)
+gen4%=VARPTR(gen4$)
+BLOAD "logogen4.pi1",gen4%
+VOID XBIOS(6,L:gen4%+2)
+titre$=SPACE$(32066)
+titre%=VARPTR(titre$)
+BLOAD "titres.pi1",titre%
+BMOVE gen4%+34,XBIOS(2),32000
+demo%=1
+BMOVE titre%+34,XBIOS(2)+(160*150),160*16
+DO
+  IF STICK(1)=1 AND y%<28160
+    descend
+  ENDIF
+  IF STICK(1)=2 AND y%>0
+    monte
+  ENDIF
+  testjoy
+LOOP
+> PROCEDURE descend
+  INC demo%
+  FOR y2%=y% TO y%+(160*16) STEP 160
+    BMOVE titre%+34+y2%,XBIOS(2)+(160*150),160*16
+    FOR pause%=1 TO 10
+      testjoy
+    NEXT pause%
+  NEXT y2%
+  ADD y%,160*16
+RETURN
+> PROCEDURE monte
+  DEC demo%
+  FOR y2%=y% TO y%-(160*16) STEP -160
+    BMOVE titre%+34+y2%,XBIOS(2)+(160*150),160*16
+    FOR pause%=1 TO 10
+      testjoy
+    NEXT pause%
+  NEXT y2%
+  SUB y%,160*16
+RETURN
+> PROCEDURE testjoy
+  IF INKEY$=" "
+    PRINT demo%
+    END
+  ENDIF
+RETURN

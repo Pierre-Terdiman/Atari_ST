@@ -1,0 +1,215 @@
+img$=SPACE$(32066)
+img%=VARPTR(img$)
+BLOAD "mini.pi1",img%
+VOID XBIOS(6,L:img%+2)
+BMOVE img%+34,XBIOS(2),32000
+DIM car$(100)
+GET 1,1,16,11,car$(1)
+GET 18,1,33,11,car$(2)
+GET 35,1,50,11,car$(3)
+GET 52,1,67,11,car$(4)
+GET 69,1,84,11,car$(5)
+GET 86,1,101,11,car$(6)
+GET 103,1,118,11,car$(7)
+GET 120,1,135,11,car$(8)
+GET 137,1,152,11,car$(9)
+GET 154,1,169,11,car$(10)
+GET 171,1,186,11,car$(11)
+GET 188,1,203,11,car$(12)
+GET 205,1,220,11,car$(13)
+GET 222,1,237,11,car$(14)
+GET 239,1,254,11,car$(15)
+GET 256,1,271,11,car$(16)
+GET 273,1,288,11,car$(17)
+GET 290,1,305,11,car$(18)
+GET 1,13,16,23,car$(19)
+GET 18,13,33,23,car$(20)
+GET 35,13,50,23,car$(21)
+GET 52,13,67,23,car$(22)
+GET 69,13,84,23,car$(23)
+GET 86,13,101,23,car$(24)
+GET 103,13,118,23,car$(25)
+GET 120,13,135,23,car$(26)
+GET 137,13,152,23,car$(27)
+GET 154,13,169,23,car$(28)
+GET 171,13,186,23,car$(29)
+GET 188,13,203,23,car$(30)
+GET 205,13,220,23,car$(31)
+GET 222,13,237,23,car$(32)
+GET 239,13,254,23,car$(33)
+GET 256,13,271,23,car$(34)
+' FOR x%=1 TO 18
+' GET x%,1,x%+15,11,car$(x%)
+' NEXT x%
+CLS
+message$=SPACE$(20)+"CHOUETTE, CE SCROLL MARCHE. C'EST GENIAL EH !! VIVE MOI !! JE SUIS VRAIMENT *THE BEST* !!"
+message$=message$+STRING$(40-(LEN(message$)-(FIX(LEN(message$)/20))*40),32)
+DIM sp$(FIX(LEN(message$)/40))
+FOR t%=FIX(LEN(message$)/40) DOWNTO 0
+  PRINT CHR$(27)+"E"+CHR$(27)+"b1";
+  nom$=MID$(message$,t%*20+1,20)
+  graphic
+  GET 0,0,319,11,sp$(t%)
+NEXT t%
+REPEAT
+  FOR t%=0 TO FIX(LEN(message$)/40)-1
+    FOR x%=0 TO -319 STEP -2
+      PUT x%,182,sp$(t%)
+      PUT x%+320,182,sp$(t%+1)
+      VSYNC
+      EXIT IF INP(-2)
+    NEXT x%
+    EXIT IF INP(-2)
+  NEXT t%
+UNTIL INP(-2)
+END
+> PROCEDURE graphic
+  coord_x%=1
+  FOR var%=1 TO LEN(nom$)
+    ascii%=ASC(MID$(nom$,var%,1))
+    nombre
+    PUT coord_x%,1,car$(n%)
+    ADD coord_x%,16
+  NEXT var%
+RETURN
+> PROCEDURE nombre
+  IF ascii%=32
+    n%=100
+  ELSE
+    IF ascii%=65
+      n%=1
+    ELSE
+      IF ascii%=66
+        n%=2
+      ELSE
+        IF ascii%=67
+          n%=3
+        ELSE
+          IF ascii%=68
+            n%=4
+          ELSE
+            IF ascii%=69
+              n%=5
+            ELSE
+              IF ascii%=70
+                n%=6
+              ELSE
+                IF ascii%=71
+                  n%=7
+                ELSE
+                  IF ascii%=72
+                    n%=8
+                  ELSE
+                    IF ascii%=73
+                      n%=9
+                    ELSE
+                      IF ascii%=74
+                        n%=10
+                      ELSE
+                        IF ascii%=75
+                          n%=11
+                        ELSE
+                          IF ascii%=76
+                            n%=12
+                          ELSE
+                            IF ascii%=77
+                              n%=13
+                            ELSE
+                              IF ascii%=78
+                                n%=14
+                              ELSE
+                                IF ascii%=79
+                                  n%=15
+                                ELSE
+                                  IF ascii%=80
+                                    n%=16
+                                  ELSE
+                                    IF ascii%=81
+                                      n%=17
+                                    ELSE
+                                      IF ascii%=82
+                                        n%=18
+                                      ELSE
+                                        IF ascii%=83
+                                          n%=19
+                                        ELSE
+                                          IF ascii%=84
+                                            n%=20
+                                          ELSE
+                                            IF ascii%=85
+                                              n%=21
+                                            ELSE
+                                              IF ascii%=86
+                                                n%=22
+                                              ELSE
+                                                IF ascii%=87
+                                                  n%=23
+                                                ELSE
+                                                  IF ascii%=88
+                                                    n%=24
+                                                  ELSE
+                                                    IF ascii%=89
+                                                      n%=25
+                                                    ELSE
+                                                      IF ascii%=90
+                                                        n%=26
+                                                      ELSE
+                                                        IF ascii%=33
+                                                          n%=27
+                                                        ELSE
+                                                          IF ascii%=63
+                                                            n%=28
+                                                          ELSE
+                                                            IF ascii%=46
+                                                              n%=29
+                                                            ELSE
+                                                              IF ascii%=58
+                                                                n%=30
+                                                              ELSE
+                                                                IF ascii%=45
+                                                                  n%=31
+                                                                ELSE
+                                                                  IF ascii%=42
+                                                                    n%=32
+                                                                  ELSE
+                                                                    IF ascii%=44
+                                                                      n%=33
+                                                                    ELSE
+                                                                      IF ascii%=39
+                                                                        n%=34
+                                                                      ENDIF
+                                                                    ENDIF
+                                                                  ENDIF
+                                                                ENDIF
+                                                              ENDIF
+                                                            ENDIF
+                                                          ENDIF
+                                                        ENDIF
+                                                      ENDIF
+                                                    ENDIF
+                                                  ENDIF
+                                                ENDIF
+                                              ENDIF
+                                            ENDIF
+                                          ENDIF
+                                        ENDIF
+                                      ENDIF
+                                    ENDIF
+                                  ENDIF
+                                ENDIF
+                              ENDIF
+                            ENDIF
+                          ENDIF
+                        ENDIF
+                      ENDIF
+                    ENDIF
+                  ENDIF
+                ENDIF
+              ENDIF
+            ENDIF
+          ENDIF
+        ENDIF
+      ENDIF
+    ENDIF
+  ENDIF
+RETURN

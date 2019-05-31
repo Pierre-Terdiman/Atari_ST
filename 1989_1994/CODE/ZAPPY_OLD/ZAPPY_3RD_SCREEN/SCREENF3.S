@@ -1,0 +1,1397 @@
+IERA	EQU	$FFFA07		* INTERUPTION ENABLE A
+IERB	EQU	$FFFA09		* INTERUPTION ENABLE B
+ISRA	EQU	$FFFA0F		* INTERUPTION IN-SERVICE A
+IMRA	EQU	$FFFA13		* INTERUPTION MASQUE A
+TBCR	EQU	$FFFA1B		* TIMER B CONTROL REGISTER
+TBDR	EQU	$FFFA21		* TIMER B DONNEE REGISTER
+SYNCRO	EQU	$FF820A		* REGISTRE SYNCRO SHIFTER
+COUL_0	EQU	$FF8240
+COUL_1	EQU	$FF8242		* ADRESSES DES REGISTRES
+COUL_2	EQU	$FF8244		* DE LA PALETTE DU SHIFTER
+COUL_3	EQU	$FF8246
+COUL_4	EQU	$FF8248
+COUL_5	EQU	$FF824A
+COUL_6	EQU	$FF824C
+COUL_7	EQU	$FF824E
+COUL_8	EQU	$FF8250
+COUL_9	EQU	$FF8252
+COUL_10	EQU	$FF8254
+COUL_11	EQU	$FF8256
+COUL_12	EQU	$FF8258
+COUL_13	EQU	$FF825A
+COUL_14	EQU	$FF825C
+COUL_15	EQU	$FF825E
+ACIA	EQU	$FFFC02		* LECTURE DE L'ACIA CLAVIER
+PSG	EQU	$FF8800	        * pour le son...
+
+
+ 	SECTION TEXT
+DEBUT:	MOVE.L  A7,A5
+	LEA.L 	D_PILE,A7
+	MOVE.L 	4(A5),A5
+	MOVE.L 	$C(A5),D0
+	ADD.L 	$14(A5),D0
+	ADD.L 	$1C(A5),D0
+	ADD.L 	#$100,D0		
+	MOVE.L 	D0,-(SP)		
+        MOVE.L 	A5,-(SP)
+	MOVE.W 	#0,-(SP)
+	MOVE.W 	#$4A,-(SP)
+	TRAP 	#1
+	LEA 	12(SP),SP
+
+	pea	0
+	move.w	#$20,-(sp)
+	trap	#1
+	addq.l	#6,sp
+        MOVE.L  D0,SAUVE
+
+
+	MOVE.W	#4,-(SP)		* APPEL FONCTION GETREZ
+	TRAP 	#14			* XBIOS...
+	ADDQ.L	#2,SP			*
+	MOVE.W	D0,RES			* SAUVE LA RESOLUTION
+	
+	MOVE.W	#2,-(SP)		* APPEL FONCTION PHYSBASE
+	TRAP 	#14			* XBIOS
+	ADDQ.L 	#2,SP			*
+	MOVE.L	D0,ANC_ECR		* SAUVE L'ADRESSE ECRAN
+
+
+	LEA.L	COUL_0,A0		* ADRESSE PALETTE SHIFTER
+	MOVEM.L	(A0),D0-D7		* RECUPERE LES 16 REGISTRES
+	LEA.L	ANC_PAL,A0		* ADRESSE DE SAUVEGARDE
+	MOVEM.L	D0-D7,(A0)		* SAUVE LES 16 REGISTRES
+
+
+
+	
+	
+        MOVEA.L #BLOC+34,A0
+        LEA.L   BUFFER,A1
+        MOVE.L  #1319,D0
+COPY1   MOVE.L  (A0)+,(A1)+
+        DBF D0,COPY1
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         adda.l  #5280,A1
+         MOVE.L  #1319,D0
+COPY2   MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY2
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #10560,A1
+         MOVE.L  #1319,D0
+COPY3   MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY3
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #15840,A1
+         MOVE.L  #1319,D0
+COPY4   MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY4
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #21120,A1
+         MOVE.L  #1319,D0
+COPY5   MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY5
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #26400,A1
+         MOVE.L  #1319,D0
+COPY6   MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY6
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #31680,A1
+         MOVE.L  #1319,D0
+COPY7   MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY7
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #36960,A1
+         MOVE.L  #1319,D0
+COPY8   MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY8
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #42240,A1
+         MOVE.L  #1319,D0
+COPY9   MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY9
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #47520,A1
+         MOVE.L  #1319,D0
+COPY10  MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY10
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L #52800,A1
+         MOVE.L  #1319,D0
+COPY11  MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY11
+ 	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #58080,A1
+         MOVE.L  #1319,D0
+COPY12  MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY12
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #63360,A1
+         MOVE.L  #1319,D0
+COPY13  MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY13
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #68640,A1
+         MOVE.L  #1319,D0
+COPY14  MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY14
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #73920,A1
+         MOVE.L  #1319,D0
+COPY15  MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY15
+	
+         MOVEA.L #BLOC+34,A0
+         LEA.L   BUFFER,A1
+         ADDA.L  #79200,A1
+         MOVE.L  #1319,D0
+COPY16  MOVE.L  (A0)+,(A1)+
+         DBF D0,COPY16
+
+         LEA.L   BUFFER,A4
+         BSR PREDECALE
+
+         LEA.L   BUFFER,A4
+         ADDA.L  #5280,A4
+         BSR     PREDECALE
+         LEA.L   BUFFER,A4
+          ADDA.L  #5280,A4
+         BSR     PREDECALE
+ 
+         LEA.L   BUFFER,A4
+         ADDA.L  #10560,A4
+         BSR     PREDECALE
+         LEA.L   BUFFER,A4
+         ADDA.L  #10560,A4
+         BSR     PREDECALE
+         LEA.L   BUFFER,A4
+         ADDA.L  #10560,A4
+         BSR     PREDECALE
+
+         REPT 4
+         LEA.L   BUFFER,A4
+         ADDA.L  #15840,A4
+         BSR PREDECALE
+         ENDR
+
+         REPT 5
+         LEA.L   BUFFER,A4
+         ADDA.L  #21120,A4
+         BSR PREDECALE
+         ENDR
+
+         REPT 6
+         LEA.L   BUFFER,A4
+         ADDA.L  #26400,A4
+         BSR PREDECALE
+         ENDR
+
+         REPT 7
+         LEA.L   BUFFER,A4
+         ADDA.L  #31680,A4
+         BSR PREDECALE
+         ENDR
+
+         REPT 8
+         LEA.L   BUFFER,A4
+         ADDA.L  #36960,A4
+         BSR PREDECALE
+         ENDR
+
+         REPT 9
+         LEA.L   BUFFER,A4
+         ADDA.L  #42240,A4
+         BSR PREDECALE
+         ENDR
+
+         REPT 10
+         LEA.L   BUFFER,A4
+         ADDA.L  #47520,A4
+         BSR PREDECALE
+         ENDR
+
+         REPT 11
+         LEA.L   BUFFER,A4
+         ADDA.L  #52800,A4
+         BSR PREDECALE
+         ENDR
+
+         REPT 12
+         LEA.L   BUFFER,A4
+         ADDA.L  #58080,A4
+         BSR PREDECALE
+          ENDR
+
+         REPT 13
+         LEA.L   BUFFER,A4
+         ADDA.L  #63360,A4
+         BSR PREDECALE
+         ENDR
+
+         REPT 14
+         LEA.L   BUFFER,A4
+         ADDA.L  #68640,A4
+         BSR PREDECALE
+         ENDR
+
+         REPT 15
+         LEA.L   BUFFER,A4
+         ADDA.L  #73920,A4
+         BSR PREDECALE
+         ENDR
+
+
+         REPT 16
+         LEA.L   BUFFER,A4
+         ADDA.L  #79200,A4
+         BSR PREDECALE
+         ENDR
+
+	MOVE.L #MES_F2,MES_PNT2		* INIT POINTEUR MESSAGE
+
+	
+
+
+ 
+        LEA     player,a0
+        jsr   decrunch
+        LEA     debmod,a0
+        jsr   decrunch
+        LEA     LOGO,a0
+        jsr   decrunch
+        LEA     IMAGE,a0
+        jsr   decrunch
+
+
+
+
+
+        move.w  #$0,-(sp)
+        move.l  #-1,-(sp)
+        move.l  #-1,-(sp)
+        move.w  #5,-(sp)
+        trap  #14
+        adda.l  #12,sp
+
+	MOVE.L #MES_F,MES_PNT		* INIT POINTEUR MESSAGE
+
+	bsr	SET_SCR		;preparation des ecrans
+
+
+
+        MOVEA.L  SCREEN2,A1
+        MOVEA.L  #LOGO+34,A0
+	MOVE.L   #199,D0
+KOOKOO	MOVEM.L	(A0),D1-D7/A2-A6	
+	MOVEM.L	D1-D7/A2-A6,(A1)
+	MOVEM.L	44(A0),D1-D7/A2-A6
+	MOVEM.L	D1-D7/A2-A6,44(A1)
+	MOVEM.L	92(A0),D1-D7/A2-A6
+	MOVEM.L	D1-D7/A2-A6,92(A1)
+	MOVEM.L	140(A0),D1-D6
+	MOVEM.L	D1-D6,140(A1)
+	LEA 160(A1),A1
+	LEA 160(A0),A0
+	DBF  D0,KOOKOO
+
+        MOVEA.L  SCREEN1,A1
+        MOVEA.L  #LOGO+34,A0
+	MOVE.L   #199,D0
+KOOKOO2	MOVEM.L	(A0),D1-D7/A2-A6	
+	MOVEM.L	D1-D7/A2-A6,(A1)
+	MOVEM.L	44(A0),D1-D7/A2-A6
+	MOVEM.L	D1-D7/A2-A6,44(A1)
+	MOVEM.L	92(A0),D1-D7/A2-A6
+	MOVEM.L	D1-D7/A2-A6,92(A1)
+	MOVEM.L	140(A0),D1-D6
+	MOVEM.L	D1-D6,140(A1)
+	LEA 160(A1),A1
+	LEA 160(A0),A0
+	DBF  D0,KOOKOO2
+
+
+			
+	MOVE.B	IERA,MFP1		*
+	MOVE.B	IERB,MFP2		*
+	MOVE.B	ISRA,MFP3		* SAUVE LES REGISTRES
+	MOVE.B	IMRA,MFP4		* UTILISES DU MFP
+	MOVE.B	TBCR,MFP5		*
+	MOVE.B	TBDR,MFP6		*
+
+
+	or.w	#$700,sr
+        MOVE.L  $120.W,ANC_TB
+        MOVE.L  #TB0_IR,$120.W
+	move.l	$70.w,anc_70
+	move.l	#n70,$70.w
+	clr.b	$fffa13
+	clr.b	$fffa15
+	
+	CLR.B	IERA			* VIRE TOUTES LES
+	CLR.B	IERB			* INTERUPTIONS
+
+	
+;	DC.W	$A00A			* CACHE LA SOURIS (LINE A)
+;	MOVE.B	#$12,ACIA		* INIT CLAV
+	
+	CLR.B	TBCR			* ARRET DU TIMER B (PLUS PRUDENT)
+	BSET	#0,IERA			* AUTORISE LES INTERUPTIONS
+	BSET	#0,IMRA			* SUR LE TIMER B
+
+	lea	debmod,a1
+	lea	finmod,a2
+	moveq	#0,d0
+	bsr	player
+	move.l	a0,sdtvar
+	move.w	#$2300,sr
+	lea	TEXTE,a0	;debut du texte dans a0
+	move.l	a0,MEM_LET	Position fonte (Table)
+	move.w	#0,PART_AFF	(2 Parties)
+	move.l	#new70,$70.w
+
+BOUCLE:	
+	MOVE.B	VSYNC,D0		* ATTEND UNE SYNCRO VERTICALE
+WAIT	CMP.B	VSYNC,D0		* POUR LE TESTS DES TOUCHES
+	BEQ.S	WAIT
+	CMP.B	#$B9,ACIA		* TESTE ESPACE (CODE SCAN)
+	BNE.S	BOUCLE			* SI ESPACE, ON SORT DE L'INTRO
+
+
+
+
+;	MOVE.B	#8,ACIA			* REMET LE CLAVIER
+	MOVE.B	MFP1,IERA		* RESTAURE LE MFP
+	MOVE.B	MFP2,IERB		*
+	MOVE.B	MFP3,ISRA		*
+	MOVE.B	MFP4,IMRA		*
+	MOVE.B	MFP5,TBCR		*
+	MOVE.B	MFP6,TBDR		*
+	
+	
+
+	move.w	#$2700,sr
+	move.b	#$1e,$fffa13
+	move.b	#$64,$fffa15
+	move.l	anc_70,$70.w
+        MOVE.L  ANC_TB,$120.W
+	move.w	#$2300,sr
+
+        move.w  #$1,-(sp)
+        move.l  #-1,-(sp)
+        move.l  #-1,-(sp)
+        move.w  #5,-(sp)
+        trap  #14
+        adda.l  #12,sp
+
+	clr.w	-(sp)
+	trap	#1
+
+
+
+new70	
+	CLR.B	TBCR			* ARRET DU TIMER B
+	MOVE.B	#20,TBDR		* INTERUPTION SUR LIGNE 117  (109)
+	MOVE.B	#8,TBCR			* TIMER C EN EVENT COUNT MODE
+
+	LEA.L	COUL_0,A4		* ADRESSE PALETTE SHIFTER DANS A6
+	MOVEA.L #LOGO+2,A5              * ADRESSE COULEURS
+     REPT 8
+     	MOVE.L	(A5)+,(A4)+		* MET LA NOUVELLE PALETTE EN PLACE
+     ENDR
+        MOVE.W   #$777,$FFFF824E.W        
+        CMPI.B   #$42,ACIA
+        BEQ   BLANC
+        BRA.S  NOIR
+BLANC   MOVE.W   #$777,$FFFF8240.W
+
+
+NOIR
+        
+
+        MOVEA.L  SCREEN2,A1
+
+
+
+
+        MOVEA.L  #LOGO+34,A0
+
+
+	MOVEQ	#0,D0			* NETOIE D0
+	MOVEA.L	MES_PNT,A2		* POINTEUR TEXTE DANS D0
+	MOVE.B	(A2)+,D0		* MET LE CARACTERE SUIVANT DANS D0
+	CMPI.B	#-1,D0			* SI -1, ON RECOMMENCE LE TEXTE
+	BEQ	 AGAIN2			*
+        MOVE.L	A2,MES_PNT		* SAUVE LE POINTEUR
+        BRA.S   CONT20
+AGAIN2	MOVE.L	#MES_F,MES_PNT		* REINITIALISE LE POINTEUR TEXTE
+        MOVEQ   #0,D0
+CONT20  MOVE.L D0,D1
+	LSL.L  #2,D0
+	ADD.L  D1,D0
+	LSL.L  #5,D0
+	ADDA.L D0,A1
+
+
+
+
+
+* total=89
+
+INC     SET  0
+
+        REPT	3
+	
+	MOVEM.L	INC+80(A0),D0-D1
+	MOVEM.L	D0-D1,INC+80(A1)
+	
+;	MOVEM.L	INC+96(A0),D0-D3
+;	MOVEM.L	D0-D3,INC+96(A1)
+	
+	
+INC     SET INC+160
+	ENDR
+
+
+        REPT	2
+	
+	MOVEM.L	INC+72(A0),D0-D5
+	MOVEM.L	D0-D5,INC+72(A1)
+	
+;	MOVEM.L	INC+96(A0),D0-D3
+;	MOVEM.L	D0-D3,INC+96(A1)
+	
+	
+INC     SET INC+160
+	ENDR
+
+
+
+
+        REPT	9
+	
+	MOVEM.L	INC+64(A0),D0-D6/A2-A4
+	MOVEM.L	D0-D6/A2-A4,INC+64(A1)
+	
+;	MOVEM.L	INC+96(A0),D0-D3
+;	MOVEM.L	D0-D3,INC+96(A1)
+	
+	
+INC     SET INC+160
+	ENDR
+
+
+        REPT	10
+	
+	MOVEM.L	INC+56(A0),D0-D6/A2-A5
+	MOVEM.L	D0-D6/A2-A5,INC+56(A1)
+	
+	MOVEM.L	INC+96(A0),D0-D3
+	MOVEM.L	D0-D3,INC+96(A1)
+	
+	
+INC     SET INC+160
+	ENDR
+
+
+       REPT	15
+	MOVEM.L	INC(A0),D0-D6/A2-A5	
+	MOVEM.L	D0-D6/A2-A5,INC(A1)
+	
+	MOVEM.L	INC+40(A0),D0-D6/A2-A5
+	MOVEM.L	D0-D6/A2-A5,INC+40(A1)
+	
+	MOVEM.L	INC+80(A0),D0-D6/A2-A5
+	MOVEM.L	D0-D6/A2-A5,INC+80(A1)
+	
+	MOVEM.L	INC+120(A0),D0-D6/a2-a4
+	MOVEM.L	D0-D6/a2-a4,INC+120(A1)
+	
+INC     SET INC+160
+	ENDR
+
+       REPT	16
+	
+	MOVEM.L	INC+48(A0),D0-D6/A2-A5
+	MOVEM.L	D0-D6/A2-A5,INC+48(A1)
+	
+	MOVEM.L	INC+88(A0),D0-D6/A2
+	MOVEM.L	D0-D6/A2,INC+88(A1)
+	
+	
+INC     SET INC+160
+	ENDR
+
+
+       REPT	13
+	
+	MOVEM.L	INC+56(A0),D0-D6/A2-A5
+	MOVEM.L	D0-D6/A2-A5,INC+56(A1)
+	
+	MOVEM.L	INC+96(A0),D0-D3
+	MOVEM.L	D0-D3,INC+96(A1)
+	
+	
+INC     SET INC+160
+	ENDR
+
+
+       REPT	23
+	
+	MOVEM.L	INC+72(A0),D0-D3
+	MOVEM.L	D0-D3,INC+72(A1)
+	
+	
+INC     SET INC+160
+	ENDR
+
+
+
+
+
+
+
+
+LK	MOVEQ	#0,D0			* NETOIE D0
+        MOVEQ   #0,D1
+	MOVEA.L	MES_PNT2,A2		* POINTEUR TEXTE DANS D0
+	CMPI.B	#-1,264(A2)
+	BEQ.S	 AGAIN
+        MOVEA.L	MES_PNT2,A2
+        MOVE.L  (A2)+,D0
+        MOVE.L  (A2)+,D0
+        MOVE.L	A2,MES_PNT2		* SAUVE LE POINTEUR
+        BRA.S   LA_SUITE
+AGAIN	MOVE.L	#MES_F2,MES_PNT2		* REINITIALISE LE POINTEUR TEXTE
+	MOVEQ	#0,D0			* NETOIE D0
+        MOVEQ   #0,D1
+	MOVEA.L	MES_PNT2,A2		* POINTEUR TEXTE DANS D0
+        MOVE.L	A2,MES_PNT2		
+
+
+LA_SUITE 
+INC     SET 0
+        MOVEA.L   SCREEN2,A1 
+	LEA.L     17624(A1),A1
+        REPT 33
+        MOVE.L  (A2)+,A0
+        MOVE.L  (A2)+,D0
+        ADDA.L  D0,A1
+        MOVE.L  A2,SAVEA2       
+	MOVEM.L	INC(A0),D0-D6/A2-A5
+	MOVEM.L	D0-D6/A2-A5,INC(A1)
+	MOVEM.L	INC+44(A0),D0-D6/A2-A5
+	MOVEM.L	D0-D6/A2-A5,INC+44(A1)
+; les 2 dernieres ne sont pas sures
+; essayez d'y integrer a2...
+	MOVEM.L	INC+88(A0),D0-D1
+	MOVEM.L	D0-D1,INC+88(A1)
+;;	MOVEM.L	INC+144(A0),D0-D3
+;;	MOVEM.L	D0-D3,INC+144(A1)
+INC     SET INC+160
+        MOVEA.L  SAVEA2,A2
+        ENDR
+
+
+
+
+
+	move.l	sdtvar,a0
+	move.l	(a0),a6
+	moveq	#1,d0
+	bsr	player
+
+
+
+
+        bsr	SWAP_SCR
+
+	bsr	SCROLL
+	bsr	AFF_FNT	
+
+
+        CLR.W  $FFFF8240.W
+        NOT.B  VSYNC
+n70	rte
+
+
+	
+TB0_IR	
+        MOVE.W   #$776,$FFFF824E.W
+        CLR.B	TBCR
+	MOVE.B	#20,TBDR
+	MOVE.B	#8,TBCR
+	MOVE.L	#TB1_IR,$120.W
+	BCLR	#0,ISRA
+	RTE
+TB1_IR	
+        MOVE.W   #$775,$FFFF824E.W
+        CLR.B	TBCR
+	MOVE.B	#20,TBDR
+	MOVE.B	#8,TBCR
+	MOVE.L	#TB2_IR,$120.W
+	BCLR	#0,ISRA
+	RTE
+
+TB2_IR	
+        MOVE.W   #$774,$FFFF824E.W
+        CLR.B	TBCR
+	MOVE.B	#20,TBDR
+	MOVE.B	#8,TBCR
+	MOVE.L	#TB3_IR,$120.W
+	BCLR	#0,ISRA
+	RTE
+
+TB3_IR	
+        MOVE.W   #$773,$FFFF824E.W
+        CLR.B	TBCR
+	MOVE.B	#20,TBDR
+	MOVE.B	#8,TBCR
+	MOVE.L	#TB4_IR,$120.W
+	BCLR	#0,ISRA
+	RTE
+
+TB4_IR	
+        MOVE.W   #$772,$FFFF824E.W
+
+        MOVE.W  #$501,COUL_1
+        MOVE.W  #$522,COUL_2
+        MOVE.W  #$632,COUL_3
+        MOVE.W  #$743,COUL_4
+        MOVE.W  #$667,COUL_5
+        MOVE.W  #$777,COUL_6
+;        MOVE.W  #$112,COUL_7
+        MOVE.W  #$223,COUL_8
+        MOVE.W  #$334,COUL_9
+        MOVE.W  #$445,COUL_10
+        MOVE.W  #$556,COUL_11
+        MOVE.W  #$754,COUL_12
+        MOVE.W  #$300,COUL_13
+        MOVE.W  #$112,COUL_14
+        MOVE.W  #$022,COUL_15
+
+        CLR.B	TBCR
+	MOVE.B	#20,TBDR
+	MOVE.B	#8,TBCR
+	MOVE.L	#TB5_IR,$120.W
+	BCLR	#0,ISRA
+	RTE
+
+TB5_IR	
+        MOVE.W   #$771,$FFFF824E.W
+        CLR.B	TBCR
+	MOVE.B	#20,TBDR
+	MOVE.B	#8,TBCR
+	MOVE.L	#TB6_IR,$120.W
+	BCLR	#0,ISRA
+	RTE
+
+TB6_IR	
+        MOVE.W   #$770,$FFFF824E.W
+        CLR.B	TBCR
+;	MOVE.B	#20,TBDR
+;	MOVE.B	#8,TBCR
+	MOVE.L	#TB0_IR,$120.W
+	BCLR	#0,ISRA
+	RTE
+
+
+	
+
+
+
+
+
+SET_SCR:	move.l	#BUFFERSCR,d0	;adresse buffer dans d0
+	and.l	#$ffffff00,d0		;adresse multiple de 256
+	move.l	d0,SCREEN1		;adresse obtenue dans SCREEN1
+	add.l	#32000,d0		;32000 octets plus loin...
+	move.l	d0,SCREEN2		;...SCREEN2
+	rts				;retour
+
+SWAP_SCR:	move.l	SCREEN1,d0	;adresse Ecran courant dans d0
+	move.l	SCREEN2,SCREEN1		;ecran travail sur ecran courant
+	move.l	d0,SCREEN2		;ecran courant sur ecran travail
+;	;lÖ en fait il a permutÇ les deux ecrans travail et courant	
+;	;il a mis l'un sur l'autre et vice-versa,c'est le SWAP-SCREEN
+	lsr.l	#8,d0		8*2=16
+	move.l	#$ffff8201,a0
+	movep	d0,(a0)
+	rts
+SCROLL:	
+        move.l	SCREEN2,a0	Ecran de travail
+	move.l	SCREEN2,a1
+	adda.l	#8,a1
+	adda.l  #160*166,a1
+	adda.l  #160*166,a0
+	rept 	33*20		Hauteur du scroll*20
+	move.l	(a1)+,(a0)+
+	move.l	(a1)+,(a0)+
+	endr
+
+
+        ;MOVEA.L  SCREEN2,A1
+;        ;ADDA.L   #160*30,A1
+;        ;MOVEA.L  SCREEN2,A0
+;        ;SUBA.L   #8,A0
+;
+;	;REPT	28
+;	;MOVEM.L	(A0),D0-D7/A2-A6	
+;	;MOVEM.L	D0-D7/A2-A6,160(A1)
+;	
+;	;MOVEM.L	48(A0),D0-D7/A2-A6
+;	;MOVEM.L	D0-D7/A2-A6,208(A1)
+;	
+;	;MOVEM.L	96(A0),D0-D7/A2-A6
+;	;MOVEM.L	D0-D7/A2-A6,256(A1)
+	
+	;MOVEM.L	144(A0),D0-D3
+	;MOVEM.L	D0-D3,304(A1)
+	
+	;ADDA.L	#160,A1
+	;ADDA.L	#160,A0
+	;ENDR
+ 
+
+	rts
+
+AFF_FNT:	cmp.w	#1,PART_AFF
+	blo	PART1
+	beq	PART2
+	cmp.w	#3,PART_AFF
+	blo	PART3
+	beq	PART4
+	
+PART1:	move.l	#IMAGE+34,a2	Pointe sur les fontes
+	move.l	MEM_LET,a0
+	adda.w	(a0),a2
+	move.l	SCREEN2,a1	(8 pixels de large)
+	adda.l	#152,a1
+	adda.l  #160*166,a1
+INC	set	0
+	rept	33
+	move.b	INC+9(a2),INC(a1)
+	move.b	INC+11(a2),INC+2(a1)
+	move.b	INC+13(a2),INC+4(a1)
+        move.b  INC+15(a2),INC+6(a1)  * ok je pense
+INC	set	INC+160
+	endr
+	
+	addq.l	#2,a0		On passe Ö une autre lettre
+	cmp.w	#$ffff,(a0)
+	bne	GO_LET
+	lea	TEXTE,a0
+GO_LET:	move.l	a0,MEM_LET	On sauvegarde le pointeur
+	
+	move.l	#IMAGE+34,a2
+	adda.w	(a0),a2
+INC	set 	0
+	rept 	33
+	move.b	INC+0(a2),INC+1(a1)
+	move.b	INC+2(a2),INC+3(a1)
+	move.b	INC+4(a2),INC+5(a1)  * ok
+        move.b  INC+6(a2),INC+7(a1)
+        
+INC	set	INC+160
+	endr
+	move.w	#1,PART_AFF
+	bra	FIN_SCRO	
+	
+PART2:	move.l	#IMAGE+34,a2
+	move.l	MEM_LET,a0
+	adda.w	(a0),a2
+	move.l	SCREEN2,a1
+	adda.l	#152,a1
+	adda.l  #160*166,a1
+INC	set	0
+	rept	33
+	move.l	INC(a2),INC(a1)
+	move.w	INC+4(a2),INC+4(a1)
+        move.w  INC+6(a2),INC+6(a1)      * ok
+INC	set	INC+160
+	endr
+	move.w	#2,PART_AFF
+	bra	FIN_SCRO
+
+PART3:	move.l	#IMAGE+34,a2
+	move.l	MEM_LET,a0
+	adda.w	(a0),a2
+	move.l	SCREEN2,a1
+	adda.l	#152,a1
+	adda.l  #160*166,a1
+INC	set	0
+	rept	33
+	move.b	INC+1(a2),INC(a1)	
+	move.b	INC+3(a2),INC+2(a1)	
+	move.b	INC+5(a2),INC+4(a1)
+        move.b  INC+7(a2),INC+6(a1)
+	move.b	INC+8(a2),INC+1(a1)	
+	move.b	INC+10(a2),INC+3(a1)	
+	move.b	INC+12(a2),INC+5(a1)	
+        move.b  INC+14(a2),INC+7(a1)      * ok ?
+INC	set	INC+160
+	endr
+	move.w	#3,PART_AFF
+	bra	FIN_SCRO
+
+PART4:	move.l	#IMAGE+34,a2
+	move.l	MEM_LET,a0
+	adda.w	(a0),a2
+	move.l	SCREEN2,a1
+	adda.l	#152,a1
+	adda.l  #160*166,a1
+INC	set	0
+	rept	33
+	move.l	INC+8(a2),INC(a1)
+	move.w	INC+12(a2),INC+4(a1)
+        move.w  INC+14(a2),INC+6(a1)  * ok?
+INC	set	INC+160
+	endr
+	move.w	#0,PART_AFF
+	bra	FIN_SCRO
+
+FIN_SCRO	rts	
+
+
+
+PREDECALE:
+          MOVE.L    #32,D0
+DECAL
+          roxl.w    152(a4)  * 1ER PLAN
+          roxl.w    144(a4)
+          roxl.w    136(a4)       
+          roxl.w    128(a4)
+          roxl.w    120(a4)
+          roxl.w    112(a4)
+          roxl.w    104(a4)
+          roxl.w    96(a4)
+          roxl.w    88(a4)
+          roxl.w    80(a4)
+          roxl.w    72(a4)
+          roxl.w    64(a4)
+          roxl.w    56(a4)
+          roxl.w    48(a4)
+          roxl.w    40(a4)
+          roxl.w    32(a4)
+          roxl.w    24(a4)
+          roxl.w    16(a4)
+          roxl.w    8(a4)
+          roxl.w    (a4)
+   
+          roxl.w    154(a4)  * 2EME PLAN
+          roxl.w    146(a4)
+          roxl.w    138(a4)       
+          roxl.w    130(a4)
+          roxl.w    122(a4)
+          roxl.w    114(a4)
+          roxl.w    106(a4)
+          roxl.w    98(a4)
+          roxl.w    90(a4)
+          roxl.w    82(a4)
+          roxl.w    74(a4)
+          roxl.w    66(a4)
+          roxl.w    58(a4)
+          roxl.w    50(a4)
+          roxl.w    42(a4)
+          roxl.w    34(a4)
+          roxl.w    26(a4)
+          roxl.w    18(a4)
+          roxl.w    10(a4)
+          roxl.w    2(a4)
+
+          roxl.w    156(a4)  * 3EME PLAN
+          roxl.w    148(a4)
+          roxl.w    140(a4)       
+          roxl.w    132(a4)
+          roxl.w    124(a4)
+          roxl.w    116(a4)
+          roxl.w    108(a4)
+          roxl.w    100(a4)
+          roxl.w    92(a4)
+          roxl.w    84(a4)
+          roxl.w    76(a4)
+          roxl.w    68(a4)
+          roxl.w    60(a4)
+          roxl.w    52(a4)
+          roxl.w    44(a4)
+          roxl.w    36(a4)
+          roxl.w    28(a4)
+          roxl.w    20(a4)
+          roxl.w    12(a4)
+          roxl.w    4(a4)
+
+          roxl.w    158(a4)  * 4EME PLAN
+          roxl.w    150(a4)
+          roxl.w    142(a4)       
+          roxl.w    134(a4)
+          roxl.w    126(a4)
+          roxl.w    118(a4)
+          roxl.w    110(a4)
+          roxl.w    102(a4)
+          roxl.w    94(a4)
+          roxl.w    86(a4)
+          roxl.w    78(a4)
+          roxl.w    70(a4)
+          roxl.w    62(a4)
+          roxl.w    54(a4)
+          roxl.w    46(a4)
+          roxl.w    38(a4)
+          roxl.w    30(a4)
+          roxl.w    22(a4)
+          roxl.w    14(a4)
+          roxl.w    6(a4)
+          LEA.L   160(A4),A4
+          DBF D0,DECAL
+          RTS
+
+		
+
+;***************************************************************************
+; Unpacking source for Pack-Ice Version 2.1
+; a0: Pointer on packed Data
+decrunch:	movem.l d0-a6,-(sp)		; save registers
+		cmpi.l	#'Ice!',(a0)+		; Data packed?
+		bne.s	ice2_07			; no!
+		move.l	(a0)+,d0
+		lea	-8(a0,d0.l),a5
+		move.l	(a0)+,(sp)
+		lea	108(a0),a4
+		movea.l a4,a6
+		adda.l	(sp),a6
+		movea.l a6,a3
+		movea.l a6,a1			; save 120 bytes
+		lea	ice2_21+120(pc),a2	; at the end of the
+		moveq	#$77,d0			; unpacked data
+ice2_00:	move.b	-(a1),-(a2)
+		dbra	d0,ice2_00
+		bsr	ice2_0c
+		bsr.s	ice2_08
+		bsr	ice2_10		;; Picture decrunch!
+		bcc.s	ice2_04		;; These marked lines are only
+		movea.l a3,a1		;; necessary, if you selected the
+		move.w	#$0f9f,d7	;; additional picture packer
+ice2_01:	moveq	#3,d6		;; in Pack-Ice.
+ice2_02:	move.w	-(a1),d4	;;
+		moveq	#3,d5		;; If you never use the picture
+ice2_03:	add.w	d4,d4		;; pack option, you may delete
+		addx.w	d0,d0		;; all the lines marked with ";;"
+		add.w	d4,d4		;;
+		addx.w	d1,d1		;;
+		add.w	d4,d4		;;
+		addx.w	d2,d2		;;
+		add.w	d4,d4		;;
+		addx.w	d3,d3		;;
+		dbra	d5,ice2_03	;;
+		dbra	d6,ice2_02	;;
+		movem.w d0-d3,(a1)	;;
+		dbra	d7,ice2_01	;;
+ice2_04:	move.l	(sp),d0			; move all data to
+		lea	-120(a4),a1		; 120 bytes lower
+ice2_05:	move.b	(a4)+,(a1)+
+		dbra	d0,ice2_05
+		subi.l	#$010000,d0
+		bpl.s	ice2_05
+		moveq	#$77,d0			; restore saved data
+		lea	ice2_21+120(pc),a2
+ice2_06:	move.b	-(a2),-(a3)
+		dbra	d0,ice2_06
+ice2_07:	movem.l (sp)+,d0-a6		; restore registers
+		rts
+ice2_08:	bsr.s	ice2_10
+		bcc.s	ice2_0b
+		moveq	#0,d1
+		bsr.s	ice2_10
+		bcc.s	ice2_0a
+		lea	ice2_1e(pc),a1
+		moveq	#4,d3
+ice2_09:	move.l	-(a1),d0
+		bsr.s	ice2_13
+		swap	d0
+		cmp.w	d0,d1
+		dbne	d3,ice2_09
+		add.l	20(a1),d1
+ice2_0a:	move.b	-(a5),-(a6)
+		dbra	d1,ice2_0a
+ice2_0b:	cmpa.l	a4,a6
+		bgt.s	ice2_16
+		rts
+ice2_0c:	moveq	#3,d0
+ice2_0d:	move.b	-(a5),d7
+		ror.l	#8,d7
+		dbra	d0,ice2_0d
+		rts
+ice2_0e:	move.w	a5,d7
+		btst	#0,d7
+		bne.s	ice2_0f
+		move.l	-(a5),d7
+		addx.l	d7,d7
+		bra.s	ice2_15
+ice2_0f:	move.l	-5(a5),d7
+		lsl.l	#8,d7
+		move.b	-(a5),d7
+		subq.l	#3,a5
+		add.l	d7,d7
+		bset	#0,d7
+		bra.s	ice2_15
+ice2_10:	add.l	d7,d7
+		beq.s	ice2_11
+		rts
+ice2_11:	move.w	a5,d7
+		btst	#0,d7
+		bne.s	ice2_12
+		move.l	-(a5),d7
+		addx.l	d7,d7
+		rts
+ice2_12:	move.l	-5(a5),d7
+		lsl.l	#8,d7
+		move.b	-(a5),d7
+		subq.l	#3,a5
+		add.l	d7,d7
+		bset	#0,d7
+		rts
+ice2_13:	moveq	#0,d1
+ice2_14:	add.l	d7,d7
+		beq.s	ice2_0e
+ice2_15:	addx.w	d1,d1
+		dbra	d0,ice2_14
+		rts
+ice2_16:	lea	ice2_1f(pc),a1
+		moveq	#3,d2
+ice2_17:	bsr.s	ice2_10
+		dbcc	d2,ice2_17
+		moveq	#0,d4
+		moveq	#0,d1
+		move.b	1(a1,d2.w),d0
+		ext.w	d0
+		bmi.s	ice2_18
+		bsr.s	ice2_13
+ice2_18:	move.b	6(a1,d2.w),d4
+		add.w	d1,d4
+		beq.s	ice2_1a
+		lea	ice2_20(pc),a1
+		moveq	#1,d2
+ice2_19:	bsr.s	ice2_10
+		dbcc	d2,ice2_19
+		moveq	#0,d1
+		move.b	1(a1,d2.w),d0
+		ext.w	d0
+		bsr.s	ice2_13
+		add.w	d2,d2
+		add.w	6(a1,d2.w),d1
+		bra.s	ice2_1c
+ice2_1a:	moveq	#0,d1
+		moveq	#5,d0
+		moveq	#0,d2
+		bsr.s	ice2_10
+		bcc.s	ice2_1b
+		moveq	#8,d0
+		moveq	#$40,d2
+ice2_1b:	bsr.s	ice2_13
+		add.w	d2,d1
+ice2_1c:	lea	2(a6,d4.w),a1
+		adda.w	d1,a1
+		move.b	-(a1),-(a6)
+ice2_1d:	move.b	-(a1),-(a6)
+		dbra	d4,ice2_1d
+		bra	ice2_08
+		dc.b $7f,$ff,$00,$0e,$00,$ff,$00,$07
+		dc.b $00,$07,$00,$02,$00,$03,$00,$01
+		dc.b $00,$03,$00,$01
+ice2_1e:	dc.b $00,$00,$01,$0d,$00,$00,$00,$0e
+		dc.b $00,$00,$00,$07,$00,$00,$00,$04
+		dc.b $00,$00,$00,$01
+ice2_1f:	dc.b $09,$01,$00,$ff,$ff,$08,$04,$02
+		dc.b $01,$00
+ice2_20:	dc.b $0b,$04,$07,$00,$01,$20,$00,$00
+		dc.b $00,$20
+ice2_21:	ds.w 60			; free space (can be put in BSS)
+
+
+
+		
+player	incbin	tracker7.bin
+        DS.B    22191
+debmod	incbin	battle.mod
+        DS.B    28279
+finmod
+
+LOGO	INCBIN	LOGO2.PI1
+        DS.B    22616
+BLOC    INCBIN  B:\BLOC2
+TEXTE:	INCBIN	speed.txt
+IMAGE:	INCBIN	fontes2.PI1
+        DS.B    23770
+
+MES_F	
+        DC.B   0,0,0,0,1,1,1,2,2,3,3,4,5,6,7,8,9,10,10,11,11,12,12,12,13,13,13,13
+        DC.B   12,12,12,11,11,10,10,9,8,7,6,5,4,3,3,2,2,1,1,1
+
+	DC.B  -1
+	EVEN
+
+
+
+
+MES_F2   DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER+(5280*1),0
+         DC.L  BUFFER+(5280*2),0
+         DC.L  BUFFER+(5280*3),0
+         DC.L  BUFFER+(5280*4),0
+         DC.L  BUFFER+(5280*5),0
+         DC.L  BUFFER+(5280*6),0
+         DC.L  BUFFER+(5280*7),0
+         DC.L  BUFFER+(5280*8),0
+         DC.L  BUFFER+(5280*9),0
+         DC.L  BUFFER+(5280*10),0
+         DC.L  BUFFER+(5280*10),0
+         DC.L  BUFFER+(5280*11),0
+         DC.L  BUFFER+(5280*12),0
+         DC.L  BUFFER+(5280*13),0
+         DC.L  BUFFER+(5280*13),0
+         DC.L  BUFFER+(5280*14),0
+         DC.L  BUFFER+(5280*14),0
+         DC.L  BUFFER+(5280*14),0
+         DC.L  BUFFER+(5280*15),0
+         DC.L  BUFFER+(5280*15),0
+         DC.L  BUFFER+(5280*15),0
+         DC.L  BUFFER+(5280*15),0
+ 
+         DC.L  BUFFER+(5280*14),0
+         DC.L  BUFFER+(5280*14),0
+         DC.L  BUFFER+(5280*14),0
+         DC.L  BUFFER+(5280*13),0
+         DC.L  BUFFER+(5280*13),0
+         DC.L  BUFFER+(5280*12),0
+         DC.L  BUFFER+(5280*11),0
+         DC.L  BUFFER+(5280*10),0
+         DC.L  BUFFER+(5280*10),0
+         DC.L  BUFFER+(5280*9),0
+         DC.L  BUFFER+(5280*8),0
+         DC.L  BUFFER+(5280*7),0
+         DC.L  BUFFER+(5280*6),0
+         DC.L  BUFFER+(5280*5),0
+         DC.L  BUFFER+(5280*4),0
+         DC.L  BUFFER+(5280*3),0
+         DC.L  BUFFER+(5280*3),0
+         DC.L  BUFFER+(5280*2),0
+         DC.L  BUFFER+(5280*2),0
+         DC.L  BUFFER+(5280*1),0
+         DC.L  BUFFER+(5280*1),0
+         DC.L  BUFFER+(5280*1),0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER+(5280*1),0
+         DC.L  BUFFER+(5280*1),0
+         DC.L  BUFFER+(5280*1),0
+         DC.L  BUFFER+(5280*2),0
+         DC.L  BUFFER+(5280*2),0
+         DC.L  BUFFER+(5280*3),0
+         DC.L  BUFFER+(5280*3),0
+         DC.L  BUFFER+(5280*4),0
+         DC.L  BUFFER+(5280*5),0
+         DC.L  BUFFER+(5280*6),0
+         DC.L  BUFFER+(5280*7),0
+         DC.L  BUFFER+(5280*8),0
+         DC.L  BUFFER+(5280*9),0
+         DC.L  BUFFER+(5280*10),0
+         DC.L  BUFFER+(5280*10),0
+         DC.L  BUFFER+(5280*11),0
+         DC.L  BUFFER+(5280*12),0
+         DC.L  BUFFER+(5280*13),0
+         DC.L  BUFFER+(5280*13),0
+         DC.L  BUFFER+(5280*14),0
+         DC.L  BUFFER+(5280*14),0
+         DC.L  BUFFER+(5280*14),0
+         DC.L  BUFFER+(5280*15),0
+         DC.L  BUFFER+(5280*15),0
+         DC.L  BUFFER+(5280*15),0
+         DC.L  BUFFER+(5280*15),0
+         DC.L  BUFFER+(5280*14),0
+         DC.L  BUFFER+(5280*14),0
+         DC.L  BUFFER+(5280*14),0
+         DC.L  BUFFER+(5280*13),0
+         DC.L  BUFFER+(5280*13),0
+         DC.L  BUFFER+(5280*12),0
+         DC.L  BUFFER+(5280*11),0
+         DC.L  BUFFER+(5280*10),0
+         DC.L  BUFFER+(5280*10),0
+         DC.L  BUFFER+(5280*9),0
+         DC.L  BUFFER+(5280*8),0
+         DC.L  BUFFER+(5280*7),0
+         DC.L  BUFFER+(5280*6),0
+         DC.L  BUFFER+(5280*5),0
+         DC.L  BUFFER+(5280*4),0
+         DC.L  BUFFER+(5280*3),0
+         DC.L  BUFFER+(5280*2),0
+         DC.L  BUFFER+(5280*1),0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+;        ; marge de sêcuritê...
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+         DC.L  BUFFER,0
+	DC.B  -1,-1
+	EVEN
+
+
+MES_PNT DS.L    1
+MES_PNT2 DS.L   1
+F_PILE	DS.L 	128			* FIN DE LA PILE
+D_PILE	DS.L 	1			* DEBUT DE LA PILE
+
+sdtvar	ds.l	1
+anc_70	ds.l	1
+SAVEA2  DS.L    1
+SAUVE	DS.L	1			* SAUVE LA PILE UTILISATEUR
+ANC_VBL DS.L	1			* SAUVE LE VECTEUR VBL
+ANC_TB	DS.L	1			* SAUVE LE VECTEUR TIMER B
+ANC_ECR	DS.L	1			* SAUVE L'ADRESSE DE L'ECRAN
+RES	DS.W	1			* SAUVE LA RESOLUTION
+ANC_PAL	DS.W	16			* SAUVE LA PALETTE
+MFP1	DS.B	1			* SAUVE LES REGISTRES DU MFP
+MFP2	DS.B	1			*
+MFP3	DS.B	1			*
+MFP4	DS.B	1			*
+MFP5	DS.B	1			*
+MFP6	DS.B	1			*
+
+VSYNC	DS.B	1			* POUR LA SYNCRO VERTICALE
+	ds.b	256		;tranquille pour les merdes
+BUFFERSCR:ds.b	32000*2		;buffer de 64000 octets pour les deux ecrans
+				;SCREEN1 et SCREEN2
+	ds.b	256		;tranquille pour les merdes II
+SCREEN1:	ds.l	1	;ecran	courant
+SCREEN2:	ds.l	1	;ecran	travail
+MEM_LET:	ds.l	1
+PART_AFF:	ds.l    1
+BUFFER DS.L    1320*16

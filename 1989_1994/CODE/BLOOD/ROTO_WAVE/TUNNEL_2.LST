@@ -1,0 +1,134 @@
+nb_pts=60
+nb_cercle=40
+DIM x(150),y(150),x_crb(2000),y_crb(2000),z_crb(2000),s$(100)
+DIM x_int(nb_pts),y_int(nb_pts),flag_pt(nb_pts*(nb_cercle+1))
+DIM x_c(nb_pts*(nb_cercle+1)),y_c(nb_pts*(nb_cercle+1))
+pas=(2*PI)/nb_pts
+ray=190
+k=0
+FOR i=0 TO 2*PI-pas STEP pas
+  x(k)=INT(SIN(i)*ray)
+  y(k)=INT(COS(i)*ray)
+  '  PLOT x(k),y(k)
+  INC k
+NEXT i
+' GOTO test
+'
+z=0
+pas=(2*PI)/1950
+k=0
+FOR i=0 TO PI/2 STEP pas
+  PRINT AT(1,1);k
+  x_crb(k)=INT(SIN(2*i)*COS(7*i)*250)
+  y_crb(k)=INT(SIN(3*i)*COS(2*i)*250)
+  z_crb(k)=z
+  z=z+4
+  INC k
+NEXT i
+'
+p=-256
+off=0
+act=0
+FOR k=0 TO 49
+  CLS
+  i=0
+  d_x=x_crb(act*4+off)
+  d_y=y_crb(act*4+off)
+  WHILE z_crb(i*4)<0
+    INC i
+  WEND
+  ADD i,nb_cercle
+  z_dep=i
+  no=nb_cercle
+  REPEAT
+    coeff=1/(1-(z_crb(z_dep*4)/p))
+    FOR n=0 TO nb_pts-1
+      x=x_crb(z_dep*4)+x(n)-d_x
+      x=160+x*coeff
+      y=y_crb(z_dep*4)+y(n)-d_y
+      y=100+y*coeff
+      x_c(n+no*nb_pts)=x
+      y_c(n+no*nb_pts)=y
+    NEXT n
+    DEC z_dep
+    DEC no
+  UNTIL no=0
+  '
+  zob=1
+  ref=1
+  REPEAT
+    CLS
+    PRINT ref
+    z_dep=i
+    coeff=1/(1-(z_crb((i-ref)*4)/p))
+    FOR n=0 TO nb_pts-1
+      x=x_crb((i-ref)*4)+x(n)-d_x
+      x_int(n)=160+x*coeff
+      y=y_crb((i-ref)*4)+y(n)-d_y
+      y_int(n)=100+y*coeff
+    NEXT n
+    DEFFILL 2
+    POLYFILL nb_pts,x_int(),y_int()
+    COLOR 1
+    no=nb_cercle
+    REPEAT
+      pointor=no*nb_pts
+      FOR n=pointor TO pointor+nb_pts-1
+        IF flag_pt(n)=0
+          IF PTST(x_c(n),y_c(n))=0
+            flag_pt(n)=-1
+          ENDIF
+        ENDIF
+      NEXT n
+      DEC z_dep
+      DEC no
+    UNTIL z_dep=i-ref
+    INC ref
+  UNTIL ref=nb_cercle+1
+  z_dep=i
+  no=nb_cercle
+  CLS
+  REPEAT
+    coeff=1/(1-(z_crb(z_dep*4)/p))
+    FOR n=0 TO nb_pts-1
+      x=x_crb(z_dep*4)+x(n)-d_x
+      x=160+x*coeff
+      y=y_crb(z_dep*4)+y(n)-d_y
+      y=100+y*coeff
+      IF flag_pt(n+nb_pts*no)=0
+        PLOT x,y
+      ENDIF
+    NEXT n
+    DEC z_dep
+    DEC no
+  UNTIL no=0
+  '
+  INC off
+  IF off=4
+    off=0
+    INC act
+  ENDIF
+  FOR i=0 TO 450
+    SUB z_crb(i),4
+  NEXT i
+  GET 0,0,319,199,s$(k)
+NEXT k
+'
+DO
+  FOR i=0 TO 49
+    PUT 0,0,s$(i)
+    VSYNC
+  NEXT i
+LOOP
+' test:
+' GOSUB aff_cercle(10,10,0)
+END
+' PROCEDURE aff_cercle(x_base,y_base,z)
+' p=-256
+' coeff=1/(1-(z/p))
+' FOR i=0 TO nb_pts-1
+' x=160+(x_base+x(i))*coeff
+' y=100+(y_base+y(i))*coeff
+' PLOT x,y
+' NEXT i
+' RETURN

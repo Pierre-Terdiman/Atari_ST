@@ -1,0 +1,15 @@
+DO
+  VSYNC
+  ADD k,0.1
+  u=ABS(SIN(k)*12)
+  FOR i%=0 TO 7
+    SETCOLOR 0,0,0,i%
+    FOR o=1 TO u
+    NEXT o
+  NEXT i%
+  FOR i%=7 DOWNTO 0
+    SETCOLOR 0,i%,0,0
+    FOR o=1 TO u
+    NEXT o
+  NEXT i%
+LOOP

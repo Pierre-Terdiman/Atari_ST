@@ -1,0 +1,285 @@
+'
+' FILM_3D 10/6/89 PAR GUILLAUME LAMONOCA
+'
+' EXECUTEUR DES ANIMATIONS CREES AVEC ANIM_3D
+' F1-F7 CHANGE COULEUR PENDANT L'ANIMATION
+' F8:MODE FIL DE FER (PSEUDO FIL DE FER) + RAPIDE
+' F9:MODE NORMAL FORMES PLEINES
+' F10:BREAK OU QUIT S'IL EST COMPILE
+' PLUS LOIN SE TROUVE LA ZONE DES DATAS OU SONT STOCKEES
+' LES NOMS ET ATTRIBUTS DES ANIMATIONS QUI SERONT CHARGEES AU DEBUT
+' DU PROGRAMME PUIS EXECUTEES CYCLIQUEMENT...
+'
+' PLEASE KEEP ONE COPY OF FILM_3D SAFE AND THIS LINES SAFE.
+' SVP GARDEZ UNE COPIE DE CE PROGRAMME NON ALTEREE ET GARDEZ CES LIGNES.
+' VOUS SEREZ AMENE A MODIFIEZ CE PROGRAMME.DONC UTLISEZ LE SOUS UN AUTRE NOM
+' ET COMPILEZ-LE LE PLUS SOUVENT POSSIBLE...
+'                               BONNE 3D!!!
+' FREEWARE.NE PEUT ETRE VENDU.
+'
+Hidem
+If Xbios(4)<>0 Then
+  Text 112,90,"SORRY LOW RESOLUTION ONLY"
+  Pause 200
+  @End
+Endif
+@Neo("gl_demo.glp") !UNE IMAGE NEO DEGUISEE EN .GLP OU VOS IMAGES NEO OU DEGAS
+Xbios2%=Xbios(2)
+Xbios2p%=Xbios(2)
+Fil=0
+'
+Spoke &H484,14
+On Error Gosub End
+On Break Gosub End
+Deftext 1
+Np=50
+Dim X%(Np),Y%(Np)
+'
+A$=String$(32256,0)
+A%=(Varptr(A$)+256) And Not 255
+'
+'
+Text 70,90,"PLEASE WAIT:LOADING!"
+'
+B$=String$(32256,0)
+B%=(Varptr(B$)+256) And Not 255
+'
+'
+'
+'
+'
+Data 3
+' ICI 3:NOMBRE DE FICHIER ANIMATION GL3 A LIRE
+'
+' COULEUR DE BASE(&ABC  A,B ET C BINAIRES:0/1),TITRE,NOM DU FICHIER GL3
+Data &10,"   SYGMA FORCE   ","sygma.gl3"
+Data &11," SPACE AMBULANCE ","navette.gl3"
+Data &110," DOCKING STATION ","hangar.gl3"
+Read Na
+Dim Llm$(Na),Ncc(Na),Ti$(Na),Ll%(Na)
+For I=0 To Na-1
+  Read Ncc(I),Ti$(I)
+  Read N$
+  Llm$(I)=String$(32760,0)
+  Ll%(I)=(Varptr(Llm$(I))+256) And Not 1
+  Bload N$,Ll%(I)
+Next I
+Nona=0
+Txt$=""
+N1$=""
+Repeat
+  Txt$=Txt$+N1$
+  Read N$
+  N1$=String$((40-Len(N$)) Div 2," ")+N$
+  N1$=N1$+String$((40-Len(N1$))," ")
+Until N$="FIN"
+Ltx=Len(Txt$)
+'                        ICI LE SCROLLTEXT
+'
+Data "HELLO GUYS..."
+Data "BLA BLA BLA BLA"
+Data "BLA!","-GL-"," "," "
+'
+'
+' IL NE FAUT PAS TOUCHER A LA LIGNE SUIVANTE SINON BUG...
+Data "FIN"
+'
+Sdpoke &H4BC,0
+'
+'
+'
+Lagain:
+'
+Lt%=Ll%(Nona)
+Cc=Ncc(Nona)
+Setcolor 0,0
+Setcolor 15,1911
+Pal:
+Data 1,2,4,6,3,5,7,8
+Restore Pal
+For I=0 To 7
+  Read N
+  Setcolor N,Cc*I
+Next I
+Void Xbios(5,L:B%,L:Xbios(2),W:-1)
+Sput Im$
+Text 0,6,Mid$(Txt$,Tx%*40+1,40)
+Text 92,197,Ti$(Nona)
+Void Xbios(5,L:A%,L:Xbios(2),W:-1)
+Cls
+'
+310:
+Bmove B%+1280,A%+1280,30720
+'
+'
+' --------------------------
+'
+Tt=Dpeek(Lt%)
+If Tt=65535 Then
+  Nona=Nona+1
+  If Nona=Na Then
+    Nona=0
+  Endif
+  Goto Lagain
+Endif
+T%=Lt%+2
+If Tt<>0 Then
+  '
+  If Fil Then
+    '
+    For I=1 To Tt
+      '
+      @Vbl
+      '
+      T=Dpeek(T%)
+      C=Dpeek(T%+2)
+      T%=T%+4
+      For J=0 To T-1
+        X%(J)=Dpeek(T%)-32768
+        Y%(J)=Dpeek(T%+2)-32768
+        T%=T%+4
+      Next J
+      Color 9
+      Polyline T,X%(),Y%()
+      '
+      Tc=Dpeek(T%)
+      T%=T%+2
+      If Tc<>0 Then
+        Color 2
+        For K=1 To Tc
+          Ccc=Dpeek(T%)
+          Xp=Dpeek(T%+2)-32768
+          Yp=Dpeek(T%+4)-32768
+          T%=T%+6
+          If Ccc Then
+            Box Xp,Yp,Xp+1,Yp+1
+          Else
+            Plot Xp,Yp
+          Endif
+        Next K
+      Endif
+      '
+    Next I
+    '
+  Else
+    '
+    For I=1 To Tt
+      '
+      @Vbl
+      '
+      T=Dpeek(T%)
+      C=Dpeek(T%+2)
+      T%=T%+4
+      For J=0 To T-1
+        X%(J)=Dpeek(T%)-32768
+        Y%(J)=Dpeek(T%+2)-32768
+        T%=T%+4
+      Next J
+      Deffill C
+      Polyfill T,X%(),Y%()
+      '
+      Tc=Dpeek(T%)
+      T%=T%+2
+      If Tc<>0 Then
+        Color 2
+        For K=1 To Tc
+          Ccc=Dpeek(T%)
+          Xp=Dpeek(T%+2)-32768
+          Yp=Dpeek(T%+4)-32768
+          T%=T%+6
+          If Ccc Then
+            Box Xp,Yp,Xp+1,Yp+1
+          Else
+            Plot Xp,Yp
+          Endif
+        Next K
+      Endif
+      '
+    Next I
+    '
+  Endif
+  '
+Endif
+'
+'
+Lt%=T%
+'
+'
+If Tx%<>(Peek(&H4BC) Div 4)
+  Tx%=Peek(&H4BC) Div 4
+  If Tx%*40+1>Ltx
+    Tx%=0
+    Sdpoke &H4BC,0
+  Endif
+  Void Xbios(5,L:B%,L:Xbios(2),W:-1)
+  Text 0,6,Mid$(Txt$,Tx%*40+1,40)
+  Void Xbios(5,L:A%,L:Xbios(2),W:-1)
+Endif
+Bmove B%,A%,1280
+'
+'
+Swap A%,Xbios2%
+Void Xbios(5,L:A%,L:Xbios2%,W:-1)
+Vsync
+'
+I%=Peek(&HFFFC02)
+If I%=&H3A+10
+  While Inp?(2)
+    Void Inp(2)
+  Wend
+  @End
+Endif
+If I%=&H3A+8
+  Fil=0
+  Goto 740
+Endif
+If I%=&H3A+9
+  Fil=-1
+  Goto 740
+Endif
+If I%>=&H3A+1 And I%<=&H3A+7
+  Cc=I%-&H3A
+  Cc=&H100*(Cc And 4)/4+&H10*(Cc And 2)/2+(Cc And 1)
+  Restore Pal
+  For I=0 To 7
+    Read N
+    Setcolor N,Cc*I
+  Next I
+  Goto 740
+Endif
+740:
+Goto 310
+'
+Procedure End
+  @Normal
+  If Err<>0 Then
+    '    Error Err
+    '    Error 0
+  Endif
+  End
+Return
+'
+Procedure Normal
+  Void Xbios(5,L:Xbios2p%,L:Xbios2p%,W:-1)
+  Setcolor 0,1911
+  Setcolor 15,0
+  Setcolor 1,0
+  Setcolor 3,0
+Return
+'
+'
+Procedure Neo(A$) !PLACE L'IMAGE NEO DANS IM$.SPUT IM$ LA REAFFICHE
+  Im$=String$(32128,0)
+  Im%=Varptr(Im$)
+  Bload A$,Varptr(Im$)
+  Void Xbios(6,L:Varptr(Im$)+4)
+  Im$=Right$(Im$,32000)
+Return
+'
+Procedure Vbl !C PAS EN VBL MAIS CA LE SERAIT SI C'ETAIT DE L'ASM
+  Zz=Peek(&H4BD)
+  Setcolor 1,-1911*(Zz>127)
+  Setcolor 9,&H740+(Zz And &H30) Xor (-&H30*((Zz And &H40)=0))
+Return
+'
+'

@@ -1,0 +1,22 @@
+	lea	$90000,a0
+	move.l	d0,(a0)+
+	move.l	d1,(a0)+
+	move.l	d2,(a0)+
+	move.l	d3,(a0)+
+	move.l	d4,(a0)+
+	move.l	d5,(a0)+
+	move.l	d6,(a0)+
+	move.l	d7,(a0)+
+	move.l	a1,(a0)+
+	move.l	a2,(a0)+
+	move.l	a3,(a0)+
+	move.l	a4,(a0)+
+	move.l	a5,(a0)+
+	move.l	a6,(a0)+
+	move.l	a7,(a0)+
+	move.l	$70.w,(a0)+
+	move	sr,(a0)+
+	move.b	$fffffa07.w,(a0)+
+	move.b	$fffffa09.w,(a0)+
+	move.b	$fffffc02.w,(a0)+
+	rts

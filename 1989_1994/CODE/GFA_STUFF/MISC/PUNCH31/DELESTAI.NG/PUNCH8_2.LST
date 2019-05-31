@@ -1,0 +1,20 @@
+DIM col!(15,3) !CONVERTIT UNE IMAGE PI1 EN PI3.    Avant de lancer le programme:
+FOR z%=0 TO 15 ! buf% doit etre l'adresse d'un ecran PI1  charge par vos soins.
+  n%=((PEEK(buf%+2+z%*2) AND 7)+((PEEK(buf%+3+z%*2) AND 112)/16)+(PEEK(buf%+3+z%*2) AND 7))/3
+  FOR x%=0 TO 3
+    col!(z%,x%)=((n%=1 OR n%=0) AND (x%=0))+((n%<=3) AND (x%=1))+((n%<>7 OR n%<>5) AND (x%=2))+((n%=5 OR n%=4 OR n%=2 OR n%=0) AND (x%=3))
+  NEXT x%                  !Exemple de chargement d'un ecran:
+NEXT z%                    ! buf$=space$(32066)
+FOR y%=0 TO 399 STEP 2     ! fileselect "a:\*.pi1","",f$
+  FOR x%=0 TO 639 STEP 2   ! buf%=varptr(buf$)
+    IF z%=0                ! bload f$,buf%
+      z%=16
+      ADD buf%,8
+    ENDIF
+    DEC z%
+    num%=(((DPEEK(buf%+34) AND (2^z%))/2^z%)*8)+(((DPEEK(buf%+36) AND (2^z%))/2^z%)*4)+(((DPEEK(buf%+38) AND (2^z%))/2^z%)*2)+(((DPEEK(buf%+40) AND (2^z%))/2^z%))
+    FOR n%=0 TO 3
+      PSET x%-(n%=1 OR n%=3),y%-(n%=2 OR n%=3),col!(num%,n%)
+    NEXT n%
+  NEXT x%
+NEXT y%

@@ -1,0 +1,11 @@
+	MOVE.W	#1,-(SP)
+	MOVE.W	#0,-(SP)
+	MOVE.W	#0,-(SP)
+	MOVE.W	#1,-(SP)
+	MOVE.W	#0,-(SP)
+	CLR.L	-(SP)
+	PEA	BUF_BOOT
+	MOVE.W	#8,-(SP)
+	TRAP	#14
+	LEA	20(SP),SP
+BUF_BOOT	DS.L	1000

@@ -1,0 +1,10 @@
+EVERY 200 GOSUB watch
+DO
+  MOUSE x,y,b
+LOOP
+PROCEDURE watch
+  sl=VAL(RIGHT$(TIME$,2))-(t$=TIME$)
+  PRINT AT(32-(40*(XBIOS(4)>0)),1);LEFT$(TIME$,6)+STRING$(-(sl<10),"0")+STR$(sl);
+  t$=TIME$
+  SHOWM
+RETURN

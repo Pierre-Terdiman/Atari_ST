@@ -1,0 +1,15 @@
+flag!=TRUE
+debut:
+REPEAT
+  FOR i%=0 TO 30 STEP 2
+    a%=DPEEK(&HFF8240+i%)
+    ADD a%,(2*flag!+1)*((a% AND 7)<>(-(DPEEK(XBIOS(2)-32+i%) AND 7)*flag!))
+    ADD a%,16*(2*flag!+1)*((a% AND 112)<>(-(DPEEK(XBIOS(2)-32+i%) AND 112)*flag!))
+    ADD a%,256*(2*flag!+1)*((a% AND 1792)<>(-(DPEEK(XBIOS(2)-32+i%) AND 1792)*flag!))
+    SDPOKE &HFF8240+i%,a%
+  NEXT i%
+  FOR j%=0 TO 1800
+  NEXT j%
+UNTIL INKEY$<>""
+flag!=NOT flag!
+GOTO debut

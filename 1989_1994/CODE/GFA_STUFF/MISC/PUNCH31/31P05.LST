@@ -1,0 +1,22 @@
+' Zulu, de Jean-No‰l Carpentier
+' GfA 3, basse r‚solution
+RESERVE 100000
+buf%=MALLOC(32000)
+FILESELECT "\*.PI1","",sel$
+BLOAD sel$,buf%-34
+VOID XBIOS(6,L:buf%-32)
+gr%=15                 !grosseur du "grain"
+dt%=27                 !largeur du d‚bit
+REPEAT
+  MOUSE x%,y%,k%
+  IF k%=1
+    REPEAT
+      i%=RAND(x%+dt%)
+    UNTIL i%>x%-dt% AND i%<320-gr%
+    REPEAT
+      j%=RAND(y%+dt%)
+    UNTIL j%>y%-dt% AND j%<200-gr%
+    RC_COPY buf%,i%,j%,gr%,gr% TO XBIOS(2),i%,j%
+  ENDIF
+UNTIL k%=2
+VOID MFREE(buf%)

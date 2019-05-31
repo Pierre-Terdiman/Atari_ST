@@ -1,0 +1,22 @@
+' ZZ_LOAD, Jean-No‰l Carpentier
+OPEN "i",#1,"FILENAME.RGH"  !ouvre un fichier en lecture
+SEEK #1,12                    !passe: (c)F.MARCHAL
+INPUT #1,t%                   !taille du fichier
+BGET #1,XBIOS(2)-32,32        !prend la palette
+VOID XBIOS(6,L:XBIOS(2)-32)   !met en place la palette
+BGET #1,XBIOS(2)-t%*5,t%*5    !prend l'image compact‚e...
+CLOSE #1                      !ferme le fichier
+HIDEM                         !cache la souris
+FOR col%=0 TO 156 STEP 4      !160 colonnes
+  FOR lig%=XBIOS(2)+160 TO XBIOS(2)+32000 STEP 160  !200 lignes
+    IF i%=0
+      i%=PEEK(XBIOS(2)-t%*5+ptr%)    !nbr de r‚p‚titions
+      d%=LPEEK(XBIOS(2)-t%*4+ptr%*4) !mot long … r‚p‚ter
+      INC ptr%                       !incr‚mente pointeur
+    ENDIF
+    LPOKE (lig%+col%),d%             !affiche le mot long
+    DEC i%                           !d‚cr‚mente r‚p‚tition
+  NEXT lig%
+NEXT col%
+VOID INP(2)                          !attend une touche
+

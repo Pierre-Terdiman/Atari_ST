@@ -1,0 +1,45 @@
+	MOVE.L	D3,A2	;1
+	ADDA.W	(A0)+,A2	;3
+	MOVE.L	(A0)+,A1	;3
+	LEA	4(A1),A5	;2
+	MOVE.B	(A1)+,D0	;2
+	ADDA.W	(A5)+,A2	;3
+	OR.B	D0,(A2)	;3
+	MOVE.L	A2,(A4)+	;3
+	MOVE.B	(A1)+,D0	;2
+	ADDA.W	(A5)+,A2	;3
+	OR.B	D0,(A2)	;3
+	MOVE.L	A2,(A4)+	;3
+	MOVE.B	(A1)+,D0	;2
+	ADDA.W	(A5)+,A2	;3
+	OR.B	D0,(A2)	;3
+	MOVE.L	A2,(A4)+	;3
+	MOVE.B	(A1)+,D0	;2
+	ADDA.W	(A5)+,A2	;3
+	OR.B	D0,(A2)	;3
+	MOVE.L	A2,(A4)+	;3
+	;RESTE 88-53=35 NOPS
+	MOVE.L	D3,A2	;1
+	ADDA.W	(A0)+,A2	;3
+	MOVE.L	(A0)+,A1	;3
+	LEA	4(A1),A5	;2
+	MOVE.B	(A1)+,D0	;2
+	ADDA.W	(A5)+,A2	;3
+	OR.B	D0,(A2)	;3
+	MOVE.L	A2,(A4)+	;3
+	MOVE.B	(A1)+,D0	;2
+	ADDA.W	(A5)+,A2	;3
+	OR.B	D0,(A2)	;3
+	MOVE.L	A2,(A4)+	;3
+	MOVE.B	(A1)+,D0	;2
+	MOVE.B	(A1)+,D4	;2
+
+	ADDA.W	(A5)+,A2	;3
+	OR.B	D0,(A2)	;3
+	MOVE.L	A2,(A4)+	;3
+	ADDA.W	(A5)+,A2	;3
+	NOP
+
+	OR.B	D4,(A2)	;3
+	MOVE.L	A2,(A4)+	;3
+	DCB.W	6,$4E71

@@ -1,0 +1,1197 @@
+;MODE=1 depack data from a0 to a0
+;MODE=0 depack data from a0 to a1 (RESTORE SPACE a 1 inutile! si MODE=0)
+;PIC_ALGO = 0 decrunch file not encoded with special picture algorythm.
+;PIC_ALGO = 1 decrunch all files with or without picture algorythm.
+;DEC_SPACE = (lesser decrunch space is gived after packing by atomik v3.5)
+;RESTORE_SPACE = 1 the allocated decrunch space will be restored .
+;RESTORE_SPACE = 0 the allocated decrunch space will not be restored.
+
+MODE:	EQU	0
+PIC_ALGO:	EQU	1
+DEC_SPACE:	EQU	$0000	 ;MAX IS $7FFE (no odd value!)
+RESTORE_SPACE:	EQU	0
+
+;TAB=16
+LARG = 230
+LIM_1 = 100
+LIM_2 = 250
+NB = 1920
+
+; A FAIRE = DANS LES BUF ROTATE ET AVANCE, REMPLACER LES 6 .B PAR 5
+;           METTRE 42 ANGLES AU LIEU DE 45
+
+	;A6=CORES_X
+	;A5=TABLE DE PREMULTIPLICATION PAR 230
+CALC	MACRO
+	ADD.W	D2,D2
+	ADD.W	D2,D2
+	MOVE.B	1(A6,D2.W),(A1)+  ;MOTIF
+	ADD.W	D3,D3
+	MOVE.W	(A5,D3.W),D3	;Y*230
+	ADD.W	2(A6,D2.W),D3	;OFFSET ECRAN
+	MOVE.W	D3,(A2)+
+	ENDM
+
+CALC2	MACRO
+	ADD.W	D2,D2
+	ADD.W	D2,D2
+	MOVE.B	1(A6,D2.W),(A1)+  ;MOTIF
+	ADD.W	D3,D3
+	MOVE.W	(A5,D3.W),D3	;Y*230
+	ADD.W	2(A6,D2.W),D3	;OFFSET ECRAN
+	SUBI.W	#LARG,D3
+	MOVE.W	D3,(A2)+
+	ENDM
+
+MAIN	CLR.L	-(SP)
+	MOVE.W	#$20,-(SP)
+	TRAP	#1
+	ADDQ.W	#6,SP
+
+	CLR.W	-(SP)
+	PEA	-1.W
+	PEA	-1.W
+	MOVE.W	#5,-(SP)
+	TRAP	#14
+	LEA	12(SP),SP
+
+	CLR.L	$FFFF8240.W
+	CLR.L	$FFFF8244.W
+	CLR.L	$FFFF8248.W
+	CLR.L	$FFFF824C.W
+	CLR.L	$FFFF8250.W
+	CLR.L	$FFFF8254.W
+	CLR.L	$FFFF8258.W
+	CLR.L	$FFFF825C.W
+
+	LEA	POPO,A0
+	LEA	ICI,A1
+	JSR	depack
+
+	JSR	PREP_ECR
+	MOVE.L	SCREEN1,A0
+	LEA	ICI,A1
+	LEA	34(A1),A1
+	LEA	8000(A1),A2
+	LEA	8000(A2),A3
+	MOVE	#3999,D0
+COPY	MOVE	(A1)+,(A0)+
+	MOVE	(A2)+,(A0)+
+	MOVE	(A3)+,(A0)+
+	ADDQ	#2,A0
+	DBF	D0,COPY
+
+	LEA	ICI,A0
+	LEA	34(A0),A0
+	LEA	24000(A0),A1
+	MOVE	#16*3-1,D0
+POI	MOVE	#19,D1
+QS	MOVE	(A1)+,(A0)
+	ADDQ	#8,A0
+	DBF	D1,QS
+	DBF	D0,POI
+
+	JSR	GERE_FNT
+
+	JSR	PREP_STARS
+	JSR	PREP2STARS
+	JSR	PREP_TAB_SYM
+	JSR	PREPARE_FULL
+	CLR.W	PT_ROTATE
+	MOVE.L	#BUF_AVANCE,ADR_BUF
+	LEA	ADR_EFF,A0
+	LEA	BUF_EFF_1,A1
+	LEA	BUF_EFF_2,A2
+	MOVE.L	A1,(A0)+
+	MOVE.L	A2,(A0)+
+
+	MOVE.L	#VBL_DEBUT,$70.W
+	MOVEQ	#0,D5
+WAIT2	MOVEQ	#0,D6
+
+WAIT	TST	D7
+	BEQ.S	WAIT
+	MOVEQ	#0,D7
+	LEA	DEG,A0
+MOD_DEG	EQU	*+2
+	LEA	0(A0),A0
+	CMPI	#$9999,(A0)
+	BEQ.S	SUIT
+	MOVE	(A0),MOD_COLOR
+	ADDQ	#1,D6
+	CMPI	#3,D6
+	BNE.S	WAIT
+	ADDQ	#2,MOD_DEG
+	BRA.S	WAIT2
+SUIT	ADDQ	#1,D5
+	CLR	MOD_DEG
+	CMPI	#3,D5
+	BNE.S	WAIT2
+	MOVE.L	#VBL_RTE,$70.W
+
+	LEA	BUFFER,A0
+	MOVE.W	#15999,D7
+.R	CLR.L	(A0)+
+	CLR.L	(A0)+
+	DBRA	D7,.R
+
+	MOVE.L	SCREEN2,A0
+	LEA	160+230*120+6+72(A0),A0
+	MOVE.L	SCREEN1,A1
+	LEA	160+230*120+6+72(A1),A1
+	LEA	BUF_LOG,A2
+	MOVE	#16-1,D1
+POPO2	MOVE	#20-1,D0
+POPOZ	MOVE	(A2),(A0)
+	MOVE	(A2),(A1)
+	ADDQ	#8,A2
+	ADDQ	#8,A1
+	ADDQ	#8,A0
+	DBF	D0,POPOZ
+	LEA	70(A0),A0
+	LEA	70(A1),A1
+	DBF	D1,POPO2
+	MOVE.L	SCREEN2,A0
+	LEA	-230*2(A0),A0
+	MOVE.L	SCREEN1,A1
+	LEA	-230*2(A1),A1
+	MOVEQ	#0,D0
+	MOVE	#160*2-1,D1
+KILL_SALETES	MOVE.L	D0,(A0)+
+	MOVE.L	D0,(A1)+
+	DBF	D1,KILL_SALETES
+
+	MOVEQ	#1,D0
+	JSR	ZIK
+
+	MOVE.W	#$777,$FFFF8242.W
+	MOVE.W	#$444,$FFFF8244.W
+	MOVE.W	#$777,$FFFF8246.W
+	MOVE.W	#$222,$FFFF8248.W
+	MOVE.W	#$777,$FFFF824A.W
+	MOVE.W	#$444,$FFFF824C.W
+	MOVE.W	#$777,$FFFF824E.W
+	MOVE.L	#$04450445,D0
+	MOVE	D0,$FFFF8252.W
+	MOVE.L	D0,$FFFF8254.W
+	MOVE.L	D0,$FFFF8258.W
+	MOVE.L	D0,$FFFF825C.W
+
+	MOVE.W	#$2700,SR
+	MOVE.L	#INTER_RTE,$68.W
+	CLR.B	$FFFFFA07.W
+	CLR.B	$FFFFFA09.W
+	CLR.B	$FFFFFA13.W
+	CLR.B	$FFFFFA15.W
+	MOVE.L	#VBLR,$70.W
+	MOVE.W	#$2300,SR
+
+BARRAGE	BRA.S	BARRAGE
+	move.l	#vbf,$70.w
+j	bra.s	j
+vbf	move	#$700,$ffff8240.w
+	rte
+DEG
+	DC	$777,$666,$555,$444,$333,$222,$111,$000
+	DC	$9999
+
+VBL_DEBUT	MOVEQ	#1,D7
+MOD_COLOR	EQU	*+2
+	MOVE	#0,D0
+	TST	D5
+	BNE.S	.NO1
+	MOVE	D0,$FFFF8242.W
+	MOVE	D0,$FFFF8246.W
+	MOVE	D0,$FFFF824A.W
+	MOVE	D0,$FFFF824E.W
+	RTE
+.NO1	CMPI	#1,D5
+	BNE.S	.NO2
+	MOVE	D0,$FFFF8244.W
+	MOVE	D0,$FFFF8246.W
+	MOVE	D0,$FFFF824C.W
+	MOVE	D0,$FFFF824E.W
+	RTE
+.NO2
+	MOVE	D0,$FFFF8248.W
+	MOVE	D0,$FFFF824A.W
+	MOVE	D0,$FFFF824C.W
+	MOVE	D0,$FFFF824E.W
+
+VBL_RTE	RTE
+
+VBLR	MOVE.B	#0,$FFFFFA19.W
+	MOVE.B	#99,$FFFFFA1F.W       ; BORDER HAUT
+	MOVE.B	#4,$FFFFFA19.W
+	BCLR	#3,$FFFFFA17.W
+	MOVE.L	#INTER_TMA,$134.W
+	ORI.B	#$20,$FFFFFA13.W
+	ORI.B	#$20,$FFFFFA07.W
+	;ICI 33 LIGNES DE LIBRES
+	MOVE.L	ADR_EFF,A0
+	MOVEQ	#0,D0
+	MOVE.L	SCREEN2,A2
+	LEA	160+230*130(A2),A2
+	JSR	(A0)
+	MOVE.W	PT_ROTATE,D0	
+	LEA	MOUVEMENT,A0
+	ADDA.W	D0,A0
+	MOVE.W	(A0),D0
+	BGE.S	.OK
+	MOVE.L	#BUF_ROTATE,ADR_BUF
+	MOVE.W	2(A0),D0
+	ADDQ.W	#2,PT_ROTATE
+.OK	MULU.W	#480*6,D0
+;	LEA	BUF_ROTATE,A0
+	MOVE.L	ADR_BUF,A0
+;	LEA	BUF_AVANCE,A0
+	ADDA.L	D0,A0
+	MOVE.L	A0,MOD_412
+	JSR	ZIK+8
+;	DCB.W	14*128,$4E71
+INTER_RTE	RTE
+
+INTER_TMA:	CLR.B	$FFFFFA07.W
+	CLR.B	$FFFFFA09.W
+	MOVE	#$2100,SR
+full
+	MOVEQ	#16,D0
+	LEA	$FFFF8209.W,A0
+	LEA	$FFFF820A.W,A6
+	LEA	$FFFF8260.W,A3
+
+	MOVEQ	#2,D3
+	MOVEQ	#0,D4
+
+	STOP	#$2100
+
+	MOVE	#$2700,SR
+	MOVE	#$2300,(SP)
+
+	MOVEQ	#29,D2
+SYNCHROA:	DBF	D2,SYNCHROA
+	NOP
+
+	MOVE.B	D4,(A6)	;820A
+	REPT	6
+	NOP
+	ENDR
+	MOVE.B	D3,(A6)	;820A
+
+	;SYNCHRO ICI...
+.SYNCHRO	MOVE.B	(A0),D2
+	BEQ.S	.SYNCHRO
+	SUB.B	D2,D0
+	LSL.W	D0,D0
+
+	DCB.W	97-33-1,$4E71
+	MOVE.L	ADR_EFF,A0	;5
+	LEA	848*4+2+2(A0),A5  ;2
+MOD_412 = *+2
+	LEA	$12345678,A0	;3
+	MOVE.L	SCREEN2,A2	;5
+	LEA	160+230*130(A2),A2 ;2
+	MOVEQ	#0,D3	;1
+	MOVE.L	ADR_EFF,A4	;5
+	ADDQ.W	#2,A4	;2
+	MOVEQ	#0,D0	;1
+	MOVE.W	#$820A,A3	;2  820A
+	MOVE.W	#$8260,A6	;2  8260
+	JSR	(A5)	;4
+	CLR.W	$FFFF8240.W
+	MOVE.W	PT_ROTATE,D0
+	ADDQ.W	#2,D0
+	CMPI.W	#VAL_FIN,D0
+	BLT.S	.OK
+	MOVEQ	#0,D0
+	MOVE.L	#BUF_AVANCE,ADR_BUF
+.OK	MOVE.W	D0,PT_ROTATE
+	LEA	ADR_EFF,A0
+	MOVE.L	(A0)+,D0
+	MOVE.L	(A0),-(A0)
+	MOVE.L	D0,4(A0)
+SWAPEC	MOVE.L	SCREEN1,D0
+	MOVE.L	SCREEN2,SCREEN1
+	MOVE.L	D0,SCREEN2
+	MOVE.B	SCREEN1+1,$FFFF8201.W
+	MOVE.B	SCREEN1+2,$FFFF8203.W
+	TST	TST_DEBUT
+	BNE.S	.SUITE
+	LEA	FAD_INIT,A0
+MOD_FAD_INIT	EQU	*+2
+	LEA	0(A0),A0
+	CMPI	#$9999,(A0)
+	BEQ.S	.DOI
+	MOVEM	(A0),D0-D4
+	LEA	$FFFF8240.W,A0
+	MOVE	D0,2(A0)
+	MOVE	D0,6(A0)
+	MOVE	D0,$A(A0)
+	MOVE	D0,$E(A0)
+	MOVE	D1,4(A0)
+	MOVE	D1,$C(A0)
+	MOVE	D2,8(A0)
+	MOVE	D3,(A0)
+	MOVE	D4,$10(A0)
+	SUBQ	#1,ZAPPY2
+	BNE.S	.OUT2
+	ADD	#10,MOD_FAD_INIT
+	MOVE	#2,ZAPPY2
+	;MOVE.W	#$20,$FFFF8240.W
+.OUT2	RTE
+.DOI	MOVE	#1,TST_DEBUT
+.SUITE	;CMPI.B	#$39,$FFFFFC02.W
+	;BEQ.S	.FD
+	subq	#1,cnt
+	ble.s	FD
+	RTE
+cnt	dc	50*8
+FD	LEA	FAD,A0
+MOD_FAD	EQU	*+2
+	LEA	0(A0),A0
+	CMPI	#$9999,(A0)
+	BNE.S	DO
+	MOVE	#$4E71,BARRAGE
+	RTE
+
+DO	MOVEM	(A0),D0-D3
+	LEA	$FFFF8240.W,A0
+	MOVE	D0,2(A0)
+	MOVE	D0,6(A0)
+	MOVE	D0,$A(A0)
+	MOVE	D0,$E(A0)
+	MOVE	D1,4(A0)
+	MOVE	D1,$C(A0)
+	MOVE	D2,8(A0)
+	move	d3,$ffff8250.w
+	move	d3,$ffff8252.w
+	move	d3,$ffff8254.w
+	move	d3,$ffff8256.w
+	move	d3,$ffff8258.w
+	move	d3,$ffff825a.w
+	move	d3,$ffff825c.w
+	move	d3,$ffff825e.w
+	
+	SUBQ	#1,ZAPPY
+	BNE.S	.OUT
+	ADDQ	#8,MOD_FAD
+	MOVE	#3,ZAPPY
+	;MOVE.W	#$20,$FFFF8240.W
+.OUT	RTE
+ZAPPY	DC	3
+ZAPPY2	DC	2
+TST_DEBUT	DC	0
+PREP_STARS	LEA	COEFF_3D,A0
+	LEA	BUF_COEFF-512*4,A1
+	MOVEQ	#1,D6
+.REPEAT	LEA	COEFF_3D,A0
+	MOVEQ	#0,D5
+	MOVE.W	#LIM_1-1,D7
+.F1	MOVE.W	(A0)+,(A1)+
+	MOVE.W	D5,(A1)+
+	DBRA	D7,.F1
+	ADDQ.W	#2,D5
+	MOVE.W	#LIM_2-1,D7
+.F2	MOVE.W	(A0)+,(A1)+
+	MOVE.W	D5,(A1)+
+	DBRA	D7,.F2
+	ADDQ.W	#2,D5
+	MOVE.W	#512-LIM_2-LIM_1-1,D7
+.F3	MOVE.W	(A0)+,(A1)+
+	MOVE.W	D5,(A1)+
+	DBRA	D7,.F3
+	DBRA	D6,.REPEAT
+	CLR.L	MOD
+	LEA	TRIGO,A1
+	LEA	BUF_ROTATE,A3
+	MOVEQ	#41,D7
+.ROTATE_ALL	MOVE.W	D7,A5
+	LEA	COOR_STARS,A0
+	LEA	BUF_PROVISOIRE,A4
+	MOVEM.W	(A1)+,D0-D3  ;COS,SIN,COS(-PI/2),SIN(-PI/2)
+	MOVE.W	#480-1,D7
+.ROTATE_STARS	MOVE.W	D7,A6
+	MOVE.W	(A0)+,D4	;X
+	MOVE.W	(A0)+,D5	;Y
+;	ADDQ.W	#2,A0	;ON SAUTE LE Z
+;	MOVE.W	D4,D6
+;	BRA.S	.CONT
+	ADD.W	D4,D4
+	ADD.W	D5,D5
+	MOVE.W	D4,D6
+	MULS.W	D0,D6	;X*COS T
+	SWAP	D6
+	MOVE.W	D5,D7
+	MULS.W	D1,D7	;Y*SIN T
+	SWAP	D7
+	SUB.W	D7,D6	;D6=X*COS T-Y*SIN T=X'
+	BLT.S	.OK_X_NEG
+	MOVE.W	D4,D6
+	MULS.W	D2,D6	;X*COS T-PI/2
+	SWAP	D6
+	MOVE.W	D5,D7
+	MULS.W	D3,D7	;Y*SIN T-PI/2
+	SWAP	D7
+	SUB.W	D7,D6	;D6=X*COS T-Y*SIN T=X'
+	MULS.W	D3,D4	;X*SIN T-PI/2
+	SWAP	D4
+	MULS.W	D2,D5	;Y*COS T-PI/2
+	SWAP	D5
+	ADD.W	D4,D5	;D5=X*SIN T+Y*COS T=Y'
+	BRA.S	.CONT
+.OK_X_NEG	MULS.W	D1,D4	;X*SIN T
+	SWAP	D4
+	MULS.W	D0,D5	;Y*COS T
+	SWAP	D5
+	ADD.W	D4,D5	;D5=X*SIN T+Y*COS T=Y'
+.CONT	ADD.W	D6,D6
+	MOVE.W	D6,(A4)+	;X'*2
+	ADD.W	D5,D5
+	MOVE.W	D5,(A4)+	;Y'*2
+	MOVE.W	(A0)+,D5
+;	ADD.W	D5,D5
+	MOVE.W	D5,(A4)+	;Z
+	MOVE.W	A6,D7
+	DBRA	D7,.ROTATE_STARS	
+	LEA	BUF_PROVISOIRE,A4
+	LEA	BUF_COEFF,A0
+	MOVE.L	#BUF_UTIL+75*224*12,D6
+	MOVE.W	#480-1,D7
+.RECOM	MOVE.W	(A4)+,D0	;X*2
+	MOVE.W	(A4)+,D1	;Y*2
+	MOVEQ	#0,D2
+	MOVE.W	(A4)+,D2	;Z
+	ASL.L	#8,D2
+MOD = *+2
+	SUBI.L	#$1234,D2
+	ASR.L	#8,D2
+	ADD.W	D2,D2
+	ADD.W	D2,D2
+	MOVE.W	2(A0,D2.W),(A3)+
+	MOVE.W	(A0,D2.W),D2	;COEFF 3D
+;	ADD.W	D0,D0
+;	ADD.W	D1,D1
+	MULS.W	D2,D0
+	MULS.W	D2,D1
+	SWAP	D0
+	SWAP	D1
+	ADDI.W	#224,D0
+	ADDI.W	#130,D1
+	TST.W	D0
+	BGE.S	.OK_1
+	MOVE.L	#NIB,D1
+	BRA.S	.RETOUR_CLIP
+.OK_1	CMPI.W	#-74,D1
+	BGE.S	.OK_2
+	MOVE.L	#NIB,D1
+	BRA.S	.RETOUR_CLIP
+.OK_2	MULS.W	#224*12,D1
+	MULS.W	#12,D0
+	ADD.L	D0,D1
+	ADD.L	D6,D1
+.RETOUR_CLIP	MOVE.L	D1,(A3)+ ;ADRESSE DU POINT ET DE SES SYMETRIQUES
+	;MOVE.W	D5,(A3)+ ;OFFSET POUR LES COULEURS
+	DBRA	D7,.RECOM
+	ADDI.L	#(512*256)/42,MOD
+	MOVE.L	A5,D7
+	DBRA	D7,.ROTATE_ALL
+	RTS
+
+PREP2STARS	CLR.L	MOD2
+	LEA	TRIGO,A1
+	LEA	BUF_AVANCE,A3
+	MOVEQ	#41,D7
+.AVANCE_ALL	MOVE.W	D7,A5
+	LEA	COOR_STARS,A0
+	LEA	BUF_PROVISOIRE,A4
+	MOVE.W	#480-1,D7
+.AVANCE_STARS	MOVE.W	D7,A6
+	MOVE.W	(A0)+,D4	;X
+	MOVE.W	(A0)+,D5	;Y
+	ADD.W	D4,D4
+	MOVE.W	D4,(A4)+
+	ADD.W	D5,D5
+	MOVE.W	D5,(A4)+
+	MOVE.W	(A0)+,D5
+	MOVE.W	D5,(A4)+	;Z
+	MOVE.W	A6,D7
+	DBRA	D7,.AVANCE_STARS
+	LEA	BUF_PROVISOIRE,A4
+	LEA	BUF_COEFF,A0
+	MOVE.L	#BUF_UTIL+73*224*12,D6
+	MOVE.W	#480-1,D7
+.RECOM	MOVE.W	(A4)+,D0	;X*2
+	MOVE.W	(A4)+,D1	;Y*2
+	MOVEQ	#0,D2
+	MOVE.W	(A4)+,D2	;Z
+	ASL.L	#8,D2
+MOD2 = *+2
+	SUBI.L	#$1234,D2
+	ASR.L	#8,D2
+	ADD.W	D2,D2
+	ADD.W	D2,D2
+	MOVE.W	2(A0,D2.W),(A3)+
+	MOVE.W	(A0,D2.W),D2	;COEFF 3D
+;	ADD.W	D0,D0
+;	ADD.W	D1,D1
+	MULS.W	D2,D0
+	MULS.W	D2,D1
+	SWAP	D0
+	SWAP	D1
+	ADDI.W	#224,D0
+	ADDI.W	#130,D1
+	TST.W	D0
+	BGE.S	.OK_1
+	MOVE.L	#NIB,D1
+	BRA.S	.RETOUR_CLIP
+.OK_1	CMPI.W	#-72,D1
+	BGE.S	.OK_2
+	MOVE.L	#NIB,D1
+	BRA.S	.RETOUR_CLIP
+.OK_2	MULS.W	#224*12,D1
+	MULS.W	#12,D0
+	ADD.L	D0,D1
+	ADD.L	D6,D1
+.RETOUR_CLIP	MOVE.L	D1,(A3)+ ;ADRESSE DU POINT ET DE SES SYMETRIQUES
+	;MOVE.W	D5,(A3)+ ;OFFSET POUR LES COULEURS
+	DBRA	D7,.RECOM
+	ADDI.L	#(512*256)/42,MOD2
+	MOVE.L	A5,D7
+	DBRA	D7,.AVANCE_ALL
+	RTS
+
+PREPARE_FULL	LEA	BUF_EFF_1,A0
+	MOVE.W	#848-1,D7
+.COPY_0	MOVE.L	#$15401234,(A0)+
+	DBRA	D7,.COPY_0
+	MOVE.W	#$4E75,(A0)+
+	ADDQ.W	#2,A0	;MOT GENANT QUE L'ON SAUTE
+	MOVEQ	#7-1,D6
+.COPY_2	LEA	DEB_EFF,A1
+	MOVE.W	#LONG_TOTALE,D7
+.COPY_1	MOVE.W	(A1)+,(A0)+
+	DBRA	D7,.COPY_1
+	DBRA	D6,.COPY_2
+	LEA	DEB_EFF,A1
+	MOVE.W	#LONG_1,D7
+.COPY_3	MOVE.W	(A1)+,(A0)+
+	DBRA	D7,.COPY_3
+	MOVE.W	#105-1,D7
+.RECOP_DOUBLE	LEA	LIGNE_1,A4
+	MOVE.W	#LONG_LIGNE_1,D6
+.RECOP_SIMPLE	MOVE.W	(A4)+,(A0)+
+	DBRA	D6,.RECOP_SIMPLE
+	DBRA	D7,.RECOP_DOUBLE
+;	BRA.S	.OK_FINI
+	LEA	TABLE_AFFICH,A4
+	LEA	TABLE_CORES_X,A5
+	LEA	TABLE_CORES_X2,A6
+.CONT	CMPI.B	#-1,(A4)
+	BEQ.S	.OK_FINI
+	MOVEQ	#0,D0
+	MOVE.B	(A4)+,D0
+	SUBQ.W	#1,D0
+	ADD.W	D0,D0
+	MOVE.W	(A5,D0.W),D1
+	ADD.W	D0,D0
+	MOVE.L	(A6,D0.W),A3
+.COPY_FIN	MOVE.W	(A3)+,(A0)+
+	DBRA	D1,.COPY_FIN
+	BRA.S	.CONT
+.OK_FINI	MOVE.W	#$4E75,(A0)+
+	LEA	BUF_EFF_2,A2
+	SUBA.L	#BUF_EFF_1,A0
+	MOVE.L	A0,D7
+	LSR.W	#1,D7
+	SUBQ.W	#1,D7
+	LEA	BUF_EFF_1,A3
+.COPY_AUTRE	MOVE.W	(A3)+,(A2)+
+	DBRA	D7,.COPY_AUTRE
+	RTS
+
+PREP_ECR	MOVE.L	#BUFFER,D0
+	CLR.B	D0
+	MOVE.L	D0,SCREEN1
+	ADDI.L	#64000+1280,D0
+	MOVE.L	D0,SCREEN2
+	MOVE.B	SCREEN1+1,$FFFF8201.W
+	MOVE.B	SCREEN1+2,$FFFF8203.W
+;	MOVE.L	SCREEN1,A0
+;	MOVE.L	SCREEN2,A1
+;	MOVE.W	#16000-1,D7
+;.R	MOVE.L	#$AAAAAAAA,(A0)+
+;	MOVE.L	#$AAAAAAAA,(A1)+
+;	DBRA	D7,.R
+	RTS
+
+
+PREP_TAB_SYM	LEA	BUF_UTIL,A2
+	LEA	TABLE_230,A5
+	LEA	CORES_X,A6
+	MOVE.W	#-203,D6	;Y
+	MOVE.W	#203-1,D1
+.PROUT_3	MOVE.W	#-224,D5	;X
+	MOVE.W	#224-1,D4
+.PROUT_2	LEA	8(A2),A1
+	MOVE.W	D5,D2	;X
+	MOVE.W	D6,D3	;Y
+	CALC
+	MOVE.W	D6,D2	;Y
+	MOVE.W	D5,D3
+	NEG.W	D3	;-X
+	CALC2
+	MOVE.W	D5,D2
+	NEG.W	D2	;-X
+	SUBQ.W	#1,D2
+	MOVE.W	D6,D3
+	NEG.W	D3	;-Y
+	CALC2
+	MOVE.W	D6,D2
+	NEG.W	D2	;-Y
+	SUBQ.W	#1,D2
+	MOVE.W	D5,D3	;X
+	CALC
+	ADDQ.W	#1,D5	;X=X+1
+	MOVE.L	A1,A2
+	DBRA	D4,.PROUT_2
+	ADDQ.W	#1,D6	;Y=Y+1
+	DBRA	D1,.PROUT_3
+	RTS
+
+ZIK	INCBIN	JESS.ZIK
+
+MOUVEMENT	REPT	5
+	DC.W	41,40,39,38,37,36
+	DC.W	35,34,33,32,31,30,29,28,27,26,25,24,23,22
+	DC.W	21,20,19,18,17,16,15,14,13,12,11,10,9,8,7
+	DC.W	6,5,4,3,2,1,0
+	ENDR
+	REPT	2
+	DC.W	0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+	DC.W	17,18,19,20,21,22,23,24,25,26,27,28,29,30
+	DC.W	31,32,33,34,35,36,37,38,39,40,41
+	ENDR
+	DC.W	-1
+	REPT	5
+	DC.W	0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16
+	DC.W	17,18,19,20,21,22,23,24,25,26,27,28,29,30
+	DC.W	31,32,33,34,35,36,37,38,39,40,41
+	ENDR
+VAL_FIN = *-MOUVEMENT
+
+	INCLUDE	AFFICH_1.S
+	
+	INCLUDE	EFFAC_1.S
+
+	DCB.W	100,-132*230
+N	SET	-130
+	REPT	130
+	DC.W	N*LARG
+N	SET	N+1
+	ENDR
+TABLE_230	REPT	130
+	DC.W	N*LARG
+N	SET	N+1
+	ENDR
+	DCB.W	100,-132*230
+
+	DCB.W	64*20,0
+N	SET	0
+	DC.W	$10,N,8,N,4,N,2,N,1,N,$80,N+1,$40,N+1,$20,N+1,$10,N+1,8,N+1,4,N+1,2,N+1,1,N+1
+N	SET	8
+	REPT	12
+	DC.W	$80,N,$40,N,$20,N,$10,N,8,N,4,N,2,N,1,N,$80,N+1,$40,N+1,$20,N+1,$10,N+1,8,N+1,4,N+1,2,N+1,1,N+1
+N	SET	N+8
+	ENDR
+CORES_X	REPT	13
+	DC.W	$80,N,$40,N,$20,N,$10,N,8,N,4,N,2,N,1,N,$80,N+1,$40,N+1,$20,N+1,$10,N+1,8,N+1,4,N+1,2,N+1,1,N+1
+N	SET	N+8
+	ENDR
+	DC.W	$80,N,$40,N,$20,N,$10,N,8,N,4,N,2,N,1,N,$80,N+1,$40,N+1,$20,N+1,$10,N+1,8,N+1
+	DCB.W	64*20,0
+
+NIB	DC.L	0
+	DC.W	0,0,0,0
+
+TABLE_AFFICH	DC.B	18,1,1,1,2,3,1,1,1,4,5,1,1,6,7,1,1,1,8,9
+	DC.B	1,1,1,10,11,1,1,12,13,1,1,1,14,15,1,1,16,17
+	DC.B	1,1,1,2,3,1,1,1,4,5,1,1,6,7,1,1,1,8,9
+	DC.B	1,1,1,10,11,1,1,12,13,1,1,1,14,15,1,1,16,17
+	DC.B	1,1,1,2,3,1,1,1,4,5,1,1,6,7,1,1,1,8,19,9
+	DC.B	1,1,1,10,11,1,1,12,13,1,1,1,14,15,1,1,16,17
+	DC.B	1,1,1,2,3,1,1,1,4,5,1,1,6,7,1,1,1,8,9
+	DC.B	1,1,1,10
+	DC.B	-1
+	EVEN
+
+TABLE_CORES_X	DC.W	LONG_LIGNE_1,LONG_LIGNE_2
+	DC.W	LONG_LIGNE_3,LONG_LIGNE_4
+	DC.W	LONG_LIGNE_5,LONG_LIGNE_6
+	DC.W	LONG_LIGNE_7,LONG_LIGNE_8
+ 	DC.W	LONG_LIGNE_9,LONG_LIGNE_10
+	DC.W	LONG_LIGNE_11,LONG_LIGNE_12
+	DC.W	LONG_LIGNE_13,LONG_LIGNE_14
+	DC.W	LONG_LIGNE_15,LONG_LIGNE_16,LONG_LIGNE_17
+	DC.W	LONG_LIGNE_SPECIALE,LONG_LIGNE_19
+
+TABLE_CORES_X2	DC.L	LIGNE_1,LIGNE_2,LIGNE_3,LIGNE_4
+	DC.L	LIGNE_5,LIGNE_6,LIGNE_7,LIGNE_8
+	DC.L	LIGNE_9,LIGNE_10,LIGNE_11,LIGNE_12
+	DC.L	LIGNE_13,LIGNE_14,LIGNE_15,LIGNE_16
+	DC.L	LIGNE_17,LIGNE_SPECIALE,LIGNE_19
+FAD
+	DC	$777,$444,$222,$445
+	DC	$666,$333,$222,$445
+	DC	$555,$222,$222,$445
+	DC	$444,$222,$111,$445
+	DC	$333,$111,$111,$445
+	DC	$222,$111,$111,$445
+	DC	$111,$000,$000,$445
+	rept	20
+	DC	$000,$000,$000,$445
+	endr
+	dc	0,0,0,$334
+	dc	0,0,0,$223
+	dc	0,0,0,$112
+	dcb	4,0
+	DC	$9999
+FAD_INIT
+	DC	$111,$111,$111,$777,$777
+	DC	$222,$222,$111,$666,$666
+	DC	$333,$222,$111,$555,$555
+	DC	$444,$333,$222,$444,$444
+	DC	$555,$333,$222,$333,$333
+	DC	$666,$333,$222,$222,$222
+	DC	$777,$444,$222,$111,$111
+	REPT	20
+	DC	$777,$444,$222,$0,0
+	ENDR
+	DC	$777,$444,$222,$0,$112
+	DC	$777,$444,$222,$0,$223
+	DC	$777,$444,$222,$0,$334
+	DC	$777,$444,$222,$0,$445
+	DC	$9999
+
+COOR_STARS	INCBIN	2048.COR
+
+TRIGO	INCBIN	SIN_COS.TRG
+
+	DS.W	50
+COEFF_3D	INCBIN	COEFF256.3D
+FIN
+
+BUF_UTIL
+depack:	movem.l	d0-a6,-(a7)
+	cmp.l	#"ATM5",(a0)+
+	bne	not_packed
+	link	a2,#-28
+	move.l	(a0)+,d0
+	ifne	MODE
+	lea	4(a0,d0.l),a5
+	move.l	d0,-(a7)
+	elseif
+	move.l	a1,a5
+	add.l	d0,a5
+	endc
+	move.l	a5,a4
+	ifne	MODE
+	ifne	DEC_SPACE
+	lea	DEC_SPACE(a4),a5
+	endc
+	endc
+	lea	-$c(a4),a4
+	move.l	(a0)+,d0
+	move.l	a0,a6
+	add.l	d0,a6
+	ifne	PIC_ALGO
+	moveq	#0,d0
+	move.b	-(a6),d0
+	move	d0,-2(a2)
+	ifne	RESTORE_SPACE
+	lsl	#2,d0
+	sub	d0,a4
+	endc
+	elseif
+	ifne	RESTORE_SPACE
+	clr	-2(a2)
+	endc
+	subq	#1,a6
+	endc
+	ifne	RESTORE_SPACE
+	lea	buff_marg(pc),a3
+	move	-2(a2),d0
+	lsl	#2,d0
+	add	#DEC_SPACE+$C,d0
+	bra.s	.save
+.save_m:	move.b	(a4)+,(a3)+
+	subq	#1,d0
+.save:	bne.s	.save_m
+	movem.l	a3-a4,-(a7)
+	endc
+	ifne	PIC_ALGO
+	pea	(a5)
+	endc
+	move.b	-(a6),d7
+	bra	take_type
+decrunch:	move	d3,d5
+take_lenght:	add.b	d7,d7
+.cont_take:	dbcs	d5,take_lenght
+	beq.s	.empty1
+	bcc.s	.next_cod
+	sub	d3,d5
+	neg	d5
+	bra.s	.do_copy1
+.next_cod:	moveq	#3,d6
+	bsr.s	get_bit2
+	beq.s	.next_cod1
+	bra.s	.do_copy
+.next_cod1:	moveq	#7,d6
+	bsr.s	get_bit2
+	beq.s	.next_cod2
+	add	#15,d5
+	bra.s	.do_copy
+.empty1:	move.b	-(a6),d7
+	addx.b	d7,d7
+	bra.s	.cont_take
+.next_cod2:	moveq	#13,d6
+	bsr.s	get_bit2
+	add	#255+15,d5
+.do_copy:	add	d3,d5
+.do_copy1:	lea	decrun_table(pc),a4
+	move	d5,d2
+	bne.s	bigger
+	add.b	d7,d7
+	bne.s	.not_empty
+	move.b	-(a6),d7
+	addx.b	d7,d7
+.not_empty:	bcs.s	.ho_kesako
+	moveq	#1,d6
+	bra.s	word
+.ho_kesako:	moveq	#3,d6
+	bsr.s	get_bit2
+	tst.b	-28(a2)
+	beq.s	.ho_kesako1
+	move.b	10-28(a2,d5.w),-(a5)
+	bra	tst_end
+.ho_kesako1:	move.b	(a5),d0
+	btst	#3,d5
+	bne.s	.ho_kesako2
+	bra.s	.ho_kesako3
+.ho_kesako2:	add.b	#$f0,d5
+.ho_kesako3:	sub.b	d5,d0
+	move.b	d0,-(a5)
+	bra	tst_end
+get_bit2:	clr	d5
+.get_bits:	add.b	d7,d7
+	beq.s	.empty
+.cont:	addx	d5,d5
+	dbf	d6,.get_bits
+	tst	d5
+	rts
+.empty:	move.b	-(a6),d7
+	addx.b	d7,d7
+	bra.s	.cont
+bigger:	moveq	#2,d6
+word:	bsr.s	get_bit2
+contus:	move	d5,d4
+	move.b	14(a4,d4.w),d6
+	ext	d6
+	tst.b	1-28(a2)
+	bne.s	.spe_ofcod1
+	addq	#4,d6
+	bra.s	.nospe_ofcod1
+.spe_ofcod1:	bsr.s	get_bit2
+	move	d5,d1
+	lsl	#4,d1
+	moveq	#2,d6
+	bsr.s	get_bit2
+	cmp.b	#7,d5
+	blt.s	.take_orof
+	moveq	#0,d6
+	bsr.s	get_bit2
+	beq.s	.its_little
+	moveq	#2,d6
+	bsr.s	get_bit2
+	add	d5,d5
+	or	d1,d5
+	bra.s	.spe_ofcod2
+.its_little:	or.b	2-28(a2),d1
+	bra.s	.spe_ofcod3
+.take_orof:	or.b	3-28(a2,d5.w),d1
+.spe_ofcod3:	move	d1,d5
+	bra.s	.spe_ofcod2
+.nospe_ofcod1:	bsr.s	get_bit2
+.spe_ofcod2:	add	d4,d4
+	beq.s	.first
+	add	-2(a4,d4.w),d5
+.first:	lea	1(a5,d5.w),a4
+	move.b	-(a4),-(a5)
+.copy_same:	move.b	-(a4),-(a5)
+	dbf	d2,.copy_same
+	bra.s	tst_end
+make_jnk:	add.b	d7,d7
+	bne.s	.not_empty
+	move.b	-(a6),d7
+	addx.b	d7,d7
+.not_empty:	bcs.s	string
+	move.b	-(a6),-(a5)
+tst_end:	cmp.l	a5,a3
+	bne.s	make_jnk
+	cmp.l	a6,a0
+	beq.s	work_done
+take_type:	moveq	#0,d6
+	bsr	get_bit2
+	beq.s	.nospe_ofcod
+	move.b	-(a6),d0
+	lea	2-28(a2),a1
+	move.b	d0,(a1)+
+	moveq	#1,d1
+	moveq	#6,d2
+.next:	cmp.b	d0,d1
+	bne.s	.no_off_4b
+	addq	#2,d1
+.no_off_4b:	move.b	d1,(a1)+
+	addq	#2,d1
+	dbf	d2,.next
+	st	1-28(a2)
+	bra.s	.spe_ofcod
+.nospe_ofcod:	sf	1-28(a2)
+.spe_ofcod:	moveq	#0,d6
+	bsr	get_bit2
+	beq.s	.relatif
+	lea	10-28(a2),a1
+	moveq	#15,d0
+.next_f:	move.b	-(a6),(a1)+
+	dbf	d0,.next_f
+	st	-28(a2)
+	bra.s	.freq
+.relatif:	sf	-28(a2)
+.freq:	clr	d3
+	move.b	-(a6),d3
+	move.b	-(a6),d0
+	lsl	#8,d0
+	move.b	-(a6),d0
+	move.l	a5,a3
+	sub	d0,a3
+	bra.s	make_jnk
+string:	bra	decrunch
+work_done:
+	ifne	PIC_ALGO
+	move.l	(a7)+,a0
+	pea	(a2)
+	bsr.s	decod_picture
+	move.l	(a7)+,a2
+	endc
+	ifne	RESTORE_SPACE
+	movem.l	(a7)+,a3-a4
+	endc
+	ifne	MODE
+	move.l	(a7)+,d0
+	bsr	copy_decrun
+	endc
+	ifne	RESTORE_SPACE
+	move	-2(a2),d0
+	lsl	#2,d0
+	add	#DEC_SPACE+$C,d0
+	bra.s	.restore
+.restore_m:	move.b	-(a3),-(a4)
+	subq	#1,d0
+.restore:	bne.s	.restore_m
+	endc
+	unlk	a2
+not_packed:	movem.l	(a7)+,d0-a6
+ 	rts
+decrun_table:	dc.w	32,32+64,32+64+256,32+64+256+512,32+64+256+512+1024
+	dc.w	32+64+256+512+1024+2048,32+64+256+512+1024+2048+4096
+	dc.b	0,1,3,4,5,6,7,8
+	ifne	PIC_ALGO
+decod_picture:	move	-2(a2),d7
+.next_picture:	dbf	d7,.decod_algo
+	rts
+.decod_algo:	move.l	-(a0),d0
+	lea	0(a5,d0.l),a1
+.no_odd:	lea	$7d00(a1),a2
+.next_planes:	moveq	#3,d6
+.next_word:	move	(a1)+,d0
+	moveq	#3,d5
+.next_bits:	add	d0,d0
+	addx	d1,d1
+	add	d0,d0
+	addx	d2,d2
+	add	d0,d0
+	addx	d3,d3
+	add	d0,d0
+	addx	d4,d4
+	dbf	d5,.next_bits
+	dbf	d6,.next_word
+	movem	d1-d4,-8(a1)
+	cmp.l	a1,a2
+	bne.s	.next_planes
+	bra.s	.next_picture
+	endc
+	ifne	MODE
+copy_decrun:	lsr.l	#4,d0
+	lea	-12(a6),a6
+.copy_decrun:	rept	4
+	move.l	(a5)+,(a6)+
+	endr
+	dbf	d0,.copy_decrun
+	rts
+	endc
+	ifne	RESTORE_SPACE
+buff_marg:	dcb.b	$90+DEC_SPACE+$C
+	endc
+	EVEN	
+GERE_FNT	
+	CLR	MOD_OFFSET
+	CLR	MOD_ROX
+	LEA	MSG,A6
+DEBUT	MOVEQ	#0,D6
+	MOVE.B	(A6)+,D6
+	CMPI.B	#-1,D6
+	BEQ	FINI3
+	CMPI.B	#-2,D6
+	BNE.S	.P
+	CLR	X
+	ADD	#160*14,MOD_OFFSET
+	BRA.S	DEBUT
+.P	SUBI.B	#$20,D6
+	BNE.S	.NOT_ESP
+	ADDQ	#8,X
+	BRA.S	DEBUT
+.NOT_ESP	ADD	D6,D6
+	ADD	D6,D6
+	LEA	TABL_FNT,A5
+	MOVE.L	(A5,D6.W),A1
+
+	LEA	BUF_FNT,A0
+;	LEA	FNT+34,A1
+	MOVE	#15,D0
+.R	MOVE	(A1),(A0)+
+	LEA	160(A1),A1
+	DBF	D0,.R
+
+	LEA	SAVER,A2
+;	MOVE.L	SCREEN2,A1
+;	LEA	160+230*100+6(A1),A1
+	LEA	BUF_LOG,A1
+MOD_OFFSET	EQU	*+2
+	LEA	0(A1),A1
+
+	MOVE	X,D2
+	MOVE	D2,D4
+	LSR	#4,D2
+	MOVE	D2,D7
+	LSL	#4,D7
+	SUB	D7,D4
+	LSL	#3,D2
+	ADD	D2,A1
+	MOVE	D4,MOD_ROX
+
+	LEA	BUF_FNT,A0
+	MOVE	#16-1,D7
+.DO_IT	MOVEQ	#0,D4
+	MOVEQ	#0,D1
+	MOVEQ	#0,D3
+	MOVEQ	#16,D2
+	MOVE	(A0)+,D0
+.BIT_OFF	SUBQ	#1,D2
+	ADDQ	#1,D1
+	CMPI	#-1,D2
+	BEQ.S	.END_
+	BTST	D2,D0
+	BEQ.S	.BIT_OFF
+	MOVE	D1,D3
+	BSET	D2,D4
+	BRA.S	.BIT_OFF
+.END_
+	SWAP	D4
+
+	MOVEQ	#0,D2
+MOD_ROX	EQU	*+2
+	MOVE	#0,D2
+	BEQ.S	.ROOL
+	SUBQ	#1,D2
+.J	ROXR.L	D4
+	DBF	D2,.J
+
+.ROOL	MOVE	D4,8(A1)
+	SWAP	D4
+	OR	D4,(A1)
+
+;	MOVE	D4,(A1)
+	MOVE	D3,(A2)+
+	LEA	160(A1),A1
+;	LEA	160(A0),A0
+	DBF	D7,.DO_IT
+FINI	MOVE	#$9999,(A2)
+	NOP
+
+	LEA	SAVER,A0
+.CONT2	MOVE	(A0),D0
+.CONT	ADDQ	#2,A0
+	CMPI	#$9999,(A0)
+	BEQ.S	FINI2
+	CMP	(A0),D0
+	BGE.S	.CONT
+	BRA.S	.CONT2
+FINI2	NOP
+	ADDQ	#1,D0
+	ADD	D0,X
+	BRA	DEBUT
+FINI3
+	RTS
+MSG
+ DC.B '-HOLOCAUST-'
+ DC.B -1
+	EVEN
+TABL_FNT	
+	DC.L	FNT+34+160*16+120	ESPACE
+	DC.L	FNT+34+160*16+120-16-8	!
+	DC.L	FNT+34+160*16+120-8-8	"
+	REPT	10
+	DC.L	FNT+34
+	ENDR
+	DC.L	FNT+34+160*16*2+8*10
+	
+	DC.L	FNT+34+160*16+120-24-8	.
+	REPT	31-13
+	DC.L	FNT+34
+	ENDR
+N	SET	0
+	REPT	15
+	DC.L	FNT+34+N
+N	SET	N+8
+	ENDR
+N	SET	0
+	REPT	11
+	DC.L	FNT+34+160*16+N
+N	SET	N+8
+	ENDR
+	
+;FNT	INCBIN	COG_FNT.PI1
+POPO	INCBIN	POPO.ZOB
+	SECTION	BSS
+FNT
+ICI	DS.B	32066
+X	DS	1
+BUF_FNT	DS	16
+SAVER	DS	16+1
+
+	DS.B	545700-36656
+PT_ROTATE	DS.W	1
+NB_VBL	DS.W	1
+SCREEN1	DS.L	1
+SCREEN2	DS.L	1
+	DS.B	256+1280
+BUFFER	DS.B	128000+1280-512*3-512*2-512*2
+BUF_PROVISOIRE	DS.W	512*3
+	DS.W	512*2
+BUF_COEFF	DS.W	512*2
+ADR_BUF	DS.L	1
+ADR_EFF	DS.L	2
+BUF_EFF_1	DS.B	40490
+BUF_EFF_2	DS.B	40490
+BUF_ROTATE	DS.B	6*480*42	;120960
+BUF_AVANCE	DS.B	6*480*42	;120960
+BUF_LOG	DS.B	160*16

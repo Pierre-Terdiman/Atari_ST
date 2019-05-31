@@ -1,0 +1,140 @@
+RESERVE 100000
+SPOKE &H484,PEEK(&H484) AND 254
+ecran%=XBIOS(2)
+buffer$=SPACE$(32000)
+buffer%=VARPTR(buffer$)
+FOR c%=0 TO 15
+  SETCOLOR c%,0,0,0
+NEXT c%
+SETCOLOR 15,7,7,7
+PRINT
+PRINT "Quality never goes out of style."
+PRINT
+PRINT "You 'll soon see what the GFA Basic"
+PRINT
+PRINT "is capable of."
+PRINT
+PRINT "And don't say bad things about the"
+PRINT
+PRINT "Amiga, which offers you the music."
+sprites$=SPACE$(32066)
+sprites%=VARPTR(sprites$)
+BLOAD "thorgall",sprites%
+SETCOLOR 15,0,0,0
+BMOVE sprites%+34,XBIOS(2),32000
+CLR sprites%,sprites$
+DIM op$(10),eclair$(10)
+GET 0,0,62,27,op$(1)
+GET 64,0,126,27,op$(2)
+GET 128,0,190,27,op$(3)
+GET 192,0,254,27,op$(4)
+GET 256,0,318,27,op$(5)
+GET 0,30,62,57,op$(6)
+GET 64,30,126,57,op$(7)
+GET 128,30,190,57,op$(8)
+GET 192,30,254,57,op$(9)
+GET 256,30,318,57,op$(10)
+GET 0,162,154,199,pyram$
+GET 157,162,312,199,mpyram$
+GET 0,59,33,115,eclair$(1)
+GET 35,59,68,115,eclair$(2)
+GET 70,59,103,115,eclair$(3)
+GET 105,59,138,115,eclair$(4)
+GET 140,59,173,115,eclair$(5)
+GET 175,59,208,115,eclair$(6)
+GET 210,59,243,115,eclair$(7)
+GET 245,59,278,115,eclair$(8)
+GET 0,118,3,120,vert$
+GET 5,118,8,120,rouge$
+CLS
+vaisseau$=SPACE$(32066)
+vaisseau%=VARPTR(vaisseau$)
+BLOAD "aaricia",vaisseau%
+digit$=SPACE$(5000)
+digit%=VARPTR(digit$)
+BLOAD "code",digit%
+OPEN "I",#1,"amiga.mus"
+length%=LOF(#1)
+sample%=GEMDOS(72,L:length%)
+CLOSE #1
+BLOAD "amiga.mus",sample%
+f%=C:digit%(L:sample%,L:length%,W:10000,W:20,W:15,L:*follow%)
+VOID XBIOS(6,L:vaisseau%+2)
+DEFFILL 12
+PBOX 0,0,319,199
+FOR y%=32000-160 TO 0 STEP -160
+  BMOVE vaisseau%+34+y%,XBIOS(2),32160-y%-160
+NEXT y%
+FOR pause%=1 TO 15000
+NEXT pause%
+PUT 74,76,vert$
+FOR pause%=1 TO 15000
+NEXT pause%
+PUT 82,74,vert$
+FOR pause%=1 TO 15000
+NEXT pause%
+PUT 91,71,vert$
+anim
+END
+PROCEDURE anim
+  VOID XBIOS(5,L:buffer%,L:-1,W:-1)
+  n%=1
+  FOR y%=199 TO 162 STEP -1
+    BMOVE vaisseau%+34,buffer%,32000
+    PUT 107,y%,mpyram$,4
+    PUT 107,y%,pyram$,7
+    IF n%<11
+      PUT 156,112,op$(n%)
+    ELSE
+      PUT 156,112,op$(10)
+    ENDIF
+    BMOVE buffer%,ecran%,32000
+    INC n%
+  NEXT y%
+  VOID XBIOS(5,L:ecran%,L:-1,W:-1)
+  PUT 123,62,rouge$
+  FOR pause%=1 TO 40000
+  NEXT pause%
+  VOID XBIOS(5,L:buffer%,L:-1,W:-1)
+  FOR fois%=1 TO 10
+    FOR ec%=1 TO 8
+      BMOVE vaisseau%+34,buffer%,32000
+      PUT 156,112,op$(10)
+      PUT 107,162,mpyram$,4
+      PUT 107,162,pyram$,7
+      PUT 172,113,eclair$(ec%)
+      BMOVE buffer%,ecran%,32000
+    NEXT ec%
+  NEXT fois%
+  FOR fois%=1 TO 20
+    BMOVE vaisseau%+34,buffer%,32000
+    PUT 156,112,op$(10)
+    PUT 107,162,mpyram$,4
+    PUT 107,162,pyram$,7
+    BMOVE buffer%,ecran%,32000
+  NEXT fois%
+  FOR n%=10 TO 1 STEP -1
+    BMOVE vaisseau%+34,buffer%,32000
+    PUT 156,112,op$(n%)
+    PUT 107,162,mpyram$,4
+    PUT 107,162,pyram$,7
+    BMOVE buffer%,ecran%,32000
+  NEXT n%
+  FOR fois%=1 TO 30
+    BMOVE vaisseau%+34,buffer%,32000
+    PUT 107,162,mpyram$,4
+    PUT 107,162,pyram$,7
+    BMOVE buffer%,ecran%,32000
+  NEXT fois%
+  FOR y%=162 TO 199
+    BMOVE vaisseau%+34,buffer%,32000
+    PUT 107,y%,mpyram$,4
+    PUT 107,y%,pyram$,7
+    BMOVE buffer%,ecran%,32000
+  NEXT y%
+  FOR y%=0 TO 32000-160 STEP 160
+    BMOVE vaisseau%+34+y%,XBIOS(2),32160-y%-160
+  NEXT y%
+  CLEAR
+  QUIT
+RETURN

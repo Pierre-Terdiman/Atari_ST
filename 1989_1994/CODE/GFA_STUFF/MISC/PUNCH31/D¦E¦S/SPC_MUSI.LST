@@ -1,0 +1,19 @@
+' La musique de l'espace...
+'      D.E.S 1989
+'
+For I%=0 To 1200
+  If I%<300
+    Sound 1,15,#Sin(I%)*50+I%,1
+  Endif
+  If I%<600 And I%>300
+    Sound 1,15,#I%*(I%*10)+I%,1
+  Endif
+  If I%>600 And I%<900
+    Sound 1,15,#Tan(I%)*50+I%,1
+  Endif
+  If I%>900
+    Sound 1,15,#Sin(I%^2)*500,1
+  Endif
+Next I%
+Sound 1,0
+Edit

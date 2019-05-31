@@ -1,0 +1,41 @@
+' PRINT CHR$(27);"p";"kookoo";CHR$(27);"q"
+DIM q$(11)
+FOR c%=1 TO 10
+  READ q$(c%)
+  PRINT q$(c%)
+NEXT c%
+DATA "      Corwin.       "
+DATA "      Random.       "
+DATA "      Caine.        "
+DATA "      Gerard.       "
+DATA "      Eric.         "
+DATA "      Julian.       "
+DATA "      Merlin        "
+DATA "      Bleys         "
+DATA "      Benedict      "
+DATA "      Brand         "
+c%=1
+c2%=c%
+y%=1
+LOCATE 1,1
+PRINT CHR$(27);"p";q$(c%);CHR$(27);"q"
+DO
+  LOCATE 1,y%
+  IF c2%<>c%
+    PRINT CHR$(27);"p";q$(c%);CHR$(27);"q"
+    c2%=c%
+  ENDIF
+  PAUSE 1
+  IF STICK(1)=2 AND y%<10
+    LOCATE 1,y%
+    PRINT q$(c%)
+    INC c%
+    INC y%
+  ENDIF
+  IF STICK(1)=1 AND y%>1
+    LOCATE 1,y%
+    PRINT q$(c%)
+    DEC c%
+    DEC y%
+  ENDIF
+LOOP

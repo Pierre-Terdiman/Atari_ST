@@ -1,0 +1,17 @@
+DIM c&(700)
+FOR b|=0 TO 7
+  FOR v|=0 TO 7
+    FOR r|=0 TO 7
+      t&=t&+1+(-67*(t&<1))
+      c&(t&)=&H100*v|+&H10*b|+r|
+    NEXT r|
+  NEXT v|
+NEXT b|
+DO
+  FOR r&=576 DOWNTO 1
+    FOR m&=r& TO r&+38
+      SETCOLOR 0,c&(m&)
+    NEXT m&
+    VSYNC
+  NEXT r&
+LOOP

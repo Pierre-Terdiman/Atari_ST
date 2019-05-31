@@ -1,0 +1,45 @@
+' 16 juin 91
+'
+'
+DIM p&(40,40,1)
+DIM a$(23),pp&(40,40,1)
+DIM x&(3),y&(3)
+'
+'
+FOR i&=0 TO 40
+  FOR j&=0 TO 40
+    p&(i&,j&,0)=-20*16+i&*16
+    p&(i&,j&,1)=-20*16+j&*16
+  NEXT j&
+NEXT i&
+'
+e%=XBIOS(2)
+OPEN "o",#1,"lignes.dat"
+FOR pas&=0 TO 3
+  FOR n&=0 TO 99
+    ALINE 0,0,319,0,0,&HFFFF,0
+    z=500-0.03367003367*n&*n&
+    FOR i&=0 TO 40
+      pp&(i&,0,0)=160+INT((p&(i&,0,0)+pas&*4)*500/z+0.5)
+    NEXT i&
+    FOR j&=0 TO 40
+      pp&(0,j&,1)=100+INT(p&(0,j&,1)*500/z+0.5)
+    NEXT j&
+    l_max&=0
+    l_min&=1000
+    FOR i&=0 TO 39 STEP 2
+      LINE pp&(i&,0,0),0,pp&(i&+1,0,0),0
+      l_max&=MAX(l_max&,pp&(i&+1,0,0)-pp&(i&,0,0))
+      l_min&=MIN(l_min&,pp&(i&+1,0,0)-pp&(i&,0,0))
+    NEXT i&
+    FOR j&=0 TO 19
+      OUT& #1,DPEEK(e%+j&*8)
+    NEXT j&
+    PRINT AT(1,3);n&;"   ";l_min&;" ";l_max&;" "
+    '    PAUSE 2
+    '
+  NEXT n&
+NEXT pas&
+'
+PRINT "long:";LOF(#1)
+CLOSE #1

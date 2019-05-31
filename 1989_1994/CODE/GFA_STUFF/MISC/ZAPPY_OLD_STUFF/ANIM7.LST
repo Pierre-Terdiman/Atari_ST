@@ -1,0 +1,30 @@
+RESERVE 100000
+sprite%=GEMDOS(72,L:32066)
+BLOAD "14bis.pi1",sprite%
+dessin%=GEMDOS(72,L:32066)
+BLOAD "17.pi1",dessin%
+animation
+VOID GEMDOS(73,L:sprite%)
+VOID GEMDOS(73,L:dessin%)
+END
+PROCEDURE animation
+  LOCAL x%,y%,bouton%,ecran%,buffer%
+  buffer%=GEMDOS(72,L:32000)
+  HIDEM
+  ecran%=XBIOS(2)
+  VOID XBIOS(5,L:sprite%+34,L:-1,W:-1)
+  GET 0,50,0+35-1,50+32-1,msq$
+  GET 0,0,0+35-1,0+32-1,don$
+  VOID XBIOS(5,L:buffer%,L:-1,W:-1)
+  VOID XBIOS(6,L:dessin%+2)
+  REPEAT
+    MOUSE x%,y%,bouton%
+    BMOVE dessin%+34,buffer%,32000
+    ' PUT x%,y%,msq$,4
+    PUT x%,y%,don$
+    BMOVE buffer%,ecran%,32000
+  UNTIL bouton%
+  SHOWM
+  VOID XBIOS(5,L:ecran%,L:-1,W:-1)
+  VOID GEMDOS(73,L:buffer%)
+RETURN

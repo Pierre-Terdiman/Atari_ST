@@ -1,0 +1,26 @@
+' Un GFA-Punch hyper-cool:512 couleurs sans compiler et en 20 '
+' lignes!
+' Auteur: SPEEDER (AND THE HORRIBLES)
+' GFA 3.03
+For R&=0 To 7
+  For B&=0 To 7
+    For V&=0 To 7
+      Dpoke Himem+208+(R&*64+B&*8+V&)*2,R&*256+V&*16+B&
+    Next V&
+  Next B&
+Next R&
+For X&=0 To 280 Step 40
+  Deffill 
+Asc(Mid$(Chr$(2)+Chr$(3)+Chr$(6)+Chr$(4)+Chr$(7)+Chr$(5)+Chr$(8)+C
+hr$(9),X&/40+1,1))
+  Pbox X&,0,X&+39,199
+Next X&
+Box 0,0,319,199
+P%=Gemdos(32,L:0)
+Repeat
+  For T%=Himem To Himem+1216 Step 16
+    Bmove T%,&HFFFF8242,16
+  Next T%
+  Vsync
+Until Inp(-2)
+Void Gemdos(32,L:P%)

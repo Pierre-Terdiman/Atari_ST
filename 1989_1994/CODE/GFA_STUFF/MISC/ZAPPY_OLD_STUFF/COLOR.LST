@@ -1,0 +1,11 @@
+SETCOLOR 0,7
+REPEAT
+  REPEAT
+    INC y%
+    FOR i%=0 TO y%
+      SETCOLOR 0,i%-y%
+    NEXT i%
+    VSYNC
+  UNTIL y%=52
+  DEC y%
+UNTIL MOUSEK

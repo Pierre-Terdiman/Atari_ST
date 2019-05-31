@@ -1,0 +1,20 @@
+buf$=SPACE$(32066)
+buf%=VARPTR(buf$)
+FILESELECT "a:\*.pi1","",f$
+BLOAD f$,buf%
+DIM col%(15)
+FOR z%=0 TO 15
+  col%(z%)=ABS(8-(((PEEK(buf%+2+z%*2) AND 7)+((PEEK(buf%+3+z%*2) AND 112)/16)+(PEEK(buf%+3+z%*2) AND 7))/3))
+NEXT z%
+BOUNDARY FALSE
+FOR y%=0 TO 399 STEP 2
+  FOR x%=0 TO 639 STEP 2
+    IF z%=0
+      z%=16
+      ADD buf%,8
+    ENDIF
+    DEC z%
+    DEFFILL 1,2,col%((((DPEEK(buf%+34) AND (2^z%))/2^z%)*8)+(((DPEEK(buf%+36) AND (2^z%))/2^z%)*4)+(((DPEEK(buf%+38) AND (2^z%))/2^z%)*2)+(((DPEEK(buf%+40) AND (2^z%))/2^z%)))
+    PBOX x%,y%,x%+1,y%+1
+  NEXT x%
+NEXT y%

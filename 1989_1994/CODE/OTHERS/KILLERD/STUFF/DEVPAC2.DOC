@@ -1,0 +1,54 @@
+                            DEVPAC 2
+
+HELP      donne l'adresse et la taille des segments TEXT,DATA,BSS
+                    +donne l'adresse de tous les breakpoints
+TAB       changement de fenetre (num‚ro=num‚ro+1)
+ A        lecture d'un fichier source (.S)
+ R        lancement d'un programme en m‚moire
+                    options:Go,Until(ex:A0=65400),Instruction,Slow
+ U        lancement d'un programme jusqu'… PC=
+ I        copie de bloc (d‚part,fin,destination)
+ O        calculatrice ($=hexa,\=d‚ci,%=bin)
+ P        d‚sassemble un programme vers l'imprimante ou un fichier)
+ S        sauvegarde d'un fichier binaire
+ D        choix du drive et du directory
+ G        fonction de recherche (B/W/L/T/I)
+ H        history
+ M        positionne l'adresse de d‚part pour la fenetre courante
+ W        remplissage d'une zone
+ V        flip screen
+ B        chargement d'un fichier binaire (sans entete)
+ 
+
+CTRL A    debugger (breakpoint)
+CTRL Z    debugger (mode TRACE)
+CTRL E    r‚installe les exceptions
+CTRL R    lance le programme (sans breakpoints,sans trace)
+CTRL T    debugger (mode TRACE)
+CTRL Y    debugger (mode TRACE)
+CTRL P    d‚finition des pr‚ferences
+                         -screen timer
+                         -follow trap
+                         -relative offset
+                         -ignore case
+                         -symbol length
+                         -top of RAM
+CTRL D    BDOS breakpoints
+CTRL K    d‚truit tous les breakpoints
+CTRL C    fin du travail (->programme termin‚ ou retour au bureau)
+CTRL ?    chargement d'un fichier executable
+
+
+ALT Z     plein ‚cran
+ALT E     ‚dition d'une zone m‚moire
+ALT R     positionne la valeur d'un registre (register=value)
+ALT P     sortie imprimante du contenu de la fenetre courante
+ALT S     division de la fenetre en 2
+ALT F     changement de fonte
+ALT L     positionne l'adresse de d‚part d'une fenetre sur un registre
+ALT B     positionne un breakpoint
+ALT 1,2,3...    pointe sur la fenetre num‚ro X
+ALT
+ALT
+ALT
+

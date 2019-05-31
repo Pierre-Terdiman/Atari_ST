@@ -1,0 +1,51 @@
+a$=SPACE$(32000)
+a%=VARPTR(a$)
+ecran%=XBIOS(2)
+CLS
+VOID XBIOS(5,L:a%,L:-1,W:-1)
+SETMOUSE 0,20
+p%=250
+' p%=5
+DO
+  BMOVE ecran%,a%,32000
+  mmm
+  CLS
+  ' z
+  LINE x%,y%,x%+p%*2,y%
+  LINE x%+p%*2,y%,x%,y%+p%*2
+  LINE x%,y%+p%*2,x%+p%*2,y%+p%*2
+  ' a
+  LINE x%+p%*3,y%+p%*2,x%+p%*3,y%+p%*0.5
+  LINE x%+p%*3,y%+p%*0.5,x%+p%*3.5,y%
+  LINE x%+p%*3.5,y%,x%+p%*4.5,y%
+  LINE x%+p%*4.5,y%,x%+p%*5,y%+p%*0.5
+  LINE x%+p%*5,y%+p%*0.5,x%+p%*5,y%+p%*2
+  LINE x%+p%*3,y%+p%,x%+p%*5,y%+p%
+  ' p
+  LINE x%+p%*6,y%+p%*2,x%+p%*6,y%
+  LINE x%+p%*6,y%,x%+p%*8,y%
+  LINE x%+p%*8,y%,x%+p%*8,y%+p%
+  LINE x%+p%*8,y%+p%,x%+p%*6,y%+p%
+  ' p
+  LINE x%+p%*9,y%+p%*2,x%+p%*9,y%
+  LINE x%+p%*9,y%,x%+p%*11,y%
+  LINE x%+p%*11,y%,x%+p%*11,y%+p%
+  LINE x%+p%*11,y%+p%,x%+p%*9,y%+p%
+  ' y
+  LINE x%+p%*13,y%+p%*2,x%+p%*13,y%+p%
+  LINE x%+p%*13,y%+p%,x%+p%*12,y%
+  LINE x%+p%*13,y%+p%,x%+p%*14,y%
+  BMOVE a%,ecran%,32000
+LOOP
+PROCEDURE mmm
+  MOUSE x%,y%,b%
+  IF b%=1
+    p%=p%+1
+  ENDIF
+  IF b%=2
+    p%=p%-1
+  ENDIF
+  IF b%=3
+    p%=5
+  ENDIF
+RETURN

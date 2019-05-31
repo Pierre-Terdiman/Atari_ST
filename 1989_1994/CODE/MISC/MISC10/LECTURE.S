@@ -1,0 +1,17 @@
+	LEA	LECT,A0
+	MOVE	#33,D0
+COD	ADD.B	#$22,(A0)+
+	DBF	D0,COD
+
+
+LECT	MOVE	#0,-(SP)
+	MOVE	#2,-(SP)
+	MOVE	#1,-(SP)
+	LEA	TAM(PC),A0
+	MOVE.L	A0,-(SP)
+	MOVE	#2,-(SP)
+	MOVE	#4,-(SP)
+	TRAP	#13
+	ADDA.L	#14,SP
+	
+TAM	

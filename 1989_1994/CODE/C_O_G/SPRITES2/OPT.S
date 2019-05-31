@@ -1,0 +1,129 @@
+	CLR.L	-(SP)
+	MOVE	#$20,-(SP)
+	TRAP	#1
+	ADDQ.L	#6,SP
+
+	CLR	-(SP)
+	MOVE.L	#-1,-(SP)
+	MOVE.L	#-1,-(SP)
+	MOVE	#5,-(SP)
+	TRAP	#14
+	ADDA.L	#12,SP	
+
+	MOVEM.L	$FFFF8240.W,D0-D7
+	MOVEM.L	D0-D7,SAUV
+	
+	MOVEM.L	IMG+2,D0-D7
+	MOVEM.L	D0-D7,$FFFF8240.W
+	
+	
+	
+	
+	LEA	$F8000,A0
+	LEA	IMG+34,A1
+	
+	
+	REPT	64
+N	SET	0
+
+	MOVE	N(A1),N(A0)
+
+N	SET	N+8
+
+	MOVE	N(A1),N(A0)
+
+N	SET	N+8
+
+
+	MOVE	N(A1),N(A0)
+
+N	SET	N+8
+
+	MOVE	N(A1),N(A0)
+
+N	SET	N+8
+
+	LEA	160(A1),A1
+	LEA	160(A0),A0
+	ENDR
+
+
+	
+	LEA	$F8000,A0
+	LEA	65*160(A0),A0
+	LEA	IMG+34,A1
+	
+	
+	REPT	64
+N	SET	2
+
+	MOVE	N(A1),N(A0)
+
+N	SET	N+8
+
+	MOVE	N(A1),N(A0)
+
+N	SET	N+8
+
+
+	MOVE	N(A1),N(A0)
+
+N	SET	N+8
+
+	MOVE	N(A1),N(A0)
+
+N	SET	N+8
+
+	LEA	160(A1),A1
+	LEA	160(A0),A0
+	ENDR
+
+	LEA	$F8000,A0
+	LEA	65*160(A0),A0
+	LEA	65*160(A0),A0
+	LEA	IMG+34,A1
+	
+	
+	REPT	64
+N	SET	4
+
+	MOVE	N(A1),N(A0)
+
+N	SET	N+8
+
+	MOVE	N(A1),N(A0)
+
+N	SET	N+8
+
+
+	MOVE	N(A1),N(A0)
+
+N	SET	N+8
+
+	MOVE	N(A1),N(A0)
+
+N	SET	N+8
+
+	LEA	160(A1),A1
+	LEA	160(A0),A0
+	ENDR
+
+
+
+
+	
+	MOVE	#7,-(SP)
+	TRAP	#1
+	ADDQ.L	#2,SP
+
+	MOVEM.L	SAUV,D0-D7
+	MOVEM.L	D0-D7,$FFFF8240.W
+	
+
+	
+	TRAP	#1	
+	
+	
+IMG	INCBIN	DAN3.PI1
+
+SAUV	DS.L	8

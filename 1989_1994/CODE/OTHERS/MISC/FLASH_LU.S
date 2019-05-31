@@ -1,0 +1,15 @@
+MOVEM.L	A0/D0,-(SP)		*
+flash	MOVE.B	#7,$FFFF8800.W		*
+btst	BTST	#4,$FFFF8800.W		*VOIX 3,4 OU 5
+	BNE.S	low			*
+	MOVE.B	#14,$FFFF8800.W		*
+	MOVE.B	#$40,$FFFF8802.W 	*
+	BRA.S	cont			*
+low	MOVE.B	#14,$FFFF8800.W		*  routine voyant
+	MOVE.B	#2,$FFFF8802.W		*
+cont	MOVE.L	#$70000+160*120,A0	*
+	CLR.L	D0			*
+	MOVE.B	#8,$FFFF8800.W		*
+	MOVE.B	$FFFF8800.W,D0		*
+	TST.B	D0			*
+	MOVEM.L	(SP)+,A0/D0

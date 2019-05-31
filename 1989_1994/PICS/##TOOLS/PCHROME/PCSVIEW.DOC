@@ -1,0 +1,27 @@
+
+				PhotoChrome Slideshow Utility
+		
+				  (C) 1992 Douglas Little.
+				  
+				  ------------------------
+				  
+				  
+	The slideshow program is based on the many others which are available
+on the P.D. The keys for control are...
+
+	F1-F10	>	Speed.	F1-Fast/F2-Slow
+	SPACE		>	Freeze frame.
+	RETURN	>	Continue.
+	ESC		>	Quit.
+	
+	Other features include the ability to load Degas Elite 'PC1' and
+Tiny 'TNY' formats, in case anyone wants to add intro or text screens.
+	
+	PCSVIEW can also load ICE-PACKED versions of the above screens.
+Typically, TINY and PC1 screens are halved and PCS screens are reduced
+by around 30%, ideal for slideshows since PCS files can be very large.
+(minimum size about 20k and up to 102k max.) 
+
+*-------------------------------------------------------------------------*
+*	NOTE:	 ONLY USE PACK-ICE v2.40! no other versions are supported.    *
+*-------------------------------------------------------------------------*	

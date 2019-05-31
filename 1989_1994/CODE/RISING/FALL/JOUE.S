@@ -1,0 +1,27 @@
+	CLR.L	-(SP)
+	MOVE.W	#$20,-(SP)
+	TRAP	#1
+	ADDQ.W	#6,SP
+	MOVE.L	D0,SAUV_SP
+
+	MOVEQ	#1,D0
+	JSR	ZIK
+
+	MOVE.L	#ZIK+8,$4D2.W
+
+	MOVE.W	#7,-(SP)
+	TRAP	#1
+	ADDQ.W	#2,SP
+
+	MOVE.L	SAUV_SP,-(SP)
+	MOVE.W	#$20,-(SP)
+	TRAP	#1
+	ADDQ.W	#6,SP
+
+	CLR.W	-(SP)
+	TRAP	#1
+
+ZIK	INCBIN	jess.zik
+	EVEN
+
+SAUV_SP	DS.L	1

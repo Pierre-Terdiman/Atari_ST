@@ -1,0 +1,41 @@
+
+	MOVEA.L  ECRAN,A1
+        MOVEA.L  ECRAN,A0
+        LEA.L    31840(A1),A1  
+
+;INC     SET  0
+
+;	REPT    199      
+
+	MOVEM.L	(A0),D0-D3
+	MOVEM.L	D0-D3,(A1)
+	
+	;MOVEM.L	48(A0),D0-D7/A2-A6
+	;MOVEM.L	D0-D7/A2-A6,208(A1)
+	
+	;MOVEM.L	96(A0),D0-D7/A2-A6
+	;MOVEM.L	D0-D7/A2-A6,256(A1)
+	
+	;MOVEM.L	144(A0),D0-D3
+	;MOVEM.L	D0-D3,304(A1)
+
+;	LEA.L   160(A1),A1  *=SUBA.L	#160,A1
+;	LEA.L   160(A0),A0   *=ADDA.L	#320,A0
+
+;INC     SET   INC+160
+
+;	ENDR
+
+
+	MOVEA.L  ECRAN,A1
+        MOVEA.L  ECRAN,A0
+        LEA.L    160(A0),A0  
+
+;INC     SET  0
+	REPT    199      
+	MOVEM.L	(A0),D0-D3
+	MOVEM.L	D0-D3,(A1)
+        LEA.L   160(A0),A0
+        LEA.L   160(A1),A1
+;INC     SET   INC+160
+	ENDR

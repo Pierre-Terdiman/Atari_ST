@@ -1,0 +1,970 @@
+																
+IERA	EQU	$FFFA07
+IERB	EQU	$FFFA09
+ISRA	EQU	$FFFA0F
+IMRA	EQU	$FFFA13
+TBCR	EQU	$FFFA1B
+TBDR	EQU	$FFFA21
+SYNCRO	EQU	$FF820A
+COUL_0	EQU	$FF8240
+COUL_1	EQU	$FF8242
+COUL_2	EQU	$FF8244
+COUL_3	EQU	$FF8246
+COUL_4	EQU	$FF8248
+COUL_5	EQU	$FF824A
+COUL_6	EQU	$FF824C
+COUL_7	EQU	$FF824E
+COUL_8	EQU	$FF8250
+COUL_9	EQU	$FF8252
+COUL_10	EQU	$FF8254
+COUL_11	EQU	$FF8256
+COUL_12	EQU	$FF8258
+COUL_13	EQU	$FF825A
+COUL_14	EQU	$FF825C
+COUL_15	EQU	$FF825E
+ACIA	EQU	$FFFC02
+PSG	EQU	$FF8800
+
+
+ 	SECTION TEXT
+DEBUT:	MOVE.L  A7,A5
+	LEA.L 	D_PILE,A7
+	MOVE.L 	4(A5),A5
+	MOVE.L 	$C(A5),D0
+	ADD.L 	$14(A5),D0
+	ADD.L 	$1C(A5),D0
+	ADD.L 	#$100,D0		
+	MOVE.L 	D0,-(SP)		
+        MOVE.L 	A5,-(SP)
+	MOVE.W 	#0,-(SP)
+	MOVE.W 	#$4A,-(SP)
+	TRAP 	#1
+	LEA 	12(SP),SP
+	
+	CLR.L 	-(SP)			
+	MOVE.W 	#$20,-(SP)		
+	TRAP 	#1			
+	ADDQ.L 	#6,SP			
+	MOVE.L 	D0,SAUVE		
+
+
+	MOVEA.L	#SPRITE+34,A0
+	LEA.L	BUFFER,A1
+	MOVE.L	#65,D1
+COP	MOVE.L  #$7,D0
+COPY	MOVE.L  (A0)+,(A1)+
+	DBF	D0,COPY
+	LEA.L	128(A0),A0
+	DBF 	D1,COP
+
+
+	MOVEA.L	#SPRITE+34,A0
+	ADDA.L	#24,A0
+	LEA.L	BUFFER2,A1
+	MOVE.L	#65,D1
+COP2	MOVE.L  #$7,D0
+COPY2	MOVE.L  (A0)+,(A1)+
+	DBF	D0,COPY2
+	LEA.L	128(A0),A0
+	DBF 	D1,COP2
+
+
+	MOVEA.L	#SPRITE+34,A0
+	ADDA.L	#48,A0
+	LEA.L	BUFFER3,A1
+	MOVE.L	#65,D1
+COP3	MOVE.L  #$7,D0
+COPY3	MOVE.L  (A0)+,(A1)+
+	DBF	D0,COPY3
+	LEA.L	128(A0),A0
+	DBF 	D1,COP3
+
+	MOVEA.L	#SPRITE+34,A0
+	ADDA.L	#72,A0
+	LEA.L	BUFFER4,A1
+	MOVE.L	#65,D1
+COP4	MOVE.L  #$7,D0
+COPY4	MOVE.L  (A0)+,(A1)+
+	DBF	D0,COPY4
+	LEA.L	128(A0),A0
+	DBF 	D1,COP4
+
+	MOVEA.L	#SPRITE+34,A0
+	ADDA.L	#96,A0
+	LEA.L	BUFFER5,A1
+	MOVE.L	#65,D1
+COP5	MOVE.L  #$7,D0
+COPY5	MOVE.L  (A0)+,(A1)+
+	DBF	D0,COPY5
+	LEA.L	128(A0),A0
+	DBF 	D1,COP5
+
+	MOVEA.L	#SPRITE+34,A0
+	ADDA.L	#120,A0
+	LEA.L	BUFFER6,A1
+	MOVE.L	#65,D1
+COP6	MOVE.L  #$7,D0
+COPY6	MOVE.L  (A0)+,(A1)+
+	DBF	D0,COPY6
+	LEA.L	128(A0),A0
+	DBF 	D1,COP6
+
+	MOVEA.L	#SPRITE+34,A0
+	ADDA.L	#160*66,A0
+	LEA.L	BUFFER7,A1
+	MOVE.L	#65,D1
+COP7	MOVE.L  #$7,D0
+COPY7	MOVE.L  (A0)+,(A1)+
+	DBF	D0,COPY7
+	LEA.L	128(A0),A0
+	DBF 	D1,COP7
+
+	MOVEA.L	#SPRITE+34,A0
+	ADDA.L	#160*66,A0
+	ADDA.L	#24,A0
+	LEA.L	BUFFER8,A1
+	MOVE.L	#65,D1
+COP8	MOVE.L  #$7,D0
+COPY8	MOVE.L  (A0)+,(A1)+
+	DBF	D0,COPY8
+	LEA.L	128(A0),A0
+	DBF 	D1,COP8
+
+
+
+
+        LEA   BUFFER,A0
+        LEA   MASQ,A1
+        MOVE.L  #263,D7
+QS1     MOVE.W  (A0),D0
+	MOVE.W  2(A0),D1
+	MOVE.W  4(A0),D2
+	MOVE.W  6(A0),D3
+	OR.W	D0,D1
+	OR.W	D1,D2
+	OR.W	D2,D3
+	MOVE	D3,(A1)
+	MOVE	D3,2(A1)
+	MOVE	D3,4(A1)
+	MOVE	D3,6(A1)
+	LEA     8(A1),A1
+	LEA     8(A0),A0
+        DBF D7,QS1
+
+        LEA   BUFFER2,A0
+        LEA   MASQ2,A1
+        MOVE.L  #263,D7
+QS2     MOVE.W  (A0),D0
+	MOVE.W  2(A0),D1
+	MOVE.W  4(A0),D2
+	MOVE.W  6(A0),D3
+	OR.W	D0,D1
+	OR.W	D1,D2
+	OR.W	D2,D3
+	MOVE	D3,(A1)
+	MOVE	D3,2(A1)
+	MOVE	D3,4(A1)
+	MOVE	D3,6(A1)
+	LEA     8(A1),A1
+	LEA     8(A0),A0
+        DBF D7,QS2
+
+        LEA   BUFFER3,A0
+        LEA   MASQ3,A1
+        MOVE.L  #263,D7
+QS3     MOVE.W  (A0),D0
+	MOVE.W  2(A0),D1
+	MOVE.W  4(A0),D2
+	MOVE.W  6(A0),D3
+	OR.W	D0,D1
+	OR.W	D1,D2
+	OR.W	D2,D3
+	MOVE	D3,(A1)
+	MOVE	D3,2(A1)
+	MOVE	D3,4(A1)
+	MOVE	D3,6(A1)
+	LEA     8(A1),A1
+	LEA     8(A0),A0
+        DBF D7,QS3
+
+        LEA   BUFFER4,A0
+        LEA   MASQ4,A1
+        MOVE.L  #263,D7
+QS4     MOVE.W  (A0),D0
+	MOVE.W  2(A0),D1
+	MOVE.W  4(A0),D2
+	MOVE.W  6(A0),D3
+	OR.W	D0,D1
+	OR.W	D1,D2
+	OR.W	D2,D3
+	MOVE	D3,(A1)
+	MOVE	D3,2(A1)
+	MOVE	D3,4(A1)
+	MOVE	D3,6(A1)
+	LEA     8(A1),A1
+	LEA     8(A0),A0
+        DBF D7,QS4
+
+
+        LEA   BUFFER5,A0
+        LEA   MASQ5,A1
+        MOVE.L  #263,D7
+QS5     MOVE.W  (A0),D0
+	MOVE.W  2(A0),D1
+	MOVE.W  4(A0),D2
+	MOVE.W  6(A0),D3
+	OR.W	D0,D1
+	OR.W	D1,D2
+	OR.W	D2,D3
+	MOVE	D3,(A1)
+	MOVE	D3,2(A1)
+	MOVE	D3,4(A1)
+	MOVE	D3,6(A1)
+	LEA     8(A1),A1
+	LEA     8(A0),A0
+        DBF D7,QS5
+
+
+        LEA   BUFFER6,A0
+        LEA   MASQ6,A1
+        MOVE.L  #263,D7
+QS6     MOVE.W  (A0),D0
+	MOVE.W  2(A0),D1
+	MOVE.W  4(A0),D2
+	MOVE.W  6(A0),D3
+	OR.W	D0,D1
+	OR.W	D1,D2
+	OR.W	D2,D3
+	MOVE	D3,(A1)
+	MOVE	D3,2(A1)
+	MOVE	D3,4(A1)
+	MOVE	D3,6(A1)
+	LEA     8(A1),A1
+	LEA     8(A0),A0
+        DBF D7,QS6
+
+
+        LEA   BUFFER7,A0
+        LEA   MASQ7,A1
+        MOVE.L  #263,D7
+QS7     MOVE.W  (A0),D0
+	MOVE.W  2(A0),D1
+	MOVE.W  4(A0),D2
+	MOVE.W  6(A0),D3
+	OR.W	D0,D1
+	OR.W	D1,D2
+	OR.W	D2,D3
+	MOVE	D3,(A1)
+	MOVE	D3,2(A1)
+	MOVE	D3,4(A1)
+	MOVE	D3,6(A1)
+	LEA     8(A1),A1
+	LEA     8(A0),A0
+        DBF D7,QS7
+
+        LEA   BUFFER8,A0
+        LEA   MASQ8,A1
+        MOVE.L  #263,D7
+QS8     MOVE.W  (A0),D0
+	MOVE.W  2(A0),D1
+	MOVE.W  4(A0),D2
+	MOVE.W  6(A0),D3
+	OR.W	D0,D1
+	OR.W	D1,D2
+	OR.W	D2,D3
+	MOVE	D3,(A1)
+	MOVE	D3,2(A1)
+	MOVE	D3,4(A1)
+	MOVE	D3,6(A1)
+	LEA     8(A1),A1
+	LEA     8(A0),A0
+        DBF D7,QS8
+
+
+
+
+
+
+
+
+        LEA   MASQ,A1 
+        MOVE.L  #8975,D7       * 528*16=1184
+QSS     NOT.L  (A1)+
+        DBF D7,QSS
+
+	MOVE.B	IERA,MFP1		
+	MOVE.B	IERB,MFP2		
+	MOVE.B	ISRA,MFP3		
+	MOVE.B	IMRA,MFP4		
+	MOVE.B	TBCR,MFP5		
+	MOVE.B	TBDR,MFP6		
+	
+	CLR.B	IERA	   * SUPPRIME INTERRUPTIONS
+	CLR.B	IERB			
+	
+
+;	MOVE.L	#BUFFERL,D0		* ADRESSE DU BUFFER POUR ECRAN
+;	ANDI.L	#$FFFFFF00,D0		* SUPRIME LES 8 BITS "FAIBLE"
+;	ADD.L	#512,D0			* ET FAIT MULTIPLE DE 256
+;	MOVE.L	D0,ADRLOGO		* ON SAUVE L'ADRESSE CALCULEE
+	
+	MOVE.W	#4,-(SP)		* APPEL FONCTION GETREZ
+	TRAP 	#14			* XBIOS...
+	ADDQ.L	#2,SP			*
+	MOVE.W	D0,RES			* SAUVE LA RESOLUTION
+	
+	MOVE.W	#2,-(SP)		* APPEL FONCTION PHYSBASE
+	TRAP 	#14			* XBIOS
+	ADDQ.L 	#2,SP			*
+	MOVE.L	D0,ANC_ECR		* SAUVE L'ADRESSE ECRAN
+	
+	MOVE.W 	#0,-(SP)		* BASSE RESOLUTION
+	MOVE.L	#-1,-(SP)		* PHYSBASE A ECRAN
+	MOVE.L	#-1,-(SP)		* LOGBASE A ECRAN
+	MOVE.W 	#5,-(SP)		* FONCTION SETSCREEN
+	TRAP 	#14			* DU XBIOS
+	LEA.L 	12(SP),SP		*
+
+	LEA.L	COUL_0,A0		* ADRESSE PALETTE SHIFTER
+	MOVEM.L	(A0),D0-D7		* RECUPERE LES 16 REGISTRES
+	LEA.L	ANC_PAL,A0		* ADRESSE DE SAUVEGARDE
+	MOVEM.L	D0-D7,(A0)		* SAUVE LES 16 REGISTRES
+	
+        
+;        move.l ADRFONT,a3
+;        lea  FONT+34,a5
+;        JSR  decomp
+			
+	MOVE.L	#MES_F,MES_PNT
+        ;MOVE.L #MES_F2,MES_PNT2
+
+        MOVE.W  #0,POIROT1
+	MOVE.W  #0,POIROT2
+        MOVE.W  #0,POIROT3
+
+;	MOVEQ	#5,D0			* NETOIE D0
+;	BSR	MUSIC		* INITIALISE LA MUSIQUE
+;	MOVE.W  #5,MUS
+	
+	bsr	SET_SCR		;preparation des ecrans
+;        move.l SCREEN1,a3
+;        lea  LOGO+34,a5
+;        JSR  decomp
+;        move.l SCREEN2,a3
+;        lea  LOGO+34,a5
+;        JSR  decomp
+
+        MOVEA.L SCREEN1,A0
+        MOVEA.L #FOND+34,A1
+        MOVE.L  #7999,D0
+S1       MOVE.L  (A1)+,(A0)+
+        DBF D0,S1
+
+
+        MOVEA.L SCREEN2,A0
+        MOVEA.L #FOND+34,A1
+        MOVE.L  #7999,D0
+S2       MOVE.L  (A1)+,(A0)+
+        DBF D0,S2
+
+        MOVEA.L SCREEN3,A0
+        MOVEA.L #FOND+34,A1
+        MOVE.L  #7999,D0
+S3       MOVE.L  (A1)+,(A0)+
+        DBF D0,S3
+
+
+	MOVEA.L SCREEN1,A0
+        LEA.L  SAVEFD,A1
+        MOVE.L  #69,D2
+SI      REPT 8
+        MOVE.L  (A0)+,(A1)+
+        ENDR
+        LEA.L  128(A0),A0
+        DBF  D2,SI
+
+
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER DANS A6
+	MOVEA.L #FOND+2,A5              * ADRESSE COULEURS
+        MOVEM.L (A5),D0-D7
+        MOVEM.L D0-D7,(A6)
+	MOVE.L	#0,VALEUR_AUGMENTEE_A_A0
+
+	MOVE.L	$70,ANC_VBL		* SAUVE L'ANCIEN VECTEUR VBL
+	MOVE.L	#VBL_IR,$70		* ET PLACE LE MIEN...
+	MOVE.L	$120,ANC_TB		* SAUVE ANCIEN VECTEUR TIMER B
+	MOVE.L	#TB0_IR,$120		* ET PLACE LE MIEN...
+	
+	DC.W	$A00A			* CACHE LA SOURIS (LINE A)
+	MOVE.B	#$12,ACIA		* INIT CLAV
+	
+	CLR.B	TBCR			* ARRET DU TIMER B (PLUS PRUDENT)
+	BSET	#0,IERA			* AUTORISE LES INTERUPTIONS
+	BSET	#0,IMRA			* SUR LE TIMER B
+
+;	bsr	SET_SCR		;preparation des ecrans
+;	lea	TEXTE,a0	;debut du texte dans a0
+;        LEA     TEXTE2,A1
+;	move.l	a0,MEM_LET	Position fonte (Table)
+;        MOVE.L  A1,MEM_LET2
+;	move.w	#0,PART_AFF	(2 Parties)
+
+	MOVE.L	#FIN,$008.W
+	MOVE.L	#FIN,$00C.W
+	MOVE.L	#FIN,$010.W
+
+BOUCLE:	
+	MOVE.B	VSYNC,D7		* ATTEND UNE SYNCRO VERTICALE
+WAIT	CMP.B	VSYNC,D7		* POUR LE TESTS DES TOUCHES
+	BEQ.S	WAIT
+	CMP.B	#$39,ACIA		* TESTE ESPACE (CODE SCAN)
+	BNE.S	BOUCLE			* SI ESPACE, ON SORT DE L'INTRO
+***********************************************************************
+
+FIN:	
+        MOVE.B  #2,SYNCRO
+	MOVE.B	#8,ACIA			* REMET LE CLAVIER
+	MOVE.B	MFP1,IERA		* RESTAURE LE MFP
+	MOVE.B	MFP2,IERB		*
+	MOVE.B	MFP3,ISRA		*
+	MOVE.B	MFP4,IMRA		*
+	MOVE.B	MFP5,TBCR		*
+	MOVE.B	MFP6,TBDR		*
+	
+	MOVE.L	ANC_VBL,$70		* REMET LE VECTEUR VBL
+	MOVE.L	ANC_TB,$120		* REMET LE VECTEUR TIMER C
+	
+	LEA.L	ANC_PAL,A0		* ADRESSE PALETTE SAUVEE
+	MOVEM.L	(A0),D0-D7		* RECUPERE LES 16 REGISTRES
+	LEA.L	COUL_0,A0		* ADRESSE PALETTE SHIFTER
+	MOVEM.L	D0-D7,(A0)		* RESTITUE LES COULEURS
+	
+	MOVE.W 	RES,-(SP)		* ANCIENNE RESOLUTION
+	MOVE.L	ANC_ECR,-(SP)		* ANCIEN ECRAN PHYSIQUE
+	MOVE.L	ANC_ECR,-(SP)		* ANCIEN ECRAN LOGIQUE
+	MOVE.W 	#5,-(SP)		* FONCTION SETSCREEN
+	TRAP 	#14			* DU XBIOS
+	LEA.L 	12(SP),SP		* CORRIGE LA PILE
+	
+	MOVE.L	SAUVE,-(SP)		* RETOUR EN UTILISATEUR
+	MOVE.W 	#$20,-(SP)		* AVEC LA FONCTION SUPER
+	TRAP 	#1			* DU GEMDOS
+	ADDQ.L 	#6,SP			*
+	
+;	PEA	CHUT_DA	   		* ADRESSE DES PARAMETRES
+;	MOVE.W	#$20,-(A7) 		* FONCTION DOSOUND
+;	TRAP	#14        		* DU XBIOS
+;	ADDQ.L	#6,A7      		* CORIGE LA PILE
+
+	CLR.W 	-(SP)			* FIN DU PROGRAMME
+	TRAP	#1			* FONCTION PTERM
+	
+
+
+decomp:
+ move.l #100,d4       * $C7
+ move.l #6,a0
+ moveq #4,d6
+ moveq #$28,d7
+  
+dec9:
+ clr.b d1
+ movea.l a3,a4
+
+dec8:
+ move.l a4,-(sp)
+ clr.b d3
+
+dec7:
+ move.b (a5)+,d0
+ tst.b d0
+ bmi.s dec1
+ addq.b #1,d0
+
+dec3:
+ move.b (a5)+,(a4)+
+ addq.b #1,d3
+ move.l a4,d5
+ btst #0,d5
+ bne.s dec2
+ adda.l a0,a4
+
+dec2:
+ subq.b #1,d0
+ bne.s dec3
+ bra.s dec4
+
+dec1:
+ neg.b d0
+ addq.b #1,d0
+ move.b (a5)+,d2
+
+dec6:
+ move.b d2,(a4)+
+ addq.b #1,d3
+ move.l a4,d5
+ btst #0,d5
+ bne.s dec5
+ adda.l a0,a4
+
+dec5:
+ subq.b #1,d0
+ bne.s dec6
+
+dec4:
+ cmp.b d7,d3
+ bne.s dec7
+ move.l (sp)+,a4
+ addq.l #2,a4
+ addq.b #1,d1
+ cmp.b d6,d1
+ bne.s dec8
+ adda.l #$a0,a3
+ dbra d4,dec9
+ rts
+
+VBL_IR
+
+        CLR.B	TBCR			* ARRET DU TIMER B
+;	MOVE.B	#96,TBDR		* INTERUPTION SUR LIGNE 117
+;	MOVE.B	#8,TBCR			* TIMER C EN EVENT COUNT MODE
+
+;        MOVE.W  #$777,$FFFF8240.W
+
+        MOVEA.L SCREEN1,A0
+        MOVEA.L	SCREEN3,A1
+	ADDA.L	#160*130,A0
+	ADDA.L	#160*130,A1
+	ADDA.L	VALEUR_AUGMENTEE_A_A0,A0
+	ADDA.L	VALEUR_AUGMENTEE_A_A0,A1
+
+INC	SET	0
+INC2	SET	0
+	REPT	70
+	MOVEM.L	INC2(A1),D0-D7
+	MOVEM.L	D0-D7,INC(A0)
+INC	SET	INC+160
+INC2	SET	INC2+160
+	ENDR
+
+	MOVE.L	MES_PNT,A0
+	CMPI.B	#-1,8(A0)
+	BEQ.S	AGAIN
+	MOVE.L	(A0)+,DATA1
+	MOVE.L	(A0)+,DATA2
+	MOVE.L	A0,MES_PNT
+	BRA.S	LA_SUITE
+AGAIN	MOVE.L	#MES_F,MES_PNT
+	MOVE.L	MES_PNT,A0
+	MOVE.L	(A0)+,DATA1
+	MOVE.L	(A0)+,DATA2
+	MOVE.L	A0,MES_PNT
+	ADD.L	#8,VALEUR_AUGMENTEE_A_A0
+
+LA_SUITE MOVEA.L SCREEN1,A0
+	ADDA.L	#160*130,A0
+	ADDA.L	VALEUR_AUGMENTEE_A_A0,A0
+	MOVEA.L	DATA2,A1
+	MOVEA.L	DATA1,A2
+INC	SET	0
+        REPT 66
+	MOVEM.L	INC(A0),D0-D7
+	AND.L	(A1)+,D0
+	AND.L	(A1)+,D1
+	AND.L	(A1)+,D2
+	AND.L	(A1)+,D3
+	AND.L	(A1)+,D4
+	AND.L	(A1)+,D5
+	AND.L	(A1)+,D6
+	AND.L	(A1)+,D7
+	OR.L	(A2)+,D0
+	OR.L	(A2)+,D1
+	OR.L	(A2)+,D2
+	OR.L	(A2)+,D3
+	OR.L	(A2)+,D4
+	OR.L	(A2)+,D5
+	OR.L	(A2)+,D6
+	OR.L	(A2)+,D7
+	MOVEM.L	D0-D7,INC(A0)
+INC	SET	INC+160
+	ENDR
+
+
+        bsr	SWAP_SCR
+
+
+
+
+	NOT.B	VSYNC			* BASCULE POUR SYNCRO
+        MOVE.W  #$0,COUL_0
+	RTE				* FIN DE L'INTERUPTION VBL
+
+
+TB0_IR	
+        LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER DANS A6
+	MOVEA.L #FOND+2,A5              * ADRESSE COULEURS
+        MOVEM.L (A5),D0-D7
+        MOVEM.L D0-D7,(A6)
+;     REPT 10
+;     	MOVE.L	(A5)+,(A6)+		* MET LA NOUVELLE PALETTE EN PLACE
+;     ENDR
+        
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#34,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TB1_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB1_IR	
+        LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER DANS A6
+	MOVEA.L #FOND+2,A5              * ADRESSE COULEURS
+        MOVEM.L (A5),D0-D7
+        MOVEM.L D0-D7,(A6)
+;     REPT 10
+;     	MOVE.L	(A5)+,(A6)+		* MET LA NOUVELLE PALETTE EN PLACE
+;     ENDR
+        
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#57,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TB2_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB2_IR	
+        MOVE.W  #$670,COUL_1     
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#2,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TB3_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB3_IR	
+        MOVE.W  #$570,COUL_1     
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#2,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TB4_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB4_IR	
+        MOVE.W  #$470,COUL_1     
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#2,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TB5_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+
+TB5_IR	
+        MOVE.W  #$370,COUL_1     
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#2,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TB6_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB6_IR	
+        MOVE.W  #$270,COUL_1     
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#2,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TB7_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+TB7_IR	
+        MOVE.W  #$170,COUL_1     
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#2,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TBF_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+
+
+
+TBF_IR
+    MOVE.W  #$070,COUL_1
+     REPT 120
+	NOP				* BOUCLE D'ATTENTE...
+     ENDR
+	MOVE.B	#0,SYNCRO		* PASSAGE EN 60 HZ
+     REPT 8
+     	NOP				* BOUCLE D'ATTENTE
+     ENDR
+	MOVE.B	#2,SYNCRO		* RETOUR EN 50 HZ
+	CLR.B	TBCR			* ARRET DU TIMER B
+	MOVE.L	#TB0_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* INTERUPTION TRAITEE
+	RTE				* RETOUR
+**********************************************************************
+	
+**********************************************************************
+
+
+
+
+
+SET_SCR:	move.l	#BUFFERSCR,d0	;adresse buffer dans d0
+	and.l	#$ffffff00,d0		;adresse multiple de 256
+	move.l	d0,SCREEN1		;adresse obtenue dans SCREEN1
+	add.l	#32000,d0		;32000 octets plus loin...
+	move.l	d0,SCREEN2		;...SCREEN2
+	add.l	#32000,d0		;32000 octets plus loin...
+	move.l	d0,SCREEN3	
+       rts				;retour
+
+
+SWAP_SCR:	move.l	SCREEN1,d0	;adresse Ecran courant dans d0
+	move.l	SCREEN2,SCREEN1		;ecran travail sur ecran courant
+
+	move.l	d0,SCREEN2		;ecran courant sur ecran travail
+	;l… en fait il a permut‚ les deux ecrans travail et courant	
+	;il a mis l'un sur l'autre et vice-versa,c'est le SWAP-SCREEN
+	lsr.l	#8,d0		8*2=16
+	moveA.l	#$ffff8201,a0
+	movep	d0,(a0)
+	rts
+
+
+
+PREDECALE:
+          MOVE.L    #65,D0
+DECAL
+          roxl.w    152(a4)  * 1ER PLAN
+          roxl.w    144(a4)
+          roxl.w    136(a4)       
+          roxl.w    128(a4)
+          roxl.w    120(a4)
+          roxl.w    112(a4)
+          roxl.w    104(a4)
+          roxl.w    96(a4)
+          roxl.w    88(a4)
+          roxl.w    80(a4)
+          roxl.w    72(a4)
+          roxl.w    64(a4)
+          roxl.w    56(a4)
+          roxl.w    48(a4)
+          roxl.w    40(a4)
+          roxl.w    32(a4)
+          roxl.w    24(a4)
+          roxl.w    16(a4)
+          roxl.w    8(a4)
+          roxl.w    (a4)
+   
+          roxl.w    154(a4)  * 2EME PLAN
+          roxl.w    146(a4)
+          roxl.w    138(a4)       
+          roxl.w    130(a4)
+          roxl.w    122(a4)
+          roxl.w    114(a4)
+          roxl.w    106(a4)
+          roxl.w    98(a4)
+          roxl.w    90(a4)
+          roxl.w    82(a4)
+          roxl.w    74(a4)
+          roxl.w    66(a4)
+          roxl.w    58(a4)
+          roxl.w    50(a4)
+          roxl.w    42(a4)
+          roxl.w    34(a4)
+          roxl.w    26(a4)
+          roxl.w    18(a4)
+          roxl.w    10(a4)
+          roxl.w    2(a4)
+
+          roxl.w    156(a4)  * 3EME PLAN
+          roxl.w    148(a4)
+          roxl.w    140(a4)       
+          roxl.w    132(a4)
+          roxl.w    124(a4)
+          roxl.w    116(a4)
+          roxl.w    108(a4)
+          roxl.w    100(a4)
+          roxl.w    92(a4)
+          roxl.w    84(a4)
+          roxl.w    76(a4)
+          roxl.w    68(a4)
+          roxl.w    60(a4)
+          roxl.w    52(a4)
+          roxl.w    44(a4)
+          roxl.w    36(a4)
+          roxl.w    28(a4)
+          roxl.w    20(a4)
+          roxl.w    12(a4)
+          roxl.w    4(a4)
+
+          roxl.w    158(a4)  * 4EME PLAN
+          roxl.w    150(a4)
+          roxl.w    142(a4)       
+          roxl.w    134(a4)
+          roxl.w    126(a4)
+          roxl.w    118(a4)
+          roxl.w    110(a4)
+          roxl.w    102(a4)
+          roxl.w    94(a4)
+          roxl.w    86(a4)
+          roxl.w    78(a4)
+          roxl.w    70(a4)
+          roxl.w    62(a4)
+          roxl.w    54(a4)
+          roxl.w    46(a4)
+          roxl.w    38(a4)
+          roxl.w    30(a4)
+          roxl.w    22(a4)
+          roxl.w    14(a4)
+          roxl.w    6(a4)
+          LEA.L   160(A4),A4
+          DBF D0,DECAL
+          RTS
+	
+	section   data
+
+FOND INCBIN DD4.PI1
+SPRITE INCBIN PERSO2.PI1
+;MASK   INCBIN MASK.PI1
+
+
+;MES_F	
+;        DC.B   0,1,2,3,4,5,6,7,8,9
+;        DC.B   9,8,7,6,5,4,3,2,1,0
+;	DC.B  -1
+;	EVEN
+
+;MES_F2  DC.B   0,10,20,30,40,30,20,10
+;        DC.B   -1
+;        EVEN
+MES_F	
+	REPT	3
+	DC.L	BUFFER,MASQ
+	ENDR
+	REPT	3
+	DC.L	BUFFER2,MASQ2
+	ENDR
+	REPT	3
+	DC.L	BUFFER3,MASQ3
+	ENDR
+	REPT	3
+	DC.L	BUFFER4,MASQ4
+	ENDR
+	REPT	3
+	DC.L	BUFFER5,MASQ5
+	ENDR
+	REPT	3
+	DC.L	BUFFER6,MASQ6
+	ENDR
+	REPT	3
+	DC.L	BUFFER7,MASQ7
+	ENDR
+	REPT	3
+	DC.L	BUFFER8,MASQ8
+	ENDR
+	REPT	3
+	DC.L	BUFFER7,MASQ7
+	ENDR
+	REPT	3
+	DC.L	BUFFER6,MASQ6
+	ENDR
+	REPT	3
+	DC.L	BUFFER5,MASQ5
+	ENDR
+	REPT	3
+	DC.L	BUFFER4,MASQ4
+	ENDR
+	REPT	3
+	DC.L	BUFFER3,MASQ3
+	ENDR
+	REPT	3
+	DC.L	BUFFER2,MASQ2
+	ENDR
+	DC.B	-1,-1
+
+
+CHUT_DA	DC.B	7,$FF,6,0,8,0,9,0,$A,0
+
+
+ 	SECTION BSS
+ 	EVEN
+POINTEUR DS.L   1
+MUS     DS.L    1
+MES_PNT DS.L    1
+;MES_PNT2 DS.L    1
+;BIDON   DS.L    1
+F_PILE	DS.L 	128			* FIN DE LA PILE
+D_PILE	DS.L 	1			* DEBUT DE LA PILE
+SAUVE	DS.L	1			* SAUVE LA PILE UTILISATEUR
+ANC_VBL DS.L	1			* SAUVE LE VECTEUR VBL
+ANC_TB	DS.L	1			* SAUVE LE VECTEUR TIMER B
+ANC_ECR	DS.L	1			* SAUVE L'ADRESSE DE L'ECRAN
+POIROT1	DS.W	1			* COMPTEURS POUR FAIRE DEMARRER
+POIROT2	DS.W	1			* LES ANIMATIONS, LES UNES
+POIROT3	DS.W	1			* APRES LES AUTRES
+;POIROT4	DS.W	1			*
+RES	DS.W	1			* SAUVE LA RESOLUTION
+ANC_PAL	DS.W	16			* SAUVE LA PALETTE
+MFP1	DS.B	1			* SAUVE LES REGISTRES DU MFP
+MFP2	DS.B	1			*
+MFP3	DS.B	1			*
+MFP4	DS.B	1			*
+MFP5	DS.B	1			*
+MFP6	DS.B	1			*
+VSYNC	DS.B	1			* POUR LA SYNCRO VERTICALE
+MASQ    DS.L    528
+MASQ2	DS.L	528
+MASQ3	DS.L	528
+MASQ4	DS.L	528
+MASQ5	DS.L	528
+MASQ6	DS.L	528
+MASQ7	DS.L	528
+MASQ8	DS.L	528
+MASQ9	DS.L	528
+MASQ10	DS.L	528
+MASQ11	DS.L	528
+MASQ12	DS.L	528
+MASQ13	DS.L	528
+MASQ14	DS.L	528
+MASQ15	DS.L	528
+MASQ16	DS.L	528
+MASQ17	DS.L	528
+
+SAVEFD  DS.L    560
+SAVED0	DS.L	1
+	ds.b	256		;tranquille pour les merdes
+BUFFERSCR:ds.b	3*32000
+	ds.b	256	
+VALEUR_AUGMENTEE_A_A0	DS.L	1
+SCREEN1:	ds.l	1	;ecran	courant
+SCREEN2:	ds.l	1	;ecran	travail
+SCREEN3:	ds.l	1	;ecran	travail
+MEM_LET:	ds.l	1
+MEM_LET2:       DS.L    1
+PART_AFF:	ds.l    1
+DATA1		DS.L	1
+DATA2		DS.L	1
+Y_VALUE		DS.L	1
+X_VALUE		DS.L	1
+BUFFER_DE_TRAVAIL	DS.L	2640
+BUFFER 		DS.L    528
+BUFFER2		DS.L	528
+BUFFER3		DS.L	528
+BUFFER4		DS.L	528
+BUFFER5		DS.L	528
+BUFFER6		DS.L	528
+BUFFER7		DS.L	528
+BUFFER8		DS.L	528
+BUFFER9		DS.L	528
+BUFFER10	DS.L	528
+BUFFER11	DS.L	528
+BUFFER12	DS.L	528
+BUFFER13	DS.L	528
+BUFFER14	DS.L	528
+BUFFER15	DS.L	528
+BUFFER16	DS.L	528
+

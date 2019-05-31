@@ -1,0 +1,23 @@
+coul_img$=SPACE$(32)
+coul_img%=VARPTR(coul_img$)
+image$=SPACE$(26080)
+image%=VARPTR(image$)
+OPEN "i",#1,"a:\1.pi1"
+SEEK #1,2
+BGET #1,coul_img%,32
+VOID XBIOS(6,L:coul_img%)
+SEEK #1,34+1760
+BGET #1,image%,26080
+CLOSE #1
+DO
+  CLS
+  p%=0
+  FOR t%=0 TO 15
+    FOR y%=0 TO 26080 STEP 160*15
+      BMOVE image%+(y%+p%),XBIOS(2)+(y%+p%),160
+    NEXT y%
+    VSYNC
+    ADD p%,160
+  NEXT t%
+  VOID INP(2)
+LOOP

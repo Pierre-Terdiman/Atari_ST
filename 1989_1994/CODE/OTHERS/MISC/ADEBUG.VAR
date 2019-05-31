@@ -1,0 +1,9 @@
+;***************** ADEBUG.VAR ******************
+;     fichier de configuration pour Ad‚bog
+;***********************************************
+
+-d+
+boot,ro='\ros\boot.ro
+load,ro='\ros\dma.ro
+ripp,ro='\ros\ripp.ro
+bt,la={4c6}

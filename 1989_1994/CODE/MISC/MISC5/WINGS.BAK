@@ -1,0 +1,132 @@
+L0013 EQU ZUEND+$1BA
+L0014 EQU ZUEND+$342
+ TEXT 
+Begin:
+  BRA.S   L0000 
+  DC.B   $90,'IBM  ',$BF,$94
+  DC.B   $9B,$00,$02,$02,$01,$00,$02,'p'
+  DC.B   $00,$A0,$05,$F9,$03,$00,$09,$00
+  DC.B   $02,$00,$00,$00
+L0000:PEA     L0011(PC) 
+  MOVE.W  #9,-(A7)
+  TRAP    #1
+  ADDQ.L  #6,A7 
+  LEA     L000E(PC),A0
+  LEA     L0013(PC),A1
+  MOVEQ   #$D,D2
+L0001:MOVE.W  (A0)+,D0
+  MOVEQ   #$C,D1
+L0002:MOVE.W  (A1)+,(A1)
+  CMPI.W  #5,D1 
+  BNE.S   L0003 
+  NEG.W   D0
+L0003:ADD.W   D0,(A1) 
+  DBF     D1,L0002
+  ADDQ.L  #2,A1 
+  DBF     D2,L0001
+  MOVE.L  #$1A0005,-(A7)
+  TRAP    #$E 
+  ADDQ.L  #4,A7 
+  MOVE.L  #$1A0006,-(A7)
+  TRAP    #$E 
+  ADDQ.L  #4,A7 
+  LEA     L0012(PC),A0
+  LEA     L0014(PC),A1
+  MOVE.L  (A0),(A1) 
+  MOVE.L  $120.S,-(A7)
+  MOVE.B  -$5F9.S,-(A7) 
+  MOVE.B  -$5ED.S,-(A7) 
+  LEA     L0008(PC),A0
+  MOVE.L  A0,$120.S 
+  ORI.B   #1,-$5F9.S
+  ORI.B   #1,-$5ED.S
+  MOVE.B  #1,-$5DF.S
+  MOVE.L  $4CE.S,-(A7)
+  LEA     L0009(PC),A0
+  MOVE.L  A0,$4CE.S 
+L0004:CMPI.B  #$3B,-$3FE.S
+  BNE.S   L0005 
+  MOVE.B  #2,-$7DF6.S 
+L0005:CMPI.B  #$3C,-$3FE.S
+  BNE.S   L0006 
+  CLR.B   -$7DF6.S
+L0006:CMPI.B  #$39,-$3FE.S
+  BNE.S   L0004 
+  MOVE.L  (A7)+,$4CE.S
+  MOVE.B  (A7)+,-$5ED.S 
+  MOVE.B  (A7)+,-$5F9.S 
+  MOVE.L  (A7)+,$120.S
+  MOVE.L  #$1B0005,-(A7)
+  TRAP    #$E 
+  ADDQ.L  #4,A7 
+  MOVE.L  #$1B0006,-(A7)
+  TRAP    #$E 
+  ADDQ.L  #4,A7 
+  MOVEA.L $44E.S,A0 
+  MOVE.W  #$1F3F,D0 
+L0007:CLR.L   (A0)+ 
+  DBF     D0,L0007
+  MOVE.W  #$777,-$7DC0.S
+  RTS 
+L0008:MOVEA.L L0014(PC),A6
+  MOVE.W  (A6),-$7DC0.S 
+  LEA     L0014(PC),A6
+  ADDQ.L  #2,(A6) 
+  CLR.B   -$5F1.S 
+  RTE 
+L0009:CLR.W   -$7DC0.S
+  LEA     L0012(PC),A0
+  MOVEQ   #$63,D0 
+L000A:CLR.L   (A0)+ 
+  DBF     D0,L000A
+  LEA     L0012(PC),A0
+  LEA     L0014(PC),A1
+  MOVE.L  A0,(A1) 
+  LEA     L0013(PC),A0
+  LEA     L000F(PC),A1
+  LEA     L0010(PC),A2
+  MOVEQ   #$D,D0
+L000B:MOVEM.L A0-A5/D0-D7,-(A7) 
+  MOVE.W  (A1),D0 
+  MOVEM.L (A0)+,D1-D7 
+  LEA     L0012(PC),A0
+  ADDA.L  D0,A0 
+  MOVEM.L D2-D7,-(A0) 
+  MOVE.W  D1,-(A0)
+  CMPI.W  #$18,(A1) 
+  BGT.S   L000C 
+  NEG.B   (A2)
+  BRA.S   L000D 
+L000C:CMPI.W  #$18C,(A1)
+  BLT.S   L000D 
+  NEG.B   (A2)
+L000D:CLR.L   D0
+  MOVE.B  (A2),D0 
+  EXT.W   D0
+  ADD.W   D0,(A1) 
+  MOVEM.L (A7)+,A0-A5/D0-D7 
+  ADDA.L  #$1C,A0 
+  ADDQ.L  #2,A1 
+  ADDQ.L  #1,A2 
+  DBF     D0,L000B
+  MOVE.B  #8,-$5E5.S
+  RTS 
+L000E:DC.B   $01,$10,$00,$11,$01,$01,$01,$00
+  DC.B   $01,$10,$00,$10,$00,$11,$00,$01
+  DC.B   $01,$01,$01,$11,$01,$00,$00,$10
+  DC.B   $00,$01,$01,$11
+L000F:DC.B   $00,$C6,$00,$FE,$01,'6',$00,$AA
+  DC.B   $00,$C6,$00,$E2,$00,$FE,$01,$1A
+  DC.B   $01,'6',$01,'R',$00,$AA,$00,$E2
+  DC.B   $01,$1A,$01,'R'
+L0010:DC.B   $02,$02,$02,$FC,$FC,$FC,$FC,$FC
+  DC.B   $FC,$FC,$02,$02,$02,$02
+L0011:DC.B   $1B,'b',$01,$1B,'Y ,T' 
+  DC.B   'HE CORPO' 
+  DC.B   'RATION',$1B,'Y' 
+  DC.B   '$,F1-F2:' 
+  DC.B   ' 50-60 H' 
+  DC.B   'z',$1B,'b',$0F,$1B,'H',$00,':'
+L0012:DS.W    4,0 
+  DC.B   'b',$B3
+ZUEND: END

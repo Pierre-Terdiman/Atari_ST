@@ -1,0 +1,20 @@
+PRINT "Ce punch ne fonctionne que sur les "
+PRINT CHR$(27)+"p    TELEVISEURS COULEUR RECENTS   "+CHR$(27)+"q"
+VOID INP(2)
+CLS
+FOR z%=0 TO 15
+  SETCOLOR z%,(z%/4)+3,z%/3,(z%/6)+4
+  DEFFILL z%
+  PCIRCLE 160,100,100-(z%*6)
+NEXT z%
+a$=CHR$(18)+CHR$(0)+CHR$(8)
+VOID XBIOS(25,0,L:VARPTR(a$))
+REPEAT
+  VSYNC
+  SPOKE &HFF820A,0
+  FOR z%=3 TO 7
+    SETCOLOR 0,z%,2,z%
+  NEXT z%
+  SPOKE &HFF820A,2
+UNTIL INP?(2)
+VOID XBIOS(25,0,L:VARPTR(a$)+2)

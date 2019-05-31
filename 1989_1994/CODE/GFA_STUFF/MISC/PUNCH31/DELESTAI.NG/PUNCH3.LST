@@ -1,0 +1,12 @@
+f$=SPACE$(32066)
+f%=V:f$
+FILESELECT "a:\*.pi3","",file$
+BLOAD file$,f%
+BMOVE f%+34,f%,32000
+FOR g%=0 TO 32000 STEP 80
+  BMOVE f%+g%,XBIOS(2)+g%,80
+  FOR n%=0 TO 1599+(g%>30400)*(g%-30400) STEP 80
+    BMOVE f%+g%+1600+n%,XBIOS(2)+g%+1600-n%,80
+  NEXT n%
+  VSYNC
+NEXT g%

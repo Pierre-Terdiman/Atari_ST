@@ -1,0 +1,645 @@
+
+
+
+
+            FRACLAND  Fractal Landscape Generator for the Atari ST. 
+            -------------------------------------------------------
+
+
+                           (c) 1992 David Billington
+                           -------------------------
+
+
+
+                          Version 1.2    October 1992
+                          ---------------------------
+
+
+
+
+
+Contents
+-----------
+
+          1.  Introduction.
+          2.  Quick Start.
+          3.  Generating Landscapes.
+          4.  Generating 3D Views.
+          5.  Fracland Modes.
+          6.  Generating Animation.
+          7.  Menu Entries.
+               FILE
+                    SAVE VIEW
+                    LOAD CONTOUR
+                    SAVE CONTOUR
+                    LOAD STORY
+                    SAVE STORY
+                    LOAD ANIMATION
+                    SAVE ANIMATION
+               CONTOUR
+                    GENERATE
+                    SHADE
+                    DETAIL
+                    CONTOUR ZONES
+                    COLOURING
+                    3D VIEW
+               ANIMATION
+                    PLAY BACK
+                    STORY BOARD
+                    PLAY SPEED
+                    MODE
+                    DO RENDERING
+
+          Appendix 1.  Key and mouse functions.
+          Appendix 2.  Bibliography.
+          
+          The closing address.
+
+
+
+
+
+
+
+
+
+
+
+1. Introduction
+---------------   
+    The word FRACTAL was coined by Benoit B Mandelbrot in his book 'The 
+Fractal Geometry of Nature'. It is used to describe objects which exhibit the 
+property of self-similarity. An object is said to be self-similar if its 
+structure does not vary under magnification. For example a branch from a tree 
+has a similar structure to the whole tree, a twig has much in common with the 
+branch and so on right down to the smallest twigglet. The vast majority of 
+objects in nature defy definition in terms of circles and squares but it is 
+readily apparent that they are self-similar. Mandelbrot and his successors have 
+described several ways in which this property of self-similarity may be
+exploited in order to mimic nature. Building from simple algorithms convincing
+clouds, trees, coast lines, mountains and many other natural phenomena.
+
+    This program 'FRACLAND' is  concerned with realistic modelling of fractal 
+mountains. It goes beyond producing the data which describes the landscape and 
+allows you to shade it, produce three dimensional views and even generate 
+animation depicting journeys through your fictitious mathematical worlds.
+
+
+2. Quick Start
+--------------
+    For those to impatient to read the manual here is the quick guide to 
+getting a few pictures out of FRACLAND. Before you can really get the best out 
+of FRACLAND you will need to spend a little time getting to know your way around
+the various functions, but producing a simple animation can be done in a few 
+minutes, as we are about to find out....
+
+P.S. If you have a half meg ST you will need to have a blank formatted disc
+     ready.
+
+     1.   Creating a contour map.
+          -----------------------
+          Double click on FRACLAND.PRG and at the first dialogue click on the 
+          'Generate' button. Now enter 169 in the 'Random Seed' field and press
+          return. This will draw a contour map.
+
+     2.   Drawing a 3D view of the contour.
+          ---------------------------------
+          Click on the menu entry marked '3D View'. This will display the Key
+          Frame dialogue, click on the button marked 'Visual'. Use the mouse
+          to select a view (left mouse button switches between move and tilt).
+          Once you are happy with the outline press the space bar to return to
+          the desktop and press return to draw the view. You can switch between 
+          the view screen and the desktop by pressing any key or by left mouse
+          clicking on the desktop. 
+
+     3.   Generating an animation.
+          ------------------------
+          Click on the menu entry marked 'Load Story' and selected the file
+          DEMO.STR which should have been supplied with FRACLAND. Now click on 
+          the menu entry marked 'Do Rendering', this will display an alert 
+          asking whether you want to shade the contour before drawing the 
+          animation. If you click on 'Yes' the animation will look much better 
+          but the calculating the shade data will take about 6 minutes before
+          drawing commences. If there is not enough room to hold the animation
+          in memory you will be asked to supply a file name (insert that blank
+          disk!). The program will now draw 9 frames of animation.
+          
+     4.   Playing an animation.
+          ---------------------
+          If the animation was not saved to disk then click on the menu entry
+          marked 'Play Back' to see the results. Press the space bar to exit
+          from playback.
+          If the animation was saved to disc then quit from FRACLAND and double 
+          click on FRACPLAY.PRG now click on the button marked 'Load' and select
+          the file you saved the animation to in FRACLAND. Press the return key 
+          to see the end result.
+
+     This should have given you a taste of what FRACLAND is all about, to 
+improve the image quality try shading, increasing the detail, adding friction 
+and adjusting the zone heights and colours. I hope you enjoy playing with this
+program, who knows you may even be tempted to read the instructions!
+
+3. Generating Landscapes
+------------------------
+    The contour map consists of 16,384 height measurements, this describes 
+the fractal and as such is the fundamental data set in FRACLAND. Each time a 
+contour map is to be generated you will be presented with the Contour 
+Parameters dialogue, this has four items which describe the contour, each
+parameter is explained below.
+
+    Firstly we must initialise the random number generator by 'seeding' it. 
+The seed is a four digit number used as a starting point for the random number 
+generator, thus the same seed will produce the same sequence of random numbers 
+and hence the same contour (although the contour may be modified by using the 
+other parameters). It is considered correct etiquette to supply birthdays etc 
+as a seed values. However for the more pragmatic, a random 'random seed' 
+may be generated by pressing the button marked 'R'.
+
+    The distribution of random numbers may be either uniform or normal. To 
+produce accurate fractals normal deviation should be used, this produces 
+rounded and more realistic contours. However setting distribution to uniform 
+will generate a contour about 5 times as fast. You can set the distribution 
+by clicking on the small button next to the distribution graph of your choice.
+
+   The Fractal Dimension determines the ruggedness of the resulting 
+contour. For a landscape this must lie between 2 and 3. The fractal dimension 
+describes how the flat 2 dimensional surface invades 3 dimensional space. At the
+extremes a fractal dimension of 2 would produce a completely flat contour and a 
+fractal dimension of 3 would produce a contour which undulated violently, 
+effectively filling 3 dimensions. Most earthly landscapes exhibit a fractal 
+dimension of between 2.0 and 2.4, from rolling pastures to craggy mountains.
+
+    The Initial Deviation is the amount by which the contour is allowed to move 
+above or below the initial flat plane. The default value of 128 gives a good,
+lifelike result. Raising the initial deviation will give high mountains and 
+deep ravines, lowering the value gives flatter landscapes.
+
+    The algorithm used to generate the contour is Mid-point Displacement. See
+appendix 3 for further reading. 
+
+
+4. Generating 3D views
+----------------------
+
+    Once a contour has been generated it can be displayed as a 3D projection by 
+clicking on the '3D View' menu entry. This will display the key frame dialogue. 
+The left three fields hold the coordinates of the observer (the origin is the 
+centre of the contour). The three fields to the right hold the pitch, roll and 
+yaw respectively.
+
+    To make the process of setting the view coordinates easier, two visual 
+methods are available.
+
+    1. Clicking on the button marked 'From Map' will allow you to position the
+       camera and set the line of sight by marking points on the contour map.
+       After you have used the mouse to select two points a dialogue will be 
+       displayed showing their heights and allowing them to be adjusted. (It is
+       recommended that you always add about 5 to the height of the camera, this
+       gives a more natural perspective than having your eye at ground level)
+
+    2. Clicking on the 'Visual' button will switch into real time, wire frame 
+       mode. This facility allows the position of the 3D view to be set by 
+       roaming over the current contour using the mouse. The left mouse button
+       switches between forward/backward and up/down. The right mouse draws a  
+       low detail solid landscape. 'I' switches the instrumentation on/off. 
+       'D' switches the amount of detail. The space bar exits wire frame mode 
+       and places the coordinates of the wire frame view into the key frame
+       dialogue. For small movements the arrow keys simulate the mouse
+       movements.
+
+    You can repeat either process or edit the values as much as you like, 
+checking the results in wire frame by using the visual button. Once you have a 
+satisfactory view you can draw it by pressing the OK button. The drawing 
+process may be abandoned by pressing the ESC key. The quality of the result 
+will depend on a) whether the contour has been shaded and b) the amount of 
+detail set. For more information see the menu entries GENERATE, DETAIL and 
+SHADE.
+
+5. Fracland Modes
+-----------------
+    For maximum flexibility the animation facilities in FRACLAND have two modes
+of operation 'MEMORY' and 'DISC'. The mode determines where the large animation
+files are to be held. This information is used by the 'PLAYBACK' and
+'DO RENDERING' options. In 'DISC' mode you will be prompted for a file name,
+however in 'MEMORY' mode all data will be held in RAM. The mode may be switched
+ at any time by using the menu entry marked 'MODE'.
+
+    'MEMORY MODE' - all animation will be generated in memory allowing it to be
+played back at up to 24 frames per second. You can load and save animation but 
+any attempt to load an animation that is larger than the available memory will 
+fail. The total number of frames available is displayed when you switch from 
+'DISC' to 'MEMORY' and the number of animation frames left is displayed at the 
+bottom of the 'STORY BOARD' dialogue. Unfortunately 'MEMORY MODE' is not 
+available on 520 machines (save animation to disc and use FRACPLAY instead).
+
+     'DISC MODE' - all frames of animation are saved directly to a disc file.
+They may be played back straight from disc or loaded into the separate utility 
+FRACPLAY which can hold approximately 9 more frames of animation than FRACLAND. 
+It also means that hard disc users can generate very large animation sequences 
+and play them back at reasonable speed directly from disc (17 frames a second on
+my Quantum LP52S). Not all options are available when playing back from disc, 
+see the entry on 'PLAY SPEED' for more details.
+ 
+6. Generating Animation
+-----------------------
+    To generate animation FRACLAND must first be given the start and end views, 
+and the number of frames of animation between the two. It will then calculate a 
+flight path between these points and automatically draw the intervening frames. 
+This method of animation is known as TWEENing. The start and end frames are 
+known as KEY frames, a key frame is a view defined by the animator that MUST 
+form part of the flight path. You are not restricted to just two key frames, you
+can specify up to nine and FRACLAND will formulate a path which visits each in 
+turn, thus allowing very complex animation to be described. You must also supply
+the number of frames it takes to travel between each pair of key frames, in 
+animation speak this is the number of TWEENS. Thus the number of frames in an 
+animation is the sum of all tweens. In 'MEMORY mode this total must not exceed 
+the available memory.
+
+    A sequence of key frames and tween sizes in known as a STORY, you can enter 
+the details of an animation by clicking on the STORY BOARD menu entry. The Story
+Board dialogue has nine mountain icons and eight arrows, each mountain icon is 
+an animation key frame, each arrow holds the number of frames between the key 
+frames on either side. Clicking on a mountain icon will display the key frame 
+details dialogue into which the coordinates should be entered, this is the same
+dialogue as used to generate a single 3D view and the fields and buttons are 
+described in the section GENERATING 3D VIEWS. Clicking on an arrow will display
+the tween details dialogue, the number of tween frames may be adjusted by 
+clicking on the dialogue arrow buttons. The end of a story is indicated by a 
+tween value of 0.
+
+    You may copy the coordinates of one key frame to another by using the copy 
+button, first click on the copy button, then the frame you wish to copy from, 
+followed by the frame your copying to. Hint - copying the first frame to the 
+last will make the animation loop smoothly.
+
+    Once you have decided on the key frames and tween values you may preview the
+animation in wire frame by clicking on the 'Preview' button. This allows 
+adjustments to be made before committing to a full rendering (you can exit 
+preview mode by pressing the SPACE bar or the left mouse button). Once you are 
+happy with the preview you can render the animation by clicking on the 'DO 
+RENDERING' menu entry. This will display a dialogue detailing the current status
+of the render which may be stopped at any time by pressing the 'ESC' key.
+
+7. Menu Entries
+---------------
+  FILE
+     SAVE VIEW
+                      To save the CURRENT VIEW as a standard DEGAS 
+                      picture click on the SAVE VIEW and supply a file name
+                      and path in the file selector. You can display the 
+                      CURRENT VIEW before saving by pressing any key or by
+                      left clicking on the desk top.
+
+     LOAD CONTOUR
+                      This option will allow you to load contours from disc.
+                      For information on what details are loaded please see
+                      the SAVE CONTOUR menu entry description. Once the contour
+                      has been loaded a short wait will occur whilst the 
+                      CONTOUR MAP is redrawn. CONTOUR files should have the
+                      extension '.CON'
+
+     SAVE CONTOUR
+                      When you have found a contour that you are happy with 
+                      and have decided on the position and colour of CONTOUR
+                      ZONES it may be saved to disc. You may specify the
+                      path and file name in the file selector box, the file
+                      will be given the extension '.CON'. CON files hold 
+                      the shape of the contour, colour and zone information,
+                      the amount of detail required and the shading data,
+                      if shading has been done. Saving this information 
+                      to disc for your favourite landscapes will save time as 
+                      it can take up to 10 minutes to generate, shade and draw
+                      a complex contour. Saved contour files may also be loaded
+                      at startup rather than generating from scratch each time.
+                      
+     LOAD STORY
+                      The path taken through the landscape by an animation
+                      is defined by the STORY BOARD. The details of this path
+                      may be loaded from disc into the STORY BOARD by
+                      clicking on the LOAD STORY menu entry. The appropriate
+                      file may then be selected from the file selector.
+                      STORY files should have the extension '.STR'
+                      If the STORY being loaded has more frames of animation
+                      than can be held in memory the animation MODE will
+                      automatically be switched to DISC. This will mean that
+                      all animation is to be held on disc, not in memory.
+
+     SAVE STORY
+                      The current details held in the STORY BOARD may be
+                      saved to disc by clicking on this menu item and
+                      supplying a name in the file selector. The file will
+                      automatically be given an extension of '.STR'
+
+     LOAD ANIMATION
+                      Animation may be loaded into memory by clicking on the
+                      LOAD ANIMATION menu entry and specifying the name in
+                      the file selector box. Animation files should have an
+                      extension of '.ANn' where n = 1 for low resolution
+                      and 3 for high. Animation may only be loaded if the 
+                      MODE is set to MEMORY. If the MODE is set to DISC then
+                      the option will be offered to switch MODES or you may
+                      play the animation straight from disc by using the
+                      PLAYBACK menu option directly.
+                      This action will fail if the animation was saved at a
+                      different resolution or if it contains more frames
+                      than can be fitted into memory. If the animation does
+                      contain more frames than can be fitted into memory then
+                      using the dedicated animation player FRACPLAY.PRG will
+                      allow more frames to be loaded.
+
+     SAVE ANIMATION
+                      Once an animation has been created in memory by using
+                      the 'DO RENDERING' option it may be saved to disc
+                      using this menu entry. The name and path may be given 
+                      in the file selector and an extension of '.ANn' will be
+                      added, where n = 1 for low resolution and 3 for high. 
+                      The file created will contain each frame of the
+                      animation and the colour information. It may be loaded
+                      back into memory using LOAD ANIMATION, played straight
+                      from disc using PLAYBACK in DISC MODE or loaded into
+                      the separate animation player program FRACPLAY.PRG
+
+
+  CONTOUR
+
+     GENERATE
+                      This menu entry is used to generate a fractal landscape.
+                      This is the fundamental set of data from which the 
+                      contour map, 3 dimensional views and animation are 
+                      generated. The concepts, algorithms and parameters used
+                      to generate a landscape are explained in more detail
+                      under the section on GENERATING LANDSCAPES. 
+                      To produce a sample landscape click on the GENERATE
+                      menu entry, this will display the dialogue for the
+                      parameters used in generating the fractal. You can 
+                      allow most of these to default, simply enter any number
+                      in the field marked RANDOM SEED and click on the OK
+                      button. Each SEED will grow a unique landscape.
+
+     SHADE
+                      Initially contour maps are coloured based on height above
+                      sea level (as in most atlases). However to add more
+                      realism you can shade the contour as though a light 
+                      source was illuminating it. This helps to bring out the
+                      relief of the contour. To shade a contour click on the
+                      SHADE menu entry. This will display a progress dialogue
+                      informing you  how much of the contour has been shaded. 
+                      The process takes around six minutes to complete after
+                      which the contour map will be redrawn shaded. The 
+                      shading process may be stopped by pressing the ESC key.
+                      A contour may be saved in its shaded form.
+                      (For those interested the algorithm used is Lambert's
+                      Cosine)
+                      
+     DETAIL
+                      When a 3 dimensional view is generated the number of
+                      polygons drawn governs the speed and detail. The more
+                      polygons the more detail, less  polygons gives faster
+                      drawing. This usually means that tests are drawn in rough
+                      until the correct results are achieved when the detail
+                      can be increased to produce the finished article. The
+                      amount of detail can be adjusted by clicking on the
+                      DETAIL menu entry, this will display a dialogue with four
+                      buttons, the further to the left the button selected the
+                      more detail drawn. A view drawn with minimum detail will
+                      take approximately 10 seconds on a standard ST. Maximum
+                      detail views take about 3 minutes each. Thus a 20 frame
+                      animation at maximum detail will take about an hour to
+                      produce.  
+                       
+
+     CONTOUR ZONES
+                      Each contour is divided into land and sea. The land is
+                      further divided into 3 zones. This gives a total of four
+                      areas or zones the size of which may be varied as
+                      required. Clicking on the CONTOUR ZONES menu entry will
+                      produce a dialogue box, the percentage of the contour 
+                      divided into sea, zone 1 and zone 3 should be entered.
+                      If the percentages total more than 100 then they will
+                      crowed each other out, in order of precedence - sea,
+                      zone 1, zone 3, zone 2. 
+                      Because the zones are based purely on height they
+                      appear as straight lines on the 3D views, this can look
+                      unnatural and to prevent it you may specify the percentage
+                      of friction to be used when drawing zones 1 and 3.
+                      Friction on a contour will mean that zones 1 and 3 will
+                      'invade' the flatter areas of zone 2, just as snow 
+                      will gather on flat ground at lower altitudes or trees
+                      colonise higher ground if not to steep.
+                      The contour zones set are also used when producing 3 
+                      dimensional views.
+                      (N.B. The only option available to mono users is to
+                             adjust the SEA LEVEL)
+
+     COLOURING
+                      Each of the four zones and the sky is assigned a range
+                      of colours. Clicking on the COLOURING menu entry in
+                      low resolution will display the Zone Colours dialogue.
+                      The colour of the sea may be set by selecting either Sea
+                      or Ocean; the sky can be set by selecting Night, Blue Sky,
+                      Hazy or Tropical. To change the colour of a land zone
+                      first click one of the Zone buttons then choose a terrain
+                      type from the array of buttons below. All changes to 
+                      the colours are instantly reflected in the colour bar on
+                      the top right of the dialogue (except the sky colour). To
+                      observe the effect of your colour changes you can
+                      display the last 3D view generated by clicking on the 
+                      View button. (This will be a blank screen if no view
+                      has been drawn). Although the ST only provides a palette
+                      of 16 colours they are stippled to produce a total of 46
+                      virtual colours. 
+                      Clicking on the COLOURING menu entry in mono will
+                      provide a dialogue to allow the background colour of 3 D
+                      views to be selected as black or white. 
+
+     3D VIEW
+                      The current contour may be drawn as a 3 dimensional
+                      projection. To produce a single 3D view you must click
+                      on the 3D VIEW menu entry. This will display a dialogue
+                      for the coordinates to be used and options to set them
+                      using visual methods. For more detail on creating 3D
+                      images see the section on GENERATING 3D VIEWS. Once
+                      you are happy with the coordinates you can click on OK
+                      to start the drawing process or CANCEL to abandon.
+                      Clicking on OK will draw a progress report dialogue, when
+                      the transformation and sort have finished the screen will
+                      be switched to the CURRENT VIEW screen and the landscape
+                      drawn. The process may be stopped at any time (except 
+                      during the sort phase) by pressing the ESC key.
+
+
+  ANIMATION
+
+     PLAY BACK
+                      Animation can be played using this menu option. In DISC
+                      MODE clicking on PLAY BACK will produce a file selector
+                      into which the name of an animation file (.ANn) should be 
+                      entered. The file will then be played direct from disc.
+                      In MEMORY MODE the animation will immediately start
+                      playing. If no animation is held in memory then a 
+                      warning will be given. The speed and direction of the play
+                      back can be set using the PLAY SPEED menu entry detailed
+                      below. You can stop an animation playing by left mouse
+                      click or pressing the space bar.
+                      You may also use the program FRACPLAY.PRG to play
+                      animation generated by FRACLAND. FRACPLAY can generally
+                      hold 9 more frames of animation in memory than can be
+                      stored by FRACLAND. 
+
+     STORY BOARD
+                      To create an animation the path the 'camera' takes through
+                      the landscape must be defined. The STORY BOARD menu entry
+                      will display a dialogue box into which this path may be
+                      entered. For more detail on the concepts involved see the
+                      section on GENERATING ANIMATION.
+
+     PLAY SPEED
+                      The speed and direction an animation is played back may
+                      be set by clicking on the PLAY SPEED menu item. This
+                      will produce a dialogue. The entry marked SPEED (initially
+                      set to 5) may be edited to give the delay used between
+                      frames. 0 is the quickest at around 24 frames a second
+                      from memory. Direction can be set to forward or reverse
+                      and the animation mode may be LOOP or PING. If the
+                      animation is to loop it will return directly to the start
+                      frame on reaching the end. In ping mode on reaching the
+                      end it will replay the frames in reverse order. Pinging
+                      can produce a smoother animation sequence without a sudden
+                      chop at the end. 
+                      (N.B. Only the speed has any effect in DISC MODE)
+
+     MODE
+                      FRACLAND may be used in two modes DISC or MEMORY. The
+                      mode dictates where animation is held. For more
+                      information see the section on FRACLAND MODES. The MODE
+                      may be changed at any time using the menu entry MODE. If
+                      you try and switch to MEMORY MODE with more frames of
+                      animation in the STORY BOARD than can be held in memory
+                      an error will be given requesting the number be reduced.
+                      Otherwise the number of frames that can be held in memory
+                      will be displayed in an alert box.
+
+     DO RENDERING
+                      This menu entry draws the frames of an animation.
+                      Once all the details of the animation sequence have been
+                      entered into the STORY BOARD you can click on this option
+                      to begin drawing the 3D animation frames. Each frame 
+                      is preceded by a report dialogue which will indicate
+                      how many frames have been drawn, how many are left 
+                      and the progress of the frame currently being drawn.
+                      Each frame will be written to disc or memory (depending
+                      on the current MODE) after it has been drawn, ready to be 
+                      played back on completion. The rendering may be stopped 
+                      at any time by pressing the ESC key. If you have not
+                      shaded the contour you will be given the opportunity
+                      to do so before rendering commences, for more detail
+                      on shading see the information on the SHADE menu entry
+                      above. For more details on how to create animation
+                      see the section on GENERATING ANIMATION. Please note that
+                      the quality of the animation is dependant on the amount of
+                      detail drawn, this may be set using the DETAIL menu entry.
+
+
+Appendix 1.                               Key and Mouse Functions. 
+-----------                               ------------------------
+
+   From the desk top.
+   ------------------
+      ESC                 Abandons current process. 
+      ANY KEY             Switch the screen between displaying the GEM desk
+                          top and the CURRENT VIEW. 
+      LEFT MOUSE BUTTON   Left clicking the mouse over any empty area of the
+                          desk top also switches screens between GEM and the
+                          CURRENT VIEW.
+
+
+   From wire frame visual mode.
+   ----------------------------                                
+      LEFT MOUSE BUTTON   Switch mouse function between moving
+                          forward / backward and looking up / down. 
+      RIGHT MOUSE BUTTON  Draw a low detail solid render of the current view.
+      MOUSE UP            Move forward / look up. 
+      MOUSE DOWN          Move backwards / look down.
+      MOUSE LEFT          Turn to the right.
+      MOUSE RIGHT         Turn to the left.
+      SPACE BAR           Exit visual mode.
+      D                   Switch between high and low detail.
+      I                   Switch instrumentation on/off.
+      H                   Home the view.
+      ARROW KEYS          Provide the same function as the mouse directions for
+                          fine detail.
+
+
+   From wire frame preview mode.
+   -----------------------------
+      LEFT MOUSE BUTTON   Exit preview mode.
+      SPACE BAR           Exit preview mode.
+      D                   Switch between high and low detail.
+      I                   Switch instrumentation on/off.
+
+       
+   During play back. 
+   -----------------
+      LEFT MOUSE BUTTON   Exit play back.
+      SPACE BAR           Exit play back.
+
+Appendix 2.                               Bibliography.
+-----------                               -------------
+
+1. The Science of Fractal Images.
+   Peitgen, Saupe (editors)
+   Published by Springer-Verlag 1988  ISBN 0-387-96608-0.
+
+2. Computer Rendering of Stochastic Models.
+   Fournier, Fussell and Carpenter.
+   Communications of the ACM Volume 25 Number 6 (June 82)
+
+3. Chaos
+   James Gleick.
+   Published by Cardinal   ISBN 0-7474-0413-5.
+ 
+4. Real-Time 3D graphics for the Atari St.
+   Andrew Tyler.
+   Published by Sigma Press   ISBN 1-85058-217-3
+
+
+
+
+The closing address.
+--------------------
+
+    I hope you enjoy using FRACLAND its been fun writing and researching it. 
+Watch out for new versions with PHOTOCHROME 19200 colour support, much larger 
+contour maps and all sorts of other bits, when time (currently fully occupied by
+a two month old daughter) allows.
+
+    Please write with comments, enhancement ideas, bug reports and information 
+on other fractal programs to :-        
+
+                    David Billington 
+                      55 Church Street,
+                        Hadley,
+                          Telford,
+                            Shoropshire,
+                              TF1 4RQ
+
+
+P.S. Why the fish shaped mouse ? Its a bit of christian symbolism. Fractals are 
+     ok but God does a much better job.
+
+
+
+
+
+
+                           human was the music,
+                           natural was the static ...
+
+                                           - John Updike
+
+
+
+
+
+                                --- The End ---
+

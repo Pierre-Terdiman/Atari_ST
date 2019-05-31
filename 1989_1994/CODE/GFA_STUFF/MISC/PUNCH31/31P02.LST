@@ -1,0 +1,16 @@
+' AUTEUR: NAXOS 1989
+CLS
+boucle:
+a%=RND*12+1
+b%=RND*12+1
+c%=RND*12+1
+d%=RND*12+1
+IF a%=b% OR a%=c% OR a%=d% OR b%=c% OR b%=d% OR c%=d%
+  GOTO boucle
+ENDIF
+PLOT 520,200
+FOR i%=0 TO 90
+  DRAW  TO COS(i%*a%*PI/180)*COS(i%*b%*PI/180)*200+300,SIN(i%*c%*PI/180)*SIN(i%*d%*PI/180)*100+200
+NEXT i%
+~INP(2)
+RUN

@@ -1,0 +1,20 @@
+' AUTEUR: CARDINALE GREGORY
+INPUT "Nombre de bandes: ",b
+PRINT
+INPUT "Vitesse: ",v
+FILESELECT "\*.PI?","",n$
+CLS
+a$=STRING$(32066,0)
+BLOAD n$,VARPTR(a$)
+VOID XBIOS(6,L:VARPTR(a$)+2)
+ba=32000/b
+REPEAT
+  FOR j=1 TO b
+    BMOVE VARPTR(a$)+34+f,XBIOS(2)+f,v
+    ADD f,ba
+  NEXT j
+  ADD p,v
+  f=p
+UNTIL p=>ba
+c=INP(2)
+RUN

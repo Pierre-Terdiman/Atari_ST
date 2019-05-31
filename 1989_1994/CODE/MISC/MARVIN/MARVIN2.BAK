@@ -1,0 +1,415 @@
+IERA	EQU	$FFFA07		* INTERUPTION ENABLE A
+IERB	EQU	$FFFA09		* INTERUPTION ENABLE B
+ISRA	EQU	$FFFA0F		* INTERUPTION IN-SERVICE A
+IMRA	EQU	$FFFA13		* INTERUPTION MASQUE A
+TBCR	EQU	$FFFA1B		* TIMER B CONTROL REGISTER
+TBDR	EQU	$FFFA21		* TIMER B DONNEE REGISTER
+SYNCRO	EQU	$FF820A		* REGISTRE SYNCRO SHIFTER
+COUL_0	EQU	$FF8240
+COUL_1	EQU	$FF8242		* ADRESSES DES REGISTRES
+COUL_2	EQU	$FF8244		* DE LA PALETTE DU SHIFTER
+COUL_3	EQU	$FF8246
+COUL_4	EQU	$FF8248
+COUL_5	EQU	$FF824A
+COUL_6	EQU	$FF824C
+COUL_7	EQU	$FF824E
+COUL_8	EQU	$FF8250
+COUL_9	EQU	$FF8252
+COUL_10	EQU	$FF8254
+COUL_11	EQU	$FF8256
+COUL_12	EQU	$FF8258
+COUL_13	EQU	$FF825A
+COUL_14	EQU	$FF825C
+COUL_15	EQU	$FF825E
+ACIA	EQU	$FFFC02		* LECTURE DE L'ACIA CLAVIER
+PSG	EQU	$FF8800	        * pour le son...
+
+
+ 	SECTION TEXT
+DEBUT:	MOVE.L  A7,A5
+	LEA.L 	D_PILE,A7
+	MOVE.L 	4(A5),A5
+	MOVE.L 	$C(A5),D0
+	ADD.L 	$14(A5),D0
+	ADD.L 	$1C(A5),D0
+	ADD.L 	#$100,D0		
+	MOVE.L 	D0,-(SP)		
+        MOVE.L 	A5,-(SP)
+	MOVE.W 	#0,-(SP)
+	MOVE.W 	#$4A,-(SP)
+	TRAP 	#1
+	LEA 	12(SP),SP
+	
+	CLR.L 	-(SP)			* PASSAGE EN SUPERVISEUR
+	MOVE.W 	#$20,-(SP)		*
+	TRAP 	#1			*
+	ADDQ.L 	#6,SP			*
+	MOVE.L 	D0,SAUVE		* SAUVE LA PILE UTILISATEUR
+
+
+  LEA  FOND(PC),A0
+  JSR decrunch
+
+			
+	MOVE.B	IERA,MFP1		*
+	MOVE.B	IERB,MFP2		*
+	MOVE.B	ISRA,MFP3		* SAUVE LES REGISTRES
+	MOVE.B	IMRA,MFP4		* UTILISES DU MFP
+	MOVE.B	TBCR,MFP5		*
+	MOVE.B	TBDR,MFP6		*
+	
+	CLR.B	IERA			* VIRE TOUTES LES
+	CLR.B	IERB			* INTERUPTIONS
+	
+	MOVE.L	#FIN,$008.W
+	MOVE.L	#FIN,$00C.W
+	MOVE.L	#FIN,$010.W
+
+	MOVE.W	#4,-(SP)		* APPEL FONCTION GETREZ
+	TRAP 	#14			* XBIOS...
+	ADDQ.L	#2,SP			*
+	MOVE.W	D0,RES			* SAUVE LA RESOLUTION
+	
+	MOVE.W	#2,-(SP)		* APPEL FONCTION PHYSBASE
+	TRAP 	#14			* XBIOS
+	ADDQ.L 	#2,SP			*
+	MOVE.L	D0,ANC_ECR		* SAUVE L'ADRESSE ECRAN
+	
+	MOVE.W 	#0,-(SP)		* BASSE RESOLUTION
+	MOVE.L	#$78000,-(SP)		* PHYSBASE A ECRAN
+	MOVE.L	#$78000,-(SP)		* LOGBASE A ECRAN
+	MOVE.W 	#5,-(SP)		* FONCTION SETSCREEN
+	TRAP 	#14			* DU XBIOS
+	LEA.L 	12(SP),SP		*
+
+	LEA.L	COUL_0,A0		* ADRESSE PALETTE SHIFTER
+	MOVEM.L	(A0),D0-D7		* RECUPERE LES 16 REGISTRES
+	LEA.L	ANC_PAL,A0		* ADRESSE DE SAUVEGARDE
+	MOVEM.L	D0-D7,(A0)		* SAUVE LES 16 REGISTRES
+	
+        MOVEA.L  #FOND+34,A0
+        MOVEA.L  #$78000,A1
+        MOVE.L   #7999,D0
+COPY    MOVE.L   (A0)+,(A1)+
+        DBF D0,COPY
+
+	LEA.L	COULEURS,A1
+	MOVE.L	A1,BIDON
+        
+	MOVE.L	$70,ANC_VBL		* SAUVE L'ANCIEN VECTEUR VBL
+	MOVE.L	#VBL_IR,$70		* ET PLACE LE MIEN...
+	MOVE.L	$120,ANC_TB		* SAUVE ANCIEN VECTEUR TIMER B
+	MOVE.L	#TB0_IR,$120		* ET PLACE LE MIEN...
+	
+	DC.W	$A00A			* CACHE LA SOURIS (LINE A)
+	MOVE.B	#$12,ACIA		* INIT CLAV
+	
+	CLR.B	TBCR			* ARRET DU TIMER B (PLUS PRUDENT)
+	BSET	#0,IERA			* AUTORISE LES INTERUPTIONS
+	BSET	#0,IMRA			* SUR LE TIMER B
+
+
+
+
+BOUCLE:	
+	MOVE.B	VSYNC,D0		* ATTEND UNE SYNCRO VERTICALE
+WAIT	CMP.B	VSYNC,D0		* POUR LE TESTS DES TOUCHES
+	BEQ.S	WAIT
+	CMP.B	#$39,ACIA		* TESTE ESPACE (CODE SCAN)
+	BNE.S	BOUCLE			* SI ESPACE, ON SORT DE L'INTRO
+***********************************************************************
+
+FIN:	
+        MOVE.B  #2,SYNCRO
+	MOVE.B	#8,ACIA			* REMET LE CLAVIER
+	MOVE.B	MFP1,IERA		* RESTAURE LE MFP
+	MOVE.B	MFP2,IERB		*
+	MOVE.B	MFP3,ISRA		*
+	MOVE.B	MFP4,IMRA		*
+	MOVE.B	MFP5,TBCR		*
+	MOVE.B	MFP6,TBDR		*
+	
+	MOVE.L	ANC_VBL,$70		* REMET LE VECTEUR VBL
+	MOVE.L	ANC_TB,$120		* REMET LE VECTEUR TIMER C
+	
+	LEA.L	ANC_PAL,A0		* ADRESSE PALETTE SAUVEE
+	MOVEM.L	(A0),D0-D7		* RECUPERE LES 16 REGISTRES
+	LEA.L	COUL_0,A0		* ADRESSE PALETTE SHIFTER
+	MOVEM.L	D0-D7,(A0)		* RESTITUE LES COULEURS
+	
+	MOVE.W 	RES,-(SP)		* ANCIENNE RESOLUTION
+	MOVE.L	ANC_ECR,-(SP)		* ANCIEN ECRAN PHYSIQUE
+	MOVE.L	ANC_ECR,-(SP)		* ANCIEN ECRAN LOGIQUE
+	MOVE.W 	#5,-(SP)		* FONCTION SETSCREEN
+	TRAP 	#14			* DU XBIOS
+	LEA.L 	12(SP),SP		* CORRIGE LA PILE
+	
+	MOVE.L	SAUVE,-(SP)		* RETOUR EN UTILISATEUR
+	MOVE.W 	#$20,-(SP)		* AVEC LA FONCTION SUPER
+	TRAP 	#1			* DU GEMDOS
+	ADDQ.L 	#6,SP			*
+	
+	PEA	CHUT_DA	   		* ADRESSE DES PARAMETRES
+	MOVE.W	#$20,-(A7) 		* FONCTION DOSOUND
+	TRAP	#14        		* DU XBIOS
+	ADDQ.L	#6,A7      		* CORIGE LA PILE
+
+	CLR.W 	-(SP)			* FIN DU PROGRAMME
+	TRAP	#1			* FONCTION PTERM
+	
+
+
+
+
+VBL_IR	 LEA   COULEURS,A0
+	CLR.B	TBCR			* ARRET DU TIMER B
+	MOVE.B	#50,TBDR		* INTERUPTION SUR LIGNE 117
+	MOVE.B	#8,TBCR			* TIMER C EN EVENT COUNT MODE
+	LEA.L	COUL_0,A6		* ADRESSE PALETTE SHIFTER DANS A6
+	MOVEA.L #FOND+2,A5              * ADRESSE COULEURS
+     REPT 8
+     	MOVE.L	(A5)+,(A6)+		* MET LA NOUVELLE PALETTE EN PLACE
+     ENDR
+
+
+;        CLR.W   $FFFF824C.W
+;	MOVE.L	#VBL2_IR,$70.W
+	NOT.B	VSYNC			* BASCULE POUR SYNCRO
+	RTE				* FIN DE L'INTERUPTION VBL
+
+
+TB0_IR	MOVE.W	(A0)+,$FFFF8242.W
+	CLR.B	TBCR			* ARRET DU TIMER
+	MOVE.B	#3,TBDR		* PROCHAINE INTERUP DANS 74 LIGNES
+	MOVE.B	#8,TBCR			* PASSE EN EVENT COUNT MODE
+	MOVE.L	#TB0_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* LIBERE L'INTERUPTION
+	RTE				* FIN DE L'INTERUPTION (RETOUR)
+
+
+
+
+TBF_IR
+     REPT 127
+	NOP				* BOUCLE D'ATTENTE...
+     ENDR
+	MOVE.B	#0,SYNCRO		* PASSAGE EN 60 HZ
+     REPT 8
+     	NOP				* BOUCLE D'ATTENTE
+     ENDR
+	MOVE.B	#2,SYNCRO		* RETOUR EN 50 HZ
+	CLR.B	TBCR			* ARRET DU TIMER B
+	MOVE.L	#TB0_IR,$120		* NOUVELLE ROUTINE TIMER B
+	BCLR	#0,ISRA			* INTERUPTION TRAITEE
+	RTE				* RETOUR
+**********************************************************************
+
+;***************************************************************************
+; Unpacking source for Pack-Ice Version 2.1
+; a0: Pointer on packed Data
+decrunch:	movem.l d0-a6,-(sp)		; save registers
+		cmpi.l	#'Ice!',(a0)+		; Data packed?
+		bne.s	ice2_07			; no!
+		move.l	(a0)+,d0
+		lea	-8(a0,d0.l),a5
+		move.l	(a0)+,(sp)
+		lea	108(a0),a4
+		movea.l a4,a6
+		adda.l	(sp),a6
+		movea.l a6,a3
+		movea.l a6,a1			; save 120 bytes
+		lea	ice2_21+120(pc),a2	; at the end of the
+		moveq	#$77,d0			; unpacked data
+ice2_00:	move.b	-(a1),-(a2)
+		dbra	d0,ice2_00
+		bsr	ice2_0c
+		bsr.s	ice2_08
+		bsr	ice2_10		;; Picture decrunch!
+		bcc.s	ice2_04		;; These marked lines are only
+		movea.l a3,a1		;; necessary, if you selected the
+		move.w	#$0f9f,d7	;; additional picture packer
+ice2_01:	moveq	#3,d6		;; in Pack-Ice.
+ice2_02:	move.w	-(a1),d4	;;
+		moveq	#3,d5		;; If you never use the picture
+ice2_03:	add.w	d4,d4		;; pack option, you may delete
+		addx.w	d0,d0		;; all the lines marked with ";;"
+		add.w	d4,d4		;;
+		addx.w	d1,d1		;;
+		add.w	d4,d4		;;
+		addx.w	d2,d2		;;
+		add.w	d4,d4		;;
+		addx.w	d3,d3		;;
+		dbra	d5,ice2_03	;;
+		dbra	d6,ice2_02	;;
+		movem.w d0-d3,(a1)	;;
+		dbra	d7,ice2_01	;;
+ice2_04:	move.l	(sp),d0			; move all data to
+		lea	-120(a4),a1		; 120 bytes lower
+ice2_05:	move.b	(a4)+,(a1)+
+		dbra	d0,ice2_05
+		subi.l	#$010000,d0
+		bpl.s	ice2_05
+		moveq	#$77,d0			; restore saved data
+		lea	ice2_21+120(pc),a2
+ice2_06:	move.b	-(a2),-(a3)
+		dbra	d0,ice2_06
+ice2_07:	movem.l (sp)+,d0-a6		; restore registers
+		rts
+ice2_08:	bsr.s	ice2_10
+		bcc.s	ice2_0b
+		moveq	#0,d1
+		bsr.s	ice2_10
+		bcc.s	ice2_0a
+		lea	ice2_1e(pc),a1
+		moveq	#4,d3
+ice2_09:	move.l	-(a1),d0
+		bsr.s	ice2_13
+		swap	d0
+		cmp.w	d0,d1
+		dbne	d3,ice2_09
+		add.l	20(a1),d1
+ice2_0a:	move.b	-(a5),-(a6)
+		dbra	d1,ice2_0a
+ice2_0b:	cmpa.l	a4,a6
+		bgt.s	ice2_16
+		rts
+ice2_0c:	moveq	#3,d0
+ice2_0d:	move.b	-(a5),d7
+		ror.l	#8,d7
+		dbra	d0,ice2_0d
+		rts
+ice2_0e:	move.w	a5,d7
+		btst	#0,d7
+		bne.s	ice2_0f
+		move.l	-(a5),d7
+		addx.l	d7,d7
+		bra.s	ice2_15
+ice2_0f:	move.l	-5(a5),d7
+		lsl.l	#8,d7
+		move.b	-(a5),d7
+		subq.l	#3,a5
+		add.l	d7,d7
+		bset	#0,d7
+		bra.s	ice2_15
+ice2_10:	add.l	d7,d7
+		beq.s	ice2_11
+		rts
+ice2_11:	move.w	a5,d7
+		btst	#0,d7
+		bne.s	ice2_12
+		move.l	-(a5),d7
+		addx.l	d7,d7
+		rts
+ice2_12:	move.l	-5(a5),d7
+		lsl.l	#8,d7
+		move.b	-(a5),d7
+		subq.l	#3,a5
+		add.l	d7,d7
+		bset	#0,d7
+		rts
+ice2_13:	moveq	#0,d1
+ice2_14:	add.l	d7,d7
+		beq.s	ice2_0e
+ice2_15:	addx.w	d1,d1
+		dbra	d0,ice2_14
+		rts
+ice2_16:	lea	ice2_1f(pc),a1
+		moveq	#3,d2
+ice2_17:	bsr.s	ice2_10
+		dbcc	d2,ice2_17
+		moveq	#0,d4
+		moveq	#0,d1
+		move.b	1(a1,d2.w),d0
+		ext.w	d0
+		bmi.s	ice2_18
+		bsr.s	ice2_13
+ice2_18:	move.b	6(a1,d2.w),d4
+		add.w	d1,d4
+		beq.s	ice2_1a
+		lea	ice2_20(pc),a1
+		moveq	#1,d2
+ice2_19:	bsr.s	ice2_10
+		dbcc	d2,ice2_19
+		moveq	#0,d1
+		move.b	1(a1,d2.w),d0
+		ext.w	d0
+		bsr.s	ice2_13
+		add.w	d2,d2
+		add.w	6(a1,d2.w),d1
+		bra.s	ice2_1c
+ice2_1a:	moveq	#0,d1
+		moveq	#5,d0
+		moveq	#0,d2
+		bsr.s	ice2_10
+		bcc.s	ice2_1b
+		moveq	#8,d0
+		moveq	#$40,d2
+ice2_1b:	bsr.s	ice2_13
+		add.w	d2,d1
+ice2_1c:	lea	2(a6,d4.w),a1
+		adda.w	d1,a1
+		move.b	-(a1),-(a6)
+ice2_1d:	move.b	-(a1),-(a6)
+		dbra	d4,ice2_1d
+		bra	ice2_08
+		dc.b $7f,$ff,$00,$0e,$00,$ff,$00,$07
+		dc.b $00,$07,$00,$02,$00,$03,$00,$01
+		dc.b $00,$03,$00,$01
+ice2_1e:	dc.b $00,$00,$01,$0d,$00,$00,$00,$0e
+		dc.b $00,$00,$00,$07,$00,$00,$00,$04
+		dc.b $00,$00,$00,$01
+ice2_1f:	dc.b $09,$01,$00,$ff,$ff,$08,$04,$02
+		dc.b $01,$00
+ice2_20:	dc.b $0b,$04,$07,$00,$01,$20,$00,$00
+		dc.b $00,$20
+ice2_21:	ds.w 60			; free space (can be put in BSS)
+
+
+	section   data
+
+
+FOND INCBIN MARVIN.PI1
+	DS.B	32066
+	EVEN
+
+
+COULEURS 
+;         DC.W  $000,$100,$200,$300,$400,$500,$600,$700
+;         DC.W  $710,$720,$730,$740,$750,$760,$770
+;         DC.W  $771,$772,$773,$774,$775,$776,$777,$777
+
+;	REPT	100
+	DC.W	$210,$000,$002,$112,$223,$334,$445,$556,$667,$777
+	DC.W	$667,$556,$445,$334,$223,$112,$002,$000
+;	ENDR
+	REPT	50
+	DC.W	$210
+	ENDR	
+
+	DC.W	-1,-1,-1,-1         
+        EVEN
+
+CHUT_DA	DC.B	7,$FF,6,0,8,0,9,0,$A,0
+
+ 	SECTION BSS
+ 	EVEN
+BIDON   DS.L    1
+F_PILE	DS.L 	128			* FIN DE LA PILE
+D_PILE	DS.L 	1			* DEBUT DE LA PILE
+SAUVE	DS.L	1			* SAUVE LA PILE UTILISATEUR
+ANC_VBL DS.L	1			* SAUVE LE VECTEUR VBL
+ANC_TB	DS.L	1			* SAUVE LE VECTEUR TIMER B
+ANC_ECR	DS.L	1			* SAUVE L'ADRESSE DE L'ECRAN
+POIROT1	DS.W	1			* COMPTEURS POUR FAIRE DEMARRER
+POIROT2	DS.W	1			* LES ANIMATIONS, LES UNES
+POIROT3	DS.W	1			* APRES LES AUTRES
+POIROT4	DS.W	1			*
+RES	DS.W	1			* SAUVE LA RESOLUTION
+ANC_PAL	DS.W	16			* SAUVE LA PALETTE
+MFP1	DS.B	1			* SAUVE LES REGISTRES DU MFP
+MFP2	DS.B	1			*
+MFP3	DS.B	1			*
+MFP4	DS.B	1			*
+MFP5	DS.B	1			*
+MFP6	DS.B	1			*
+VSYNC	DS.B	1			* POUR LA SYNCRO VERTICALE

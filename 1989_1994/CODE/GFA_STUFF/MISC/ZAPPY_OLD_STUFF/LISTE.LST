@@ -1,0 +1,50 @@
+VOID XBIOS(5,L:-1,L:-1,W:1)
+FOR a%=1 TO 15
+  SETCOLOR a%,0,0,0
+NEXT a%
+DIM jeu%(500),nom$(500),type%(500),copy%(500),genre$(500),edit$(500)
+DO
+  INC jeu%
+  INPUT "Nom(s) ? ",n$
+  nom$(jeu%)=n$
+  PRINT "Type : 1)  Double-face"
+  PRINT "       2)  Simple-face"
+  PRINT "       3)  Necessite un selecteur de face"
+  INPUT "",t%
+  type%(jeu%)=t%
+  INPUT "Copiable 1   Non copiable 2) ",c%
+  copy%(jeu%)=c%
+  INPUT "Genre ?",genre$(jeu%)
+  INPUT "Editeur ?",edit$(jeu%)
+  CLS
+  PRINT "Disquette numero ",jeu%
+  PRINT
+  PRINT nom$(jeu%)
+  IF type%(jeu%)=1
+    PRINT " Double-face"
+  ELSE
+    IF type%(jeu%)=2
+      PRINT " Simple-face"
+    ELSE
+      IF type%(jeu%)=3
+        PRINT " Necessite un selecteur de face"
+      ENDIF
+    ENDIF
+  ENDIF
+  IF copy%(jeu%)=1
+    PRINT "Copiable"
+  ELSE
+    IF copy%(jeu%)=2
+      PRINT "Non copiable"
+    ENDIF
+  ENDIF
+  PRINT "Genre :",genre$(jeu%)
+  PRINT "Editeur :",edit$(jeu%)
+  REPEAT
+  UNTIL INP(2)
+  CLS
+  INPUT "Encore ? ",c$
+  IF c$="n"
+    END
+  ENDIF
+LOOP

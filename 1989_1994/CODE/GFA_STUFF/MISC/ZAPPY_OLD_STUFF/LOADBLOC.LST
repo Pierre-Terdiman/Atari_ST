@@ -1,0 +1,13 @@
+PROCEDURE loadblock(nombloc$)
+  LOCAL a$,xb%,yb%,l%
+  OPEN "i",#1,nombloc$
+  l%=LOF(#1)
+  CLOSE
+  a$=SPACE$(l)
+  BLOAD nombloc$,VARPTR(a$)
+  xb%=CVI(LEFT$(a$,2))
+  yb%=CVI(MID$(a$,3,2))
+  a$=RIGHT$(a$,LEN(a$)-4)
+  PUT xb%,yb%,a$
+  CLR l%,xb%,yb%,a$
+RETURN

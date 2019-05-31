@@ -1,0 +1,5 @@
+a%=1
+DO
+  TEXT 10,10,a%,"This game was cracked by CYANUR."
+  a%=a%+10
+LOOP

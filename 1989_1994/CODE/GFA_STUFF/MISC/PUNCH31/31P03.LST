@@ -1,0 +1,22 @@
+' AUTEUR: NAXOS 89
+' BEAUCOUP DE PATIENCE AU DEBUT
+' POUR UNE PLEINE SATISFACTION ENSUITE...
+DIM a$(30)
+FOR t=0 TO 126 STEP 4.5
+  CLS
+  CLR h
+  FOR j=-2 TO 2 STEP 0.1
+    PLOT h+13,198-(t*EXP(-i*i)*EXP(-j*j)+h)
+    ADD h,2
+    FOR i=-3 TO 2 STEP 0.1
+      DRAW  TO 5+(100+30*i+h),198-(t*EXP(-i*i)*EXP(-j*j)+h)
+    NEXT i
+  NEXT j
+  GET 10,10,320,200,a$(t/4.5)
+NEXT t
+rdt%=1
+DO
+  ADD rt%,rdt%
+  rdt%=(1-2*ABS(rt%<1 OR rt%>28))*rdt%
+  PUT 10,10,a$(rt%),3
+LOOP

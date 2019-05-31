@@ -1,0 +1,16 @@
+' Un superbe rouleau!
+FILESELECT "a:\*.pi3","",f$
+buf$=SPACE$(32066)
+buffer%=V:buf$
+BLOAD f$,buffer%
+BMOVE buffer%+34,XBIOS(2),32000
+FILESELECT "a:\*.pi3","",f$
+BLOAD f$,buffer%
+BMOVE buffer%+34,buffer%,32000
+SGET xxx$
+FOR g%=1 TO 400
+  BMOVE buffer%+g%*80,XBIOS(2)+g%*80,80
+  BMOVE VARPTR(xxx$)+(g%+1)*80,XBIOS(2)+(g%+1)*80,80
+  BMOVE 
+XBIOS(2)+(g%+1)*80,XBIOS(2)+(g%+3)*80,g%*80+((g%>200)*80*(g%-200))
+NEXT g%

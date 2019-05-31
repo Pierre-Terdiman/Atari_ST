@@ -1,0 +1,106 @@
+;D0=Y1	D4=X1
+;D1=Y2	D5=X2
+;D2=Y3	D6=X3
+;D3=Y4	D7=X4
+
+	LEA	calc,a4
+
+	CMP	D0,D3	Y1,Y4
+	BGT.S	Y4_SUP
+	BLT.S	Y1_SUP
+***
+;	Y1=Y4 => Y2=Y3
+	CMP	D2,D3	Y3,Y4
+	BGT.S	Y4_SUPB
+	BLT.S	Y3_SUPB
+	MOVE	#$700,$FFFF8240.W
+PB1	BRA.S	PB1
+Y4_SUPB	
+	MOVE	D4,D0
+	MOVE	,D2
+	;DE Y1 A Y2 => XDEP=X1=X2
+	;DE Y4 A Y3 => XEND=X4=X3
+	BRA.S	DONE
+Y3_SUPB	;DE Y3 A Y4 => XDEP=X3=X4
+	;DE Y2 A Y1 => XEND=X2=X1
+	BRA.S	DONE
+***
+Y4_SUP	DE Y4 A Y1=>XDEP
+	CMP	Y1,Y2
+	BGT.S	Y2_SUPB
+	BLT.S	Y1_SUPB
+	Y1=Y2
+	DE Y3 A Y2=>XEND=X3=X2
+Y2_SUPB	DE Y3 A Y4=>XDEP
+	DE Y3 A Y2=>XEND
+	DE Y2 A Y1=>XEND
+Y1_SUPB	DE Y1 A Y2=>XDEP
+	DE Y4 A Y3=>XEND
+	DE Y3 A Y2=>XEND
+***
+Y1_SUP	DE Y1 A Y4=>XEND
+	CMP	Y3,Y4
+	BGT.S	Y4_SUPC
+	BLT.S	Y3_SUPC
+	Y3=Y4=>Y1=Y2
+	DE Y2 A Y3=>XDEP
+	DE Y1 A Y4=>XEND
+Y4_SUPC	DE Y1 A Y2=>XDEP
+	DE Y2 A Y3=>XDEP
+	DE Y1 A Y4=>XEND
+	DE Y4 A Y3=>XEND
+Y3_SUPC	DE Y2 A Y3=>XDEP
+	DE Y3 A Y4=>XDEP
+	DE Y2 A Y1=>XEND
+	DE Y1 A Y4=>XEND
+
+DONE	NOP
+
+	lea	TAB,A3
+	MOVE	#100,D0
+	MOVE	#180,D2
+
+	MOVE	#0,D1
+	MOVE	#200,D3
+	
+	JSR	calcord
+	
+	nop
+
+calcord	
+	
+	moveq.l	#0,d4
+	SUB.W	D0,D2
+	SUB.W	D1,D3
+	bne.s	scalcnul
+	rts
+scalcnul	
+	move.w	d2,d4
+	
+	ASL.W	#7,D4
+	ext.l	d4
+	DIVS.W	d3,D4	*x(+1)=(dx/dy)+x
+	move.w	#11,d2
+	ext.l	d4
+	ASL.L	d2,D4
+	
+	add.w	d3,d3
+	add.w	d3,d3
+	neg	d3
+	SWAP	d4
+	
+	add.w	d0,d0
+	add.w	d0,d0
+	sub.w	d1,d1
+	JMP	(a4,d3)
+
+	rept	201
+	MOVE.W	d0,(A3)+
+	ADDX.L	d4,d0
+	endr
+calc
+	rts
+
+	BSS
+TAB_XDEP	DS	200
+TAB_XFIN	DS	200

@@ -1,0 +1,33 @@
+'
+' Un GFA-Punch utile: Un "Trace" sur Minitel avec Spooler 50 Ko en 20 lignes!
+'
+' Auteur: SPEEDER(AND THE HORRIBLES)
+'
+PROCEDURE init_debug
+  RESERVE FRE(0)-50000
+  VOID XBIOS(15,W:7,W:0,W:174,W:-1,W:-1)
+  SLPOKE 3484,HIMEM
+  SDPOKE 3488,50000
+  OUT 1,0,0,0,0,&HC,&H14,&H1B,&H3A,&H69,&H43
+  OPEN "",#89,"AUX:"
+RETURN
+PROCEDURE debugon
+  TRON #89
+RETURN
+PROCEDURE debugoff
+  TROFF
+  PRINT #89,STRING$(39,42)
+RETURN
+PROCEDURE end_debug
+  TROFF
+  CLOSE #89
+  RESERVE FRE(0)+50000
+RETURN
+'
+' Mergez ces routines … la fin d'un programme, commencez par un
+' INIT_DEBUG, et pensez qu'… la sortie du programme, il faudra
+' que vous passiez par END_DEBUG.
+' Utile quand vous d‚veloppez un soft et que vous ne voulez pas
+' que le Trace altŠre l'affichage des donn‚es … l'‚cran.
+' Lancez le Trace par un DEBUGON et coupez-le par un DEBUGOFF.
+'

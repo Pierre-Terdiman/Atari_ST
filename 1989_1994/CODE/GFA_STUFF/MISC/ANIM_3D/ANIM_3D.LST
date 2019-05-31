@@ -1,0 +1,549 @@
+'
+' ANIM_3D 10/6/89 PAR GUILLAUME LAMONOCA
+'
+Hidem ! DOC EN FIN DE PROGRAMME
+'
+In=0 ! ICI PLEIN DE PARAMETRES MODIFIANT L'ANIMATION
+Fil=0
+M=500 !M=coefficient de grossissement des objets dans l'espace
+D=5*M
+Xs=8000 !Xs,Yx,Zs=coordonnees du soleil (distance consideree infinie)
+Ys=2000
+Zs=-8000
+Nors=Sqr(Xs^2+Ys^2+Zs^2)
+Xo=0*M !Xo,Yo,Zo=coordonnees de l'observateur au debut de l'animation (tjs *M)
+Yo=7*M
+Zo=-100*M  !(l'espace devant l'observateur est de cote Z<0)
+An=Pi/16 !an=pas des rotation
+Cc=&H111
+Vc1=5     !vc1 et vc2 a choisir soigneusement(ici 0 et 5 pour navette.gl3)
+Vc2=0     !vc1 et vc2 sont les no des points(0 a np-1) du vecteur vitesse
+Vc=0      !vc=coefficient vecteur vitesse de l'objet.V=vc*(vecteur vc1 -> vc2)
+'         !vc=1 vitesse moyenne etc...  vc=0.5 lent, etc... vc=0:immobile
+Spoke &H484,14
+On Error Gosub End
+On Break Gosub End
+Setcolor 0,0
+Setcolor 15,1911
+Pal:
+Data 1,2,4,6,3,5,7,8,9,10,12,14,11,13
+For I=0 To 7
+  Read N
+  Setcolor N,Cc*I
+Next I
+For I=0 To 5
+  Read N
+  Setcolor N,(I+3)*&H100+(I)*&H1+(I+1)*&H10
+Next I
+Cls
+Color 1
+Deftext 1
+Read Np,Nf
+Dim X%(Np),Y%(Np),Nc(Np)
+Dim X(Np+Nf),Y(Np+Nf),Z(Np+Nf)
+Dim Xt(Np),Yt(Np),Zt(Np)
+Dim Xe(Np),Ye(Np)
+Dim Vi!(Nf)
+For I=0 To Np-1
+  Read X(I),Y(I),Z(I)
+  X(I)=M*(X(I)+Tox)
+  Y(I)=M*(Y(I)+Toy)
+  Z(I)=M*(Z(I)+Toz)
+Next I
+Dim L(Nf,Np)
+For I=0 To Nf-1
+  Read L(I,0)
+  For J=1 To (L(I,0) And 127)
+    Read L(I,J)
+  Next J
+  '
+  A=L(I,1) And 127
+  B=L(I,2) And 127
+  C=L(I,3) And 127
+  X(Np+I)=(Y(C)-Y(A))*(Z(B)-Z(A))-(Y(B)-Y(A))*(Z(C)-Z(A))
+  Y(Np+I)=(X(B)-X(A))*(Z(C)-Z(A))-(X(C)-X(A))*(Z(B)-Z(A))
+  Z(Np+I)=(X(C)-X(A))*(Y(B)-Y(A))-(X(B)-X(A))*(Y(C)-Y(A))
+  Nor=Sqr(X(Np+I)^2+Y(Np+I)^2+Z(Np+I)^2)
+  If Nor<>0 Then
+    X(Np+I)=X(Np+I)*32768/Nor
+    Y(Np+I)=Y(Np+I)*32768/Nor
+    Z(Np+I)=Z(Np+I)*32768/Nor
+  Endif
+  '
+Next I
+'
+'
+'
+'
+Can=Cos(An)
+San=Sin(An)
+'
+A$=String$(32256,0)
+A%=(Varptr(A$)+256) And Not 255
+B$=String$(32256,0)
+B%=(Varptr(B$)+256) And Not 255
+L$=String$(32760,0)
+L%=(Varptr(L$)+256) And Not 1
+Void Xbios(5,L:B%,L:Xbios(2),W:-1)
+Cls
+For I=0 To 199
+  Plot Rnd*320,I
+Next I
+'
+Lt%=L%
+'
+Void Xbios(5,L:A%,L:Xbios(2),W:-1)
+310:
+Bmove B%+320,A%+320,32000-320
+320:
+Xo=Xo+Vc*(X(Vc1)-X(Vc2))
+Yo=Yo+Vc*(Y(Vc1)-Y(Vc2))
+Zo=Zo+Vc*(Z(Vc1)-Z(Vc2))
+For I=0 To Np-1
+  Xt(I)=X(I)-Xo
+  Yt(I)=Y(I)-Yo
+  Zt(I)=Z(I)-Zo
+Next I
+'
+Arrayfill Xe(),65535
+Tt=0
+T%=Lt%+2
+'
+'
+For I=0 To Nf-1
+  '
+  @Vbl
+  '
+  '
+  G=L(I,2) And 127
+  N=((X(Np+I)*Xt(G)+Y(Np+I)*Yt(G)+Z(Np+I)*Zt(G)))
+  '
+  '
+  If (N=>0) Xor In Then
+    '
+    N=-((X(Np+I)*Xs+Y(Np+I)*Ys+Z(Np+I)*Zs)/Nors)
+    '
+    '
+    '
+    C=0
+    If N>0 Xor In Then
+      C=8*N/32769
+    Endif
+    '
+    Nbp=L(I,0)
+    If Nbp>127 Then
+      Zc=Nbp Div 256
+      Nbp=Nbp And 127
+      If Zc>=3 And Zc<=8 Then
+        C=C+(Zc-6)
+        If C>7 Then
+          C=7
+        Endif
+        If C<0 Then
+          C=0
+        Endif
+        C=C-2*(C>=1)
+      Else
+        C=Zc
+      Endif
+    Else
+      C=C-2*(C>=1)
+    Endif
+    '
+    '
+    '
+    '
+    '
+    Tc=0
+    T=0
+    Vi!(I)=0
+    For J=1 To Nbp
+      N2=L(I,J)
+      V!=(Zt(N2 And 127)>127)
+      If N2>127 Then
+        N2=N2 And 127
+        If V! Then
+          Nc(Tc)=N2
+          Inc Tc
+        Endif
+      Endif
+      Vi!(I)=Vi!(I) Or V!
+      If J=1 Then
+        N1=L(I,Nbp) And 127
+      Else
+        N1=L(I,J-1) And 127
+      Endif
+      '
+      '
+      If V! Then
+        If Zt(N1)<=127 Then
+          F=(128-Zt(N1))/(Zt(N1)-Zt(N2))
+          X%(T)=160+Xt(N1)+(Xt(N1)-Xt(N2))*F
+          Y%(T)=72-Yt(N1)-(Yt(N1)-Yt(N2))*F
+          Inc T
+        Endif
+        If Xe(N2)=65535 Then
+          Xe(N2)=160+128*Xt(N2)/Zt(N2)
+          Ye(N2)=72-128*Yt(N2)/Zt(N2)
+        Endif
+        X%(T)=Xe(N2)
+        Y%(T)=Ye(N2)
+        Inc T
+      Else
+        If Zt(N1)>127 Then
+          F=(128-Zt(N1))/(Zt(N1)-Zt(N2))
+          X%(T)=160+Xt(N1)+(Xt(N1)-Xt(N2))*F
+          Y%(T)=72-Yt(N1)-(Yt(N1)-Yt(N2))*F
+          Inc T
+        Endif
+      Endif
+      N1=N2
+      '
+    Next J
+    '
+    '
+    If T<>0 Then
+      X%(T)=X%(0)
+      Y%(T)=Y%(0)
+      Inc T
+      Dpoke T%,T
+      Dpoke T%+2,C
+      For K=0 To T-1
+        Dpoke T%+4+K*4,X%(K)+32768
+        Dpoke T%+6+K*4,Y%(K)+32768
+      Next K
+      T%=T%+T*4+4
+      Inc Tt
+      '
+      Dpoke T%,Tc
+      If Tc<>0 Then
+        For K=0 To Tc-1
+          N1=Nc(K)
+          Dpoke T%+2+K*6,(Zt(N1)<(128*M))
+          Dpoke T%+4+K*6,Xe(N1)+32768
+          Dpoke T%+6+K*6,Ye(N1)+32768
+        Next K
+      Endif
+      T%=T%+2+Tc*6
+      '
+    Endif
+    '
+  Endif
+Next I
+Dpoke Lt%,Tt
+'
+'
+'
+'
+'
+Tt=Dpeek(Lt%)
+T%=Lt%+2
+If Tt<>0 Then
+  For I=1 To Tt
+    '
+    @Vbl
+    '
+    T=Dpeek(T%)
+    C=Dpeek(T%+2)
+    T%=T%+4
+    For J=0 To T-1
+      X%(J)=Dpeek(T%)-32768
+      Y%(J)=Dpeek(T%+2)-32768
+      T%=T%+4
+    Next J
+    If Fil=0 Then
+      Deffill C
+      Polyfill T,X%(),Y%()
+    Else
+      Color 9
+      Polyline T,X%(),Y%()
+    Endif
+    '
+    Tc=Dpeek(T%)
+    T%=T%+2
+    If Tc<>0 Then
+      Color 2
+      For K=1 To Tc
+        Ccc=Dpeek(T%)
+        Xp=Dpeek(T%+2)-32768
+        Yp=Dpeek(T%+4)-32768
+        T%=T%+6
+        If Ccc Then
+          Box Xp,Yp,Xp+1,Yp+1
+        Else
+          Plot Xp,Yp
+        Endif
+      Next K
+    Endif
+    '
+  Next I
+Endif
+'
+'
+If Lt%-L%<32000 Then
+  Lt%=T%
+Endif
+Text 0,10,Lt%-L%
+'
+'
+Bmove A%+320,Xbios(2)+320,32000-320
+Lwait:
+I%=Peek(&HFFFC02)
+While Peek(&HFFFC02)>127
+  @Vbl
+Wend
+If I%=&H50
+  For I=0 To Nf+Np-1
+    O=Y(I)
+    N=Z(I)
+    Y(I)=O*Can+N*San
+    Z(I)=N*Can-O*San
+  Next I
+  Goto 740
+Endif
+If I%=&H48
+  For I=0 To Nf+Np-1
+    O=Y(I)
+    N=Z(I)
+    Y(I)=O*Can-N*San
+    Z(I)=N*Can+O*San
+  Next I
+  Goto 740
+Endif
+If I%=&H4D
+  For I=0 To Nf+Np-1
+    L=X(I)
+    P=Z(I)
+    X(I)=L*Can-P*San
+    Z(I)=P*Can+L*San
+  Next I
+  Goto 740
+Endif
+If I%=&H4B
+  For I=0 To Nf+Np-1
+    L=X(I)
+    P=Z(I)
+    X(I)=L*Can+P*San
+    Z(I)=P*Can-L*San
+  Next I
+  Goto 740
+Endif
+If I%=&H4A
+  Zo=Zo-D
+  Goto 740
+Endif
+If I%=&H4E
+  Zo=Zo+D
+  Goto 740
+Endif
+If I%=&H6E
+  Yo=Yo+D
+  Goto 740
+Endif
+If I%=&H68
+  Yo=Yo-D
+  Goto 740
+Endif
+If I%=&H6C
+  Xo=Xo-D
+  Goto 740
+Endif
+If I%=&H6A
+  Xo=Xo+D
+  Goto 740
+Endif
+If I%=&H47
+  For I=0 To Nf+Np-1
+    O=Y(I)
+    L=X(I)
+    X(I)=L*Can+O*San
+    Y(I)=O*Can-L*San
+  Next I
+  Goto 740
+Endif
+If I%=&H52
+  For I=0 To Nf+Np-1
+    O=Y(I)
+    L=X(I)
+    X(I)=L*Can-O*San
+    Y(I)=O*Can+L*San
+  Next I
+  Goto 740
+Endif
+If I%=&H3A+10
+  Dpoke Lt%,-1
+  @Normal
+  While Inp?(2)
+    Void Inp(2)
+  Wend
+  Fileselect "\*.gl3","",N$
+  If N$<>"" And N$<>"\" Then
+    Bsave N$,L%,Lt%-L%+2
+  Endif
+  End
+Endif
+If I%=&H3A+8
+  Fil=Not Fil
+  Goto 740
+Endif
+If I%=&H3A+9
+  In=Not In
+  Goto 740
+Endif
+If I%>=&H3A+1 And I%<=&H3A+7
+  Cc=I%-&H3A
+  Cc=&H100*(Cc And 4)/4+&H10*(Cc And 2)/2+(Cc And 1)
+  Restore Pal
+  For I=0 To 7
+    Read N
+    Setcolor N,Cc*I
+  Next I
+  Goto 740
+Endif
+Goto Lwait
+740:
+Goto 310
+'
+'
+' DOC DE ANIM_3D   10/6/89 PAR GUILLAUME LAMONOCA
+'
+' CE PROGRAMME PERMET D'ANIMER UN OBJET ET DE FABRIQUER EN RAM UN DESSIN
+' ANIME.LA TAILLE DE CE FICHIER DEFILE EN HAUT A GAUCHE EN OCTETS
+' LA TAILLE MAXIMUM EST DE 32000 OCTETS.POUR QUITTER LE PROGRAMME UTILISER F10
+' VOUS POURREZ ALORS SAUVER L'ANIMATION AU FORMAT .GL3
+' VOUS POUVEZ QUITTER LE PRG AINSI SANS CREER DE FICHIER EN APPUYANT SUR
+' RETURN.LES FICHIERS GL3 SONT DESTINES A ETRE LU PAR LE PROGRAMME FILM_3D
+' QUI PEUT ET DOIT ETRE COMPILE POUR UNE ANIMATION BCP PLUS RAPIDE...
+'
+' TOUCHES:FLECHES CURSEUR,INSERT ET CLR-HOME POUR LES 3 ROTATIONS
+' - ET + POUR AVANCER OU RECULER...
+' F1 A F7 POUR CHANGER DE COULEUR
+' F8: ANIMATION FIL DE FER PLUS RAPIDE(N'AFFECTE PAS LE DESSIN ANIME)
+' F9: INVERSE LA VISIBILITE DES FACES:VUE EXTERIEURE/INTERIEURE
+' F10: QUITTER ET SAUVER LE DESSIN ANIM SI VOUS LE VOULEZ
+'
+' TOUT ARRET DU PROGRAMME PROVOQUE LA PERTE DU DESSIN ANIME
+' MAIS VOUS POUVEZ LE RELANCER IMMEDIATEMENT SANS PROBLEME
+' ET SI VOUS MANIEZ BIEN LES PARAMETRE INTERNES ET LES TABLEAUX
+' CONTENANT LES VECTEURS FACES ET LES COORDONNEES POINTS VOUS
+' POURREZ REALISER DES EFFETS SPECIAUX:EXEMPLE OUVERTURE DU SAS DU HANGAR
+'
+' CI-APRES ZONE DE DATA DEFINISSANT L'OBJET:
+' FORMAT:
+' 1ER DATA NP,NF
+' NP=NOMBRE DE POINTS
+' NF=NOMBRE DE FACE
+' (UNE FACE PEUT ETRE COMPOSE DE 3 POINTS A,B ET A:C'EST ALORS UN TRAIT)
+' DATAS SUIVANTS X,Y,Z POUR CHAQUE POINTS A NUMEROTER DE 0 A NP-1
+' DATAS SUIVANTS:
+' UNE FACE EST DEFINIE A CHAQUE LIGNE,DONC NF LIGNES
+' D'ABORD LE NOMBRE DE POINTS QUI CONSTITUENT LA FACE
+' PUIS LES NO DES POINTS DANS L'ORDRE DE FORMATION DE LA FACE (NO: 0 A NP-1)
+' ATTENTION:ON DOIT TJS INDIQUER LES POINTS DANS LE SENS DES AIGUILLES D'UNE
+' MONTRE EN REGARDANT LA FACE DU COTE VISIBLE...SINON ON LA VERRA A L'ENVERS
+'
+' DETAIL: ON PEUT DEMANDER A UN POINT D'ETRE EN PLUS UN PLOT CLIGNOTANT
+' IL SUFFIT AU LIEU D'INDIQUER SON NUMERO D'ECRIRE SON NO + 128.
+'
+' DETAIL: ON PEUT INFLUENCER LA COULEUR DES FACES
+' SOIT EN DEMANDANT UN COULEUR PRECISE ET CONSTANTE
+' SOIT EN DEMANDANT UN ECLAIRCISSEMENT OU UN ASSOMBRISSEMENT DE LA FACE
+' CES 2 OPTIONS S'APPELLES EN AJOUTANT 128 AU NBRE DE POINTS DE LA FACE
+' AUQUEL S'AJOUTE ENCORE 256*C OU C EST LA COULEUR FIXE DESIREE SI C
+' N'APPARTIENT PAS A L'INTERVALLE [3,9] SINON C EST L'OFFSET DESIREE
+' POUR L'INTENSITE LUMINEUSE CALCULEE COMME SUIT: C-6  C'EST A DIRE:
+' 6:PAS DE CHANGEMENT  5:FAIBLE ASSOMBRISSEMENT  3:FORT ASSOMBRISSEMENT
+' 4:MOYEN ASSOMBRISSEMENT  7:FAIBLE ECLAIRCISSEMENT  8:MOYEN ECLAIRCISSEMENT
+' CERTAINES COULEURS FIXES SONT RESERVEES AU PROGRAMMES,D'AUTRES SONT LIBRES
+' ATTENTION LES NO DE COULEUR CORRESPONDENT AU SYSTEME UTILISE PAR COLOR.
+' LES RESERVEES: 0=NOIR  1=BLANC  2=CLIGNOTANT NOIR/BLANC  10=TUYERE EN FEU
+' LES LIBRES:   10,11,12,13,14,15 (ATTENTION POUR LES MODIFIER UTILISER
+' RESPECTIVEMENT SETCOLOR 9,10,12,14,11 ET 13).CE SONT CES COULEURS QUI
+' DOIVENT ETRE UTILISE DANS LES IMAGES DE DECOR NEO OU DEGAS DANS FILM_3D.
+' CES ATTRIBUTS DE FACE PEUVENT DONC SE CALCULER: C*256+128+N
+' OU N EST LE NOMBRE DE POINTS DE LA FACE.MAIS C'EST PLUS SIMPLE SI VOUS
+' CONNAISSEZ UN PEU L'HEXADECIMAL: LE NBRE DE POINT DEVIENT ALORS &C8N EX:
+' C=3 N=4 DONNENT &384   OU ENCORE    C=13 N=10 DONNENT &D8A
+'
+' ATTENTION:LES FACES SONT DESSINEES DANS L'ORDRE OU ELLES SONT PLACEES
+' DANS LES DATAS.DONC:NE FAITES QUE DES FORMES CONVEXES DANS L'ESPACE
+' OU S'IL Y A DES CAVITES ARRANGEZ VOUS AVEC L'ORDRE DES FACES POUR QUE
+' LES FACES DONT VOUS ETES SUR QU'AUCUNE FACE NE S'AFFICHERA DEVANT ELLES
+' SOIT PLACEES A LA FIN DES DATAS (AFFICHEES EN DERNIER)
+' LE SYGMA EST UN BON EXEMPLE DE CE BIDOUILLAGE VISUEL.ENTRAINEZ-VOUS!
+' ATTENTION EVIDEMMENT AUX DETAILS QUE VOUS VOULEZ RAJOUTER AUX FACES
+' IL FAUT BIEN SUR LES PLACER APRES LE DATA DEFINISSANT LA FACE DE SUPPORT.
+'
+' DE MEME MEFIEZ VOUS DES FACES A PLOTS CLIGNOTANTS SI CES FACES NE
+' SONT PAS EN FIN DE DATAS LES PLOTS RISQUENT D'ETRE RECOUVERTS PAR
+' D'AUTRE FACES ADJACENTES ET DONC DE RESTER INVISIBLES
+' DANS CE CAS VOUS POUVEZ DEFINIR LE MEME PLOT CLIGNOTANT SUR PLUSIEURS
+' FACES...
+'
+' CE SYSTEME 3D EST SIMPLE ET ASSEZ LIMITE ET N'A RIEN AVOIR AVEC
+' LE SYSTEME ULTRA PERFORMANT QUE JE SUIS EN TRAIN DE METTRE AU POINT EN
+' ASSEMBLEUR 100% ET QUI JE PENSE ME PERMETTRA D'APPROCHER LA QUALITE DES
+' ANIMATION DE STARGLIDER2 OU VOYAGER TOUT EN GARDANT LA GESTION D'UNE SOURCE
+' LUMINEUSE... CEPENDANT AVEC ANIM_3D ET FILM_3D VOUS ARRIVEREZ A EPATER LA
+' GALERIE SANS TROP DE PROBLEME ET VOUS DONNERA DES BASES SOLIDES POUR LA 3D
+' SURTOUT SI VOUS TRADUISEZ FILM_3D EN ASM...
+'                                BONNE 3D!!!
+'
+' SVP LAISSEZ CETTE DOC INTACTE.MERCI
+' PLEASE KEEP THIS LINES SAFE.THANK YOU
+' FREEWARE.NE PEUT ETRE VENDU.
+' 10/6/89 PAR GUILLAUME LAMONOCA
+'
+' data--------------------  MERGEZ VOS PROPRES DATAS CI-DESSOUS
+'
+'
+' cube ' ESSAYEZ DE COMPRENDRE CA D'ABORD!!!
+'
+Data 8,6
+Data -10,10,10,-10,10,-10,-10,-10,-10,-10,-10,10
+Data 10,10,10,10,10,-10,10,-10,-10,10,-10,10
+'
+Data 4,0,4,5,1
+Data 4,0,3,7,4
+Data 4,1,5,6,2
+Data 4,6,7,3,2
+Data 4,5,4,7,6
+Data 4,0,1,2,3
+'
+'
+'
+'
+'
+'
+'
+'
+'
+Procedure End
+  @Normal
+  If Err<>0 Then
+    '    Error Err
+    '    Error 0
+  Endif
+  End
+Return
+'
+Procedure Normal
+  Void Xbios(5,L:Xbios(2),L:Xbios(2),W:-1)
+  Setcolor 0,1911
+  Setcolor 15,0
+  Setcolor 1,0
+  Setcolor 3,0
+Return
+'
+Procedure Deg(A$) !PLACE UNE IMAGE DEGAS DANS IM$.SPUT IM$ LA REAFFICHE
+  Im$=Space$(32066)
+  Bload A$,Varptr(Im$)
+  Void Xbios(6,L:Varptr(Im$)+2)
+  Im$=Mid$(Im$,35,32000)
+Return
+'
+Procedure Vbl     !S'APPELLE VBL CAR ELLE S'EXECUTE SOUVENT...C TOUT!
+  Zz=Peek(&H4BD)
+  Setcolor 1,-1911*(Zz>127)
+  Setcolor 9,&H740+(Zz And &H30) Xor (-&H30*((Zz And &H40)=0))
+Return

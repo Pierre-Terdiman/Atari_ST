@@ -1,0 +1,13 @@
+PRINT AT(1,1);"ATARI"
+GET 0,0,80,16,text$
+CLS
+INPUT "VITESSE (1 A 10):",v
+DO
+  FOR g=0 TO 640 STEP 64
+    FOR f=-10 TO 10 STEP v/10
+      PUT g+(f-v/10)*3.2+32,(f-v/10)^2+200,text$,0
+      PUT g+f*3.2+32,f^2+200,text$
+      VSYNC
+    NEXT f
+  NEXT g
+LOOP
